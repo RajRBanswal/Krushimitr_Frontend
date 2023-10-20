@@ -1,0 +1,73 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  
+  const LoginPage = async () => {
+    let result = await fetch("https://krushimitr.in/admin/admin_login", {
+      method: "post",
+      body: JSON.stringify({ email, password }),
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then((resp)=>resp.json());
+    // console.log(result);
+    if (result.status === 201) {
+      localStorage.setItem("admin_id", result.admins._id);
+      localStorage.setItem("admin_name", result.admins.name);
+      let token = result.admins.tokens[result.admins.tokens.length - 1].token
+      localStorage.setItem("admin_token", token);
+      alert(result.result);
+      navigate("/admin");
+    } else {
+      alert("User Not Found");
+    }
+
+
+
+    // console.warn(result.email);
+  }
+  return (
+    <div className='main_div py-5 h-100 w-100'>
+      <div className='container py-5'>
+        <div className='row'>
+        <ToastContainer />
+          <div className='col-lg-5 m-auto'>
+            <div className='card' style={{borderRadius:0}}>
+              <div className="card-body">
+                <h3 className='text-center text-uppercase text-primary fw-bold'>Login</h3>
+                <hr />
+                <div className='form-group'>
+                  <label htmlFor="name" className="form-label">Email</label>
+                  <input type="text" className="form-control" id="email" onChange={(e) => setEmail(e.target.value)} placeholder="Enter email" />
+                </div>
+                <div className='form-group mt-2'>
+                  <label htmlFor="password" className="form-label">Password</label>
+                  <input type="password" className="form-control" id="password" onChange={(e) => setPassword(e.target.value)} placeholder="Enter Password" />
+                </div>
+                <div className='form-group mt-2'>
+                  <div className="form-check">
+                    <input className="form-check-input" type="checkbox" value="" id="Remember" />
+                    <label className="form-check-label" htmlFor="Remember">
+                      Remember Me
+                    </label>
+                  </div>
+                </div>
+                <div className='form-group mt-3 text-center'>
+                  <button type="button" onClick={LoginPage} className="btn btn-danger">Primary</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Login
