@@ -9,7 +9,7 @@ function UserLogin() {
   const navigate = useNavigate();
 
   const LoginPage = async () => {
-    let result = await fetch("http://localhost:8000/users/user-login", {
+    let result = await fetch("https://krushimitr.in/users/user-login", {
       method: "post",
       body: JSON.stringify({ username, password }),
       headers: {
@@ -21,7 +21,7 @@ function UserLogin() {
       localStorage.setItem("user_name", result.user.name);
       // alert("User Logged In");
       alert(result.result);
-      navigate("/user-home");
+      navigate("/users/user-dashboard");
     } else {
       alert("User Not Found");
     }

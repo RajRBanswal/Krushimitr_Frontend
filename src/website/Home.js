@@ -206,7 +206,7 @@ function Home() {
                 <div className="container">
                     <div className="row gx-5">
                         <div className="col-lg-8 mb-5 mb-lg-0">
-                            <div className="d-flex h-100 border border-5 border-primary border-bottom-0">
+                            <div className="d-flex h-100 border border-5 border-primary">
 
                                 {/* <iframe width="100%" height="100%" src="https://www.youtube.com/watch?v=VCqoGuH_7Bw"></iframe> */}
                                 <iframe src={`https://www.youtube.com/embed/a81NHb30lt8`} title='youutbe' height={"100%"} width={"100%"} />
@@ -217,7 +217,6 @@ function Home() {
                                 <div class="">
                                     <div class="marquee-block">
                                         <div class="marquee-inner to-left">
-                                            <span>
                                                 {
                                                     news.map(item => (
                                                         <div class="marquee-item">
@@ -227,8 +226,6 @@ function Home() {
                                                         </div>
                                                     ))
                                                 }
-
-                                            </span>
 
                                         </div>
                                     </div>
@@ -392,15 +389,14 @@ function Home() {
                             <div className='col-lg-3 mt-3'>
                                 <div className='card h-100'>
                                     <div className='card-body p-0 productImage'>
-                                        <img src={`https://krushimitr.in/upload/${item.image}`} style={{ margin: 'auto' }} width={'100%'} alt={item.image} />
+                                        <img src={`https://krushimitr.in/upload/${item.image[0]}`} style={{ margin: 'auto' }} width={'100%'} alt={item.image} />
                                     </div>
                                     <div className='p-3'>
-                                        <p className='text-dark text-center fw-bold'>{item.productName} ( {item.weight}g)</p>
-                                        <p><label className="text-primary fw-bold mb-0"><i className='fa fa-rupee' ></i>{item.price}</label> &nbsp;  {item.oldPrice ? <del className=''><i className='fa fa-rupee' ></i>{item.oldPrice}</del> : ''}</p>
+                                        <p className='text-dark text-center fw-bold'>{item.productName}</p>
+                                        {/* <p><label className="text-primary fw-bold mb-0"><i className='fa fa-rupee' ></i>{item.price}</label> &nbsp;  {item.oldPrice ? <del className=''><i className='fa fa-rupee' ></i>{item.oldPrice}</del> : ''}</p> */}
                                     </div>
                                     <div className="btn-action d-flex justify-content-center pb-3">
-                                        <Link className="btn bg-primary py-2 px-3 mx-2 btn-sm" href=""><i className="bi bi-cart text-white"></i></Link>
-                                        <Link className="btn bg-secondary py-2 px-3 mx-2 btn-sm" href=""><i className="bi bi-eye text-white"></i></Link>
+                                        <Link className="btn bg-secondary py-2 px-3 mx-2 btn-sm" to="./product-details"><i className="bi bi-eye text-white"></i></Link>
                                     </div>
                                     <div className='productPercentage'>
                                         {item.discount ? <span>{item.discount}{item.percentSbl}</span> : ''}

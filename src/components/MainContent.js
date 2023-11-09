@@ -15,7 +15,7 @@ function MainContent() {
         e.preventDefault();
         setIsActive(current => !current);
     }
-    console.log(isToken);
+    // console.log(isToken);
     const admin_id = localStorage.getItem('admin_id');
     const getProfile = async () => {
         let result = await fetch("https://krushimitr.in/admin/admin_profile", {
@@ -35,7 +35,7 @@ function MainContent() {
 
         }
     }
-    console.log(isDToken + " main" + isToken);
+    // console.log(isDToken + " main" + isToken);
     useEffect(() => {
         getProfile();
         project(event, "defalut");
@@ -195,13 +195,10 @@ function MainContent() {
                                                 </Link>
                                             </li>
                                             <li>
-                                                <Link to="#">Tables</Link>
-                                            </li>
-                                            <li>
-                                                <Link to="#">Icons</Link>
-                                            </li>
-                                            <li>
-                                                <Link to="#">Forms</Link>
+                                                <Link to="all-sarkari-yojna">
+                                                    <i className="fa fa-newspaper"></i>
+                                                    <span>Sarkari Yojna</span>
+                                                </Link>
                                             </li>
                                         </ul>
                                     </div>
