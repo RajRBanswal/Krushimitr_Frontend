@@ -1,15 +1,16 @@
 import { event } from "jquery";
-import { Image } from "primereact/image";
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 // import allRoutes from '../allRoutes'
 const logo = "./assets/logo.png";
 
-function MainContent() {
+function DistributorsMain() {
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
-  const [isToken, setIsToken] = useState(localStorage.getItem("admin_token"));
+  const [isToken, setIsToken] = useState(
+    localStorage.getItem("distributor_token")
+  );
   const [isDToken, setIsDToken] = useState("");
 
   const toogle = (e) => {
@@ -17,23 +18,27 @@ function MainContent() {
     setIsActive((current) => !current);
   };
   // console.log(isToken);
-  const admin_id = localStorage.getItem("admin_id");
-  const adminName = localStorage.getItem("admin_name");
+  const distributor_id = localStorage.getItem("distributor_id");
+  const distributorName = localStorage.getItem("distributor_name");
   const getProfile = async () => {
-    let result = await fetch("https://krushimitr.in/admin/admin_profile", {
-      method: "post",
-      body: JSON.stringify({ admin_id }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }).then((result) => result.json());
-    let tokens = result.admins.tokens[result.admins.tokens.length - 1].token;
+    let result = await fetch(
+      "https://krushimitr.in/distributor/distributor_profile",
+      {
+        method: "post",
+        body: JSON.stringify({ distributor_id }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    ).then((result) => result.json());
+    let tokens =
+      result.distributor.tokens[result.distributor.tokens.length - 1].token;
     // setIsDToken(tokens);
     if (tokens !== "" && isToken !== null && tokens === isToken) {
       setIsAuth(true);
     } else {
       setIsAuth(false);
-      navigate("/admin_login");
+      navigate("/login");
     }
   };
   // console.log(isDToken + " main" + isToken);
@@ -44,7 +49,7 @@ function MainContent() {
   const Logout = () => {
     setIsAuth(false);
     localStorage.clear("");
-    navigate("/admin_login");
+    navigate("/login");
   };
   const [first, setFirst] = useState(false);
   const [two, setTwo] = useState(false);
@@ -74,6 +79,7 @@ function MainContent() {
           three ? setThree(false) : setThree(true),
           setFour(false)
         );
+
       case "four":
         return (
           setFirst(false),
@@ -121,7 +127,13 @@ function MainContent() {
                 placeholder="Search"
                 aria-label="Search"
               />
-
+              {/* <button
+                type="button"
+                className="btn btn-primary"
+                onClick={Logout}
+              >
+                Logout
+              </button> */}
               <div class="dropdown">
                 <button
                   class="btn btn-primary dropdown-toggle"
@@ -130,7 +142,7 @@ function MainContent() {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  {adminName}
+                  {distributorName}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                   <li>
@@ -138,6 +150,7 @@ function MainContent() {
                       Logout
                     </a>
                   </li>
+                 
                 </ul>
               </div>
             </div>
@@ -156,8 +169,8 @@ function MainContent() {
         <nav id="sidebar" className="sidebar-wrapper">
           <div className="sidebar-content">
             <div className="sidebar-brand">
-              <Link to="#" className="text-white">
-                Krushimitr
+              <Link to="#" className="text-white text-center">
+                Distributor{" "}
               </Link>
               <div id="close-sidebar">
                 <i className="fas fa-times" onClick={toogle}></i>
@@ -165,11 +178,7 @@ function MainContent() {
             </div>
             <div className="sidebar-header bg-white border-2 border-dark">
               <div className="user-pic">
-                <Image
-                  className="img-responsive img-rounded"
-                  src="../assets/logo.png"
-                  alt=""
-                />
+                <img className="img-responsive img-rounded" src={logo} alt="" />
               </div>
             </div>
             <div className="sidebar-menu">
@@ -178,7 +187,7 @@ function MainContent() {
                   <span>General</span>
                 </li>
                 <li>
-                  <Link to="/admin">
+                  <Link to="/distributors">
                     <i className="fa fa-book"></i>
                     <span>Dashboard</span>
                   </Link>
@@ -186,15 +195,12 @@ function MainContent() {
                 <li className={`sidebar-dropdown ${first ? "active" : ""}`}>
                   <Link to="#" onClick={(event) => project(event, "first")}>
                     <i className="fa fa-tachometer-alt itemMenu"></i>
-                    <span className="itemMenu">Admin</span>
+                    <span className="itemMenu">Distributor</span>
                   </Link>
                   <div className={`sidebar-submenu ${first ? "active" : ""}`}>
                     <ul>
                       <li>
-                        <Link to="all-users">All Users</Link>
-                      </li>
-                      <li>
-                        <Link to="all-distributor">All Distributor</Link>
+                        <Link to="allusers">Users</Link>
                       </li>
                     </ul>
                   </div>
@@ -207,10 +213,10 @@ function MainContent() {
                   <div className={`sidebar-submenu ${two ? "active" : ""}`}>
                     <ul>
                       <li>
-                        <Link to="all-categories">All Categories</Link>
+                        <Link to="allcategories">All Categories</Link>
                       </li>
                       <li>
-                        <Link to="all-products">All Products</Link>
+                        <Link to="allproducts">All Products</Link>
                       </li>
                     </ul>
                   </div>
@@ -256,15 +262,16 @@ function MainContent() {
                     </ul>
                   </div>
                 </li>
+
                 {/* <li className="header-menu">
                                     <span>Extra</span>
                                 </li> */}
-                <li>
+                {/* <li>
                   <Link to="all-application-form">
                     <i className="fa fa-book"></i>
                     <span>All Applications</span>
                   </Link>
-                </li>
+                </li> */}
               </ul>
             </div>
           </div>
@@ -281,4 +288,4 @@ function MainContent() {
   );
 }
 
-export default MainContent;
+export default DistributorsMain;

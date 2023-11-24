@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 import "./index.css";
 function UserPanel() {
-    const navigate = useNavigate();
-    const userName = localStorage.getItem("user_id");
-    if(!userName){
-        navigate("/user_login")
-    }
-    const Logout = () => {
-        localStorage.clear("");
-        navigate("/user_login")
-    }
+  let userId = "";
+  const navigate = useNavigate();
+  userId = localStorage.getItem("user_id");
+  if (!userId) {
+    navigate("/login");
+  }
+  const Logout = () => {
+    localStorage.clear("");
+    navigate("/login");
+  };
   return (
     <div>
       <div className="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary userPanel ">
@@ -34,10 +35,13 @@ function UserPanel() {
               <span className="navbar-toggler-icon"></span>
             </button>
             {/* <!-- Brand --> */}
-            <Link className="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0 text-center" to="#">
-              <img
-                src="https://preview.webpixels.io/web/img/logos/clever-primary.svg"
+            <Link
+              className="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0 text-center"
+              to="#"
+            >
+              <img src={"/assets/logo.png"}
                 alt="..."
+                width={80}
               />
             </Link>
             {/* <!-- User menu (mobile) --> */}
@@ -54,11 +58,6 @@ function UserPanel() {
                   aria-expanded="false"
                 >
                   <div className="avatar-parent-child">
-                    <img
-                      alt="Image Placeholder"
-                      src="https://images.unsplash.com/photo-1548142813-c348350df52b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80"
-                      className="avatar avatar- rounded-circle"
-                    />
                     <span className="avatar-child avatar-badge bg-success"></span>
                   </div>
                 </Link>
@@ -139,8 +138,37 @@ function UserPanel() {
                   {/* <!-- Actions --> */}
                   <div className="col-sm-12 col-12 text-sm-end">
                     <div className="mx-n1">
-                        <img src={'./assets/logo.png'} alt="" width={'50'} />
-                        <Link className="ps-3" >Rajesh Ramji Banswal</Link>
+                      <ul class="navbar-nav float-right">
+                        <li class="nav-item dropdown">
+                          <a
+                            class="nav-link dropdown-toggle"
+                            href="#"
+                            id="navbarDarkDropdownMenuLink"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            <img src={"/assets/logo.png"} alt="" width={"50"} />
+                            <Link className="ps-3">Rajesh Ramji Banswal</Link>
+                          </a>
+                          <ul
+                            class="dropdown-menu w-100"
+                            aria-labelledby="navbarDarkDropdownMenuLink"
+                          >
+                            <li>
+                              <Link class="dropdown-item" to="/">
+                                Home
+                              </Link>
+                            </li>
+                            <hr className="my-0" />
+                            <li>
+                              <Link class="dropdown-item" to="">
+                                Profile
+                              </Link>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </div>

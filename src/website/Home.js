@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import OwlCarousel from 'react-owl-carousel';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../../node_modules/owl.carousel/dist/assets/owl.carousel.min.css';
 import '../../node_modules/owl.carousel/dist/owl.carousel.min';
 import './../styles.css';
 
 function Home() {
+    const navigate = useNavigate();
     const options = {
         margin: 30,
         responsiveClass: true,
@@ -396,7 +397,7 @@ function Home() {
                                         {/* <p><label className="text-primary fw-bold mb-0"><i className='fa fa-rupee' ></i>{item.price}</label> &nbsp;  {item.oldPrice ? <del className=''><i className='fa fa-rupee' ></i>{item.oldPrice}</del> : ''}</p> */}
                                     </div>
                                     <div className="btn-action d-flex justify-content-center pb-3">
-                                        <Link className="btn bg-secondary py-2 px-3 mx-2 btn-sm" to="./product-details"><i className="bi bi-eye text-white"></i></Link>
+                                        <button className="btn bg-secondary py-2 px-3 mx-2 btn-sm" onClick={() => navigate('/product-details',{state: { item: item }})} ><i className="bi bi-eye text-white"></i></button>
                                     </div>
                                     <div className='productPercentage'>
                                         {item.discount ? <span>{item.discount}{item.percentSbl}</span> : ''}

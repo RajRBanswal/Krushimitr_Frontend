@@ -1,6 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+const logo = "../logo.png";
 function Navbar() {
+  const cart = useSelector((state) => state.cart);
+  const [cartProducs, setCartProduct] = useState([]);
+  const [userLoggedIn, setUserLoggedIn] = useState(null);
+  const [username, setUsername] = useState(null);
+
+  useEffect(() => {
+    setCartProduct(cart.data);
+    let user = localStorage.getItem("user_id");
+    let username = localStorage.getItem("user_name");
+    setUserLoggedIn(user);
+    setUsername(username);
+  },[]);
+
   return (
     <>
       <div className="container-fluid px-5 d-none d-lg-block bg-primary ">
@@ -48,11 +63,10 @@ function Navbar() {
         </div>
       </div>
 
-      <nav className="navbar navbar-expand-lg bg-white navbar-dark shadow py-3 py-lg-0 px-3 px-lg-5">
+      <nav className="navbar navbar-expand-lg bg-white navbar-dark shadow py-sm-3 py-lg-0 px-3 px-lg-5">
         <Link to="/" className="navbar-brand  ps-lg-5">
           <h1 className="m-0 display-4 text-secondary">
-            {" "}
-            <img src={"./assets/logo.png"} alt="logo" width={100} />
+            <img src={logo} alt="logo" width={100} />
           </h1>
         </Link>
         <button
@@ -95,22 +109,99 @@ function Navbar() {
             >
               Apply E-Krushimitr
             </Link>
-            <Link to="#" className="nav-item py-1 nav-link" ><div id="google_translate_element"></div></Link>
-            <Link to="/user_login" className="nav-item nav-link">
-              Login
+            <Link to="#" className="nav-item py-1 nav-link">
+              <div id="google_translate_element"></div>
             </Link>
-            <div className="nav-item dropdown">
-              <Link to="#" className="nav-link" data-bs-toggle="dropdown">
-                <i className="fa fa-solid fa-shopping-cart"></i>
+            {userLoggedIn === null ? (
+              <Link to="/login" className="nav-item nav-link">
+                Login
               </Link>
-              <div className="dropdown-menu m-0 dropdown-menu-end" style={{ minWidth: '24rem' }}>
+            ) : (
+              <Link to="/users/user-dashboard" className="nav-item nav-link">
+                {username}
+              </Link>
+            )}
+            <div className="nav-item dropdown">
+              <Link to="/cart" className="nav-link" data-bs-toggle="dropdown">
+                <i className="fa fa-solid fa-shopping-cart"></i>
+                <span className="badge rounded-pill bg-success text-light">
+                  {cart.data.length}
+                </span>
+              </Link>
+              <div
+                className="dropdown-menu m-0 dropdown-menu-end"
+                style={{ minWidth: "24rem" }}
+              >
                 <i
                   className="fa fa-close"
                   style={{ color: "red", float: "right", paddingRight: "10px" }}
                 ></i>
-                <div className="p-2 d-flex justify-content-between align-content-center mt-2 ">
-                  <p className="mb-0">Your cart is empty</p>
-                  <i className="fa fa-solid fa-shopping-cart" style={{margin: 'inherit'}}></i>
+                <div className="dropdown-item">
+                  <div
+                    className="d-flex justify-content-between align-items-center table-responsive "
+                    style={{ overflow: "auto" }}
+                  >
+                    <table className="table table-responsive table-bordered">
+                      {cartProducs ? (
+                        cartProducs.map((item, index) => {
+                          return (
+                            <tr>
+                              <td>
+                                <img
+                                  src={`https://krushimitr.in/upload/${item.image[0]}`}
+                                  alt="product"
+                                  width={50}
+                                />
+                              </td>
+                              <td>
+                                <Link
+                                  to={"./cart-details"}
+                                  className="mb-0 p-0 fw-bold"
+                                >
+                                  {item.productName} ({item.productSize.size}
+                                  {item.productSize.unit})
+                                </Link>
+                              </td>
+                              <td>
+                                <p className="mb-0 p-0">
+                                  <span className="fw-bold text-success">
+                                    Price : {item.productSize.price}
+                                  </span>
+                                </p>
+                              </td>
+                              <td>
+                                <p className="mb-0 p-0">
+                                  <span className="fw-bold  text-success">
+                                    Qty : {item.quantity}
+                                  </span>
+                                </p>
+                              </td>
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  <i
+                                    className="fa fa-solid fa-trash-alt"
+                                    style={{ margin: "inherit" }}
+                                  ></i>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={5}>
+                            <div className="p-2 d-flex justify-content-between align-content-center mt-2 ">
+                              <p className="mb-0">Your cart is empty</p>
+                              <i
+                                className="fa fa-solid fa-shopping-cart"
+                                style={{ margin: "inherit" }}
+                              ></i>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>

@@ -42,19 +42,8 @@ function EditProduct () {
       setProductGuarantee (getProd.product_data[0].guarantee);
       setProductWarranty (getProd.product_data[0].warranty);
       setImage (getProd.product_data[0].image);
-      let data = getProd.product_data[0].size.map (item => {
+      let datas = getProd.product_data[0].size.map (item => {
         let data = JSON.parse (item);
-        setDefaultValue ([
-          ...defaultValue,
-          {
-            size: data.size,
-            unit: data.unit,
-            price: data.price,
-            old_price: data.old_price,
-            discount: data.discount,
-            quantity: data.quantity,
-          },
-        ]);
         return {
           size: data.size,
           unit: data.unit,
@@ -64,13 +53,14 @@ function EditProduct () {
           quantity: data.quantity,
         };
       });
-      setProductSize (data);
+      setDefaultValue ([...defaultValue, datas]);
+      setProductSize (datas);
     } else {
       alert (getProd.result);
     }
   };
 
-  console.log (defaultValue);
+  // console.log (defaultValue);
   const [formValues, setFormValues] = useState ([
     {size: '', unit: '', price: '', old_price: '', discount: '', quantity: ''},
   ]);
@@ -124,6 +114,13 @@ function EditProduct () {
 
   //Add Products
   const updateProduct = async () => {
+    let arr = [];
+    Object.values (defaultValue[0]).forEach (item => {
+      arr.push (item);
+    });
+    Object.values (formValues).forEach (item => {
+      arr.push (item);
+    });
     const formData = new FormData ();
     formData.append ('id', productId);
     formData.append ('category', category);
@@ -133,13 +130,11 @@ function EditProduct () {
     formData.append ('gst', gst);
     formData.append ('productGuarantee', productGuarantee);
     formData.append ('productWarranty', productWarranty);
-    Object.values (defaultValue).forEach (item => {
-      formData.append ('sizes', JSON.stringify (item));
+    Object.values (arr).forEach (item => {
+      if (item.size !== '') {
+        formData.append ('sizes', JSON.stringify (item));
+      }
     });
-    Object.values (formValues).forEach (item => {
-      formData.append ('sizes', JSON.stringify (item));
-    });
-    // formData.append ('sizes', JSON.stringify(formValues));
     Object.values (image).forEach (file => {
       formData.append ('image', file);
     });
@@ -148,18 +143,17 @@ function EditProduct () {
       method: 'POST',
       body: formData,
     }).then (result => result.json ());
-    console.log (result);
-
     if (result.status === 201) {
       alert (result.result);
-      navigate('/admin/all-products');
+      navigate ('/admin/all-products');
     } else {
       alert (result.result);
     }
   };
-  const deleteImage = async(item) =>{
-    alert(item)
-  }
+
+  // const deleteImage = async item => {
+  //   alert (item);
+  // };
 
   return (
     <div>

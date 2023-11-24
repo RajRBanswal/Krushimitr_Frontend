@@ -15,6 +15,8 @@ import AllUsers from "./dashboard_content/All_Users";
 import Dashboard from "./dashboard_content/Dashboard";
 import EditProduct from "./dashboard_content/EditProduct";
 import News from "./dashboard_content/News";
+import DistributorDashboard from "./distributors/DistributorDashboard";
+import DistributorsMain from "./distributors/DistributorsMain";
 import DashboardU from "./user_panel/Dashboard";
 import UserPanel from "./user_panel/UserPanel";
 import About from "./website/About";
@@ -26,13 +28,20 @@ import Main from "./website/Main";
 import PrivacyPolicy from "./website/PrivacyPolicy";
 import ProductDetials from "./website/ProductDetials";
 import Products from "./website/Products";
+import RefundPolicy from "./website/RefundPolicy";
+import ReturnPolicy from "./website/ReturnPolicy";
 import ScrollToTop from "./website/ScrollToTop";
+import ShipingPolicy from "./website/ShipingPolicy";
 import TermsAndCondition from "./website/TermsAndCondition";
+import AllOrders from "./dashboard_content/AllOrders";
+import DAllOrders from "./distributors/DAllOrders";
+import EditOrder from "./distributors/EditOrder";
+import AllDistributors from "./dashboard_content/AllDistributors";
 
 function App() {
   const ref = React.useRef();
   const handleScroll = () => {
-    if(!ref.current) return
+    if (!ref.current) return;
     if (ref.current.getBoundingClientRect().y <= -1000 || null) {
       console.log(ref.current.getBoundingClientRect().y);
     }
@@ -52,17 +61,22 @@ function App() {
           <Route path="/about-us" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/service" element={<Contact />} />
-          <Route path="/product" element={<Contact />} />
+          <Route path="/product" element={<Products />} />
           <Route path="/blog" element={<Contact />} />
           <Route path="/terms-and-condition" element={<TermsAndCondition />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/products/:name" element={<Products />} />
           <Route path="/apply-ekrushimitr" element={<ApplyEKrushimitr />} />
-          <Route path="/user_login" element={<UserLogin />} />
+          <Route path="/login" element={<UserLogin />} />
+
+          <Route path="/shipping-policy" element={<ShipingPolicy />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/return-policy" element={<ReturnPolicy />} />
+
           <Route path="/user-register" element={<UserRegister />} />
           <Route path="/product-details" element={<ProductDetials />} />
+          <Route path="/cart-details" index element={<Cart />} />
         </Route>
-        <Route path="cart" index element={<Cart />} />
         <Route path="/users" element={<UserPanel />}>
           {/* <Route index element={<UserPanel />} /> */}
           <Route path="user-dashboard" index element={<DashboardU />} />
@@ -103,8 +117,51 @@ function App() {
             name="All-Sarkari-Yojna"
             element={<AllSarkariYojna />}
           />
+          <Route
+          path="all-orders"
+          name="All-Orders"
+          element={<AllOrders />}
+          />
+          <Route
+            path="all-distributor"
+            name="All-Distributor"
+            element={<AllDistributors />}
+          />
 
-all-sarkari-yojna
+          {/* all-sarkari-yojna */}
+        </Route>
+        <Route path="/distributors" element={<DistributorsMain />}>
+          <Route index element={<DistributorDashboard />} />
+          <Route
+            path="allcategories"
+            name="AllCategories"
+            element={<AllCategories />}
+          />
+          <Route path="allusers" name="AllUsers" element={<AllUsers />} />
+          <Route
+            path="allproducts"
+            name="AllProducts"
+            element={<AllProducts />}
+          />
+          <Route
+            path="editproduct/:id"
+            name="EditProduct"
+            element={<EditProduct />}
+          />
+          <Route
+            path="all-orders"
+            name="AllOrders"
+            element={<DAllOrders />}
+          />
+          <Route
+            path="edit-orders"
+            name="EditOrder"
+            element={<EditOrder />}
+          />
+          
+          
+
+          {/* all-sarkari-yojna */}
         </Route>
       </Routes>
     </BrowserRouter>

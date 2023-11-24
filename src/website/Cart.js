@@ -2,59 +2,146 @@ import React, { useEffect, useState } from "react";
 import { Scrollbars } from "react-custom-scrollbars-2";
 import Items from "./Items";
 import "./cart.css";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToCart,
+  reduceFromCart,
+  removeFromCart,
+} from "../redux/slice/CartSlice";
+import { useNavigate } from "react-router-dom";
 
 function Cart() {
-  useEffect(() => {
-    getProductData();
-  });
+  const navigate = useNavigate();
+  const cart = useSelector((state) => state.cart);
   const [product, setProducts] = useState([]);
-
-  const getProductData = async (e) => {
-    let result = await fetch("https://krushimitr.in/admin/all-products").then(
-      (result) => result.json()
-    );
-    // const getProd = await all_products.json();
-    if (result.status === 201) {
-      setProducts(result.product_data);
-    } else {
-      setProducts(result.result);
+  const dispatch = useDispatch();
+  const [userLoggedIn, setUserLoggedIn] = useState(null);
+  
+  useEffect(() => {
+    
+    setProducts(cart.data);
+    if (cart.data.length === 0) {
+      navigate("/");
     }
+    let user = localStorage.getItem("user_id");
+    setUserLoggedIn(user);
+  });
+  const getTotal = () => {
+    let total = 0;
+    product.map((item) => {
+      total = total + item.quantity * item.productSize.price;
+    });
+    return total.toFixed(0);
   };
+
   return (
     <div className="container py-5">
-      <header>
-        <div className="continue-shopping">
-          <img
-            src="./images/back.png"
-            alt="arrow"
-            className="arrow-icon"
-            width={20}
-          />
-          <h3>Continue Shopping</h3>
-        </div>
-        <div className="cart-icon">
-          <img src="./images/cart.png" alt="cart" width={20} />
-          <p>7</p>
-        </div>
-      </header>
       <section className="main-cart-section">
-        <h1>Shopping Cart</h1>
+        <h3>Shopping Cart</h3>
         <p className="total-items">
-          you have <span className="total-items-count">7</span> items in a carts{" "}
+          you have{" "}
+          <span className="total-items-count">{product && product.length}</span>{" "}
+          items in a carts{" "}
         </p>
         <div className="cart-items">
           <div className="cart-items-container">
-            <Scrollbars>
-              {product.map((item) => {
-                return <Items key={item._id} {...item} />;
-              })}
-            </Scrollbars>
+            <table className="table table-stripped w-100">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Product / Size / Price</th>
+                  <th>Quantity</th>
+                  <th>Total Price</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {product.map((item, index) => {
+                  return (
+                    <tr>
+                      <td>
+                        <img
+                          src={`https://krushimitr.in/upload/${item.image[0]}`}
+                          alt="product"
+                          width={50}
+                        />
+                      </td>
+                      <td>
+                        <div className="product-info">
+                          <div className="product-title">
+                            <p className="mb-0 fw-bold ">
+                              {item.productName} ({item.productSize.size}
+                              {item.productSize.unit})
+                            </p>
+                          </div>
+                          <div className="product-price">
+                            <p className="mb-0 fw-bold text-success ">
+                              ₹ {item.productSize.price}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="add-minus-quantity">
+                          <button
+                            className="btn btn-outline-primary"
+                            onClick={() => {
+                              if (item.quantity > 1) {
+                                dispatch(reduceFromCart(item));
+                              } else {
+                                dispatch(removeFromCart(index));
+                              }
+                            }}
+                          >
+                            <i className="fa fa-solid fa-minus minus"></i>
+                          </button>
+                          <input type="text" value={item.quantity} />
+                          <button
+                            className="btn btn-outline-primary"
+                            onClick={() => {
+                              dispatch(addToCart(item));
+                            }}
+                          >
+                            <i className="fa fa-solid fa-plus add"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <p className="mb-0 fw-bold text-success ">
+                          ₹ {item.productSize.price * item.quantity}
+                        </p>
+                      </td>
+                      <td></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>
+                    <p className="fw-bold text-success">₹ {getTotal()}</p>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-warning"
+                      onClick={() => {
+                        if (userLoggedIn === null) {
+                          navigate("/login");
+                        } else {
+                          navigate("/checkout");
+                        }
+                      }}
+                    >
+                      Pay & Buy
+                    </button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
-        </div>
-        <div className="card-total">
-          <h3>
-            Cart Total : <span>$300</span>
-          </h3>
         </div>
       </section>
     </div>
