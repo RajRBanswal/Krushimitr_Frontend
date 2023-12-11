@@ -1,14 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { addToCart } from "../redux/slice/CartSlice";
 
 function ProductDetials() {
   const location = useLocation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(location.state.item);
   const [productSize, setProductSize] = useState("");
   let data = product.size;
+  const [sizeData, setSizeData] = useState(
+    data === undefined ? [] : data.map((item) => JSON.parse(item))
+  );
+
+  const [selectedSize, setSelectedSize] = useState(
+    sizeData !== "" ? sizeData[0].size : ""
+  );
+  const [selectedUnit, setSelectedUnit] = useState(
+    sizeData !== "" ? sizeData[0].unit : ""
+  );
+  const [selectedPrice, setSelectedPrice] = useState(
+    sizeData !== "" ? sizeData[0].selling_price : ""
+  );
+  const [selectedGST, setSelectedGST] = useState(
+    sizeData !== "" ? sizeData[0].gst : ""
+  );
+  const [selectedCommission, setSelectedCommission] = useState(
+    sizeData !== "" ? sizeData[0].commission : ""
+  );
 
   useEffect(() => {
     data.map((item, index) => {
@@ -18,6 +38,14 @@ function ProductDetials() {
       }
     });
   }, []);
+
+  const changePrice = (item) => {
+    setSelectedSize(item.size);
+    setSelectedUnit(item.unit);
+    setSelectedPrice(item.selling_price);
+    setSelectedGST(item.gst);
+    setSelectedCommission(item.commission);
+  };
 
   const [quantity, setQuantity] = useState(1);
 
@@ -30,10 +58,17 @@ function ProductDetials() {
             <div className="card shadow">
               <div className="card-body">
                 <div className="row">
-                  <div className="col-md-4">
-                    <div id="carouselExample" class="carousel slide">
+                  <div
+                    className="col-md-4"
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      display: "flex",
+                    }}
+                  >
+                    <div id="carouselExample" className="carousel slide">
                       <div
-                        class="carousel-inner"
+                        className="carousel-inner"
                         style={{ height: "100% !important" }}
                       >
                         {product &&
@@ -41,10 +76,10 @@ function ProductDetials() {
                           product.image.map((item, index) => {
                             if (index === 0) {
                               return (
-                                <div class="carousel-item active">
+                                <div className="carousel-item active">
                                   <img
                                     src={"https://krushimitr.in/upload/" + item}
-                                    class="d-block"
+                                    className="d-block"
                                     style={{ width: "100%", height: "100%" }}
                                     alt="..."
                                   />
@@ -52,10 +87,10 @@ function ProductDetials() {
                               );
                             } else {
                               return (
-                                <div class="carousel-item">
+                                <div className="carousel-item">
                                   <img
                                     src={"https://krushimitr.in/upload/" + item}
-                                    class="d-block"
+                                    className="d-block"
                                     style={{ width: "100%", height: "100%" }}
                                     alt="..."
                                   />
@@ -65,28 +100,28 @@ function ProductDetials() {
                           })}
                       </div>
                       <button
-                        class="carousel-control-prev"
+                        className="carousel-control-prev"
                         type="button"
                         data-bs-target="#carouselExample"
                         data-bs-slide="prev"
                       >
                         <span
-                          class="carousel-control-prev-icon"
+                          className="carousel-control-prev-icon"
                           aria-hidden="true"
                         />
-                        <span class="visually-hidden">Previous</span>
+                        <span className="visually-hidden">Previous</span>
                       </button>
                       <button
-                        class="carousel-control-next"
+                        className="carousel-control-next"
                         type="button"
                         data-bs-target="#carouselExample"
                         data-bs-slide="next"
                       >
                         <span
-                          class="carousel-control-next-icon"
+                          className="carousel-control-next-icon"
                           aria-hidden="true"
                         />
-                        <span class="visually-hidden">Next</span>
+                        <span className="visually-hidden">Next</span>
                       </button>
                     </div>
                   </div>
@@ -96,7 +131,11 @@ function ProductDetials() {
                         <h3>{product && product.productName}</h3>
                       </div>
                       <div className="col-md-4">
-                        <p>{product && product.company}</p>
+                        <p>
+                          {product && product.company !== undefined
+                            ? ""
+                            : product.company}
+                        </p>
                       </div>
                     </div>
                     <div className="row">
@@ -121,8 +160,8 @@ function ProductDetials() {
                                     </span>{" "}
                                     :{" "}
                                     <span className="text-success">
-                                      {productSize.size}
-                                      {productSize.unit}
+                                      {selectedSize}
+                                      {selectedUnit}
                                     </span>
                                   </p>
                                 </div>
@@ -133,7 +172,7 @@ function ProductDetials() {
                                     </span>{" "}
                                     :{" "}
                                     <span className="text-success">
-                                      {productSize.price}
+                                      {selectedPrice}
                                     </span>
                                   </p>
                                 </div>
@@ -142,9 +181,9 @@ function ProductDetials() {
                             <div className="col-md-4 px-4">
                               <p className="fw-bold mb-0">Quantity</p>
                               <hr className="my-1" />
-                              <div class="qty-input m-auto">
+                              <div className="qty-input m-auto">
                                 <button
-                                  class="qty-count qty-count--minus btn"
+                                  className="qty-count qty-count--minus btn"
                                   data-action="minus"
                                   type="button"
                                   onClick={() =>
@@ -154,7 +193,7 @@ function ProductDetials() {
                                   -
                                 </button>
                                 <input
-                                  class="product-qty"
+                                  className="product-qty"
                                   type="number"
                                   name="product-qty"
                                   min="0"
@@ -162,7 +201,7 @@ function ProductDetials() {
                                   value={quantity}
                                 />
                                 <button
-                                  class="qty-count qty-count--add btn"
+                                  className="qty-count qty-count--add btn"
                                   data-action="add"
                                   type="button"
                                   onClick={() =>
@@ -186,9 +225,9 @@ function ProductDetials() {
                                     return (
                                       <div className="col-md-2 col-2">
                                         <button
-                                          class="btn btn-success w-100 btn-sm"
+                                          className="btn btn-success w-100 btn-sm"
                                           type="button"
-                                          onClick={() => setProductSize(datas)}
+                                          onClick={() => changePrice(datas)}
                                         >
                                           {datas.size}
                                           {datas.unit}
@@ -213,17 +252,56 @@ function ProductDetials() {
                                       _id: product._id,
                                       productName: product.productName,
                                       company: product.company,
-                                      quantity: quantity,
-                                      productSize: productSize,
+                                      description: product.description,
+                                      category: product.category,
+                                      price: selectedPrice,
                                       image: product.image,
+                                      size: selectedSize,
+                                      unit: selectedUnit,
+                                      quantity: quantity,
+                                      gst: selectedGST,
+                                      commission: selectedCommission,
+                                      guarantee: productSize.guarantee,
+                                      warranty: productSize.warranty,
+                                      updatedAt: productSize.updatedAt,
+                                      createdAt: productSize.createdAt,
+                                      referenceId: "",
+                                      referenceProductId: "",
                                     })
                                   );
-                                  alert("Product Added into Cart");
+                                  navigate("/cart-details");
                                 }}
                               >
                                 Add To Cart
                               </button>
-                              <button className="btn btn-success ms-2">
+                              <button
+                                className="btn btn-success ms-2"
+                                onClick={() => {
+                                  dispatch(
+                                    addToCart({
+                                      _id: product._id,
+                                      productName: product.productName,
+                                      company: product.company,
+                                      quantity: quantity,
+                                      image: product.image,
+                                      description: product.description,
+                                      category: product.category,
+                                      price: selectedPrice,
+                                      size: selectedSize,
+                                      unit: selectedUnit,
+                                      gst: selectedGST,
+                                      commission: selectedCommission,
+                                      guarantee: productSize.guarantee,
+                                      warranty: productSize.warranty,
+                                      updatedAt: productSize.updatedAt,
+                                      createdAt: productSize.createdAt,
+                                      referenceId: "",
+                                      referenceProductId: "",
+                                    })
+                                  );
+                                  navigate("/cart-details");
+                                }}
+                              >
                                 Buy Now
                               </button>
                             </div>

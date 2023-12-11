@@ -2,17 +2,17 @@ import React, { useEffect, useState } from 'react'
 
 function All_Users() {
     // const [tt, setTT] = useState(false);
-    const [users, setUsers] = useState([]);
-    const getAllUsers = async () => {
-        const all_users = await fetch('https://krushimitr.in/admin/all-users');
-        const uu = await all_users.json();
-        console.log(uu);
-        setUsers(uu);
-    }
-    useEffect(() => {
-        getAllUsers()
-        // setTT(false)
-    }, []);
+    // const [users, setUsers] = useState([]);
+    // const getAllUsers = async () => {
+    //     const all_users = await fetch('https://krushimitr.in/admin/all-users');
+    //     const uu = await all_users.json();
+    //     console.log(uu);
+    //     setUsers(uu);
+    // }
+    // useEffect(() => {
+    //     getAllUsers()
+    //     // setTT(false)
+    // }, []);
 
     return (
         <>
@@ -37,7 +37,7 @@ function All_Users() {
                             </tr>
                         </thead>
                         <tbody>
-                            {
+                            {/* {
                                 users.map(user => (
                                     <tr key={user._id}>
                                         <td>{user.name}</td>
@@ -46,14 +46,14 @@ function All_Users() {
                                         <td></td>
                                     </tr>
                                 ))
-                            }
+                            } */}
 
                         </tbody>
 
                     </table>
                 </div>
             </div>
-            <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered" data-bs-config={{ backdrop: true }}>
                     <div className="modal-content">
                         <div className="modal-header">

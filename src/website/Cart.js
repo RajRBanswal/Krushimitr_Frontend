@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Scrollbars } from "react-custom-scrollbars-2";
-import Items from "./Items";
 import "./cart.css";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -16,10 +14,10 @@ function Cart() {
   const [product, setProducts] = useState([]);
   const dispatch = useDispatch();
   const [userLoggedIn, setUserLoggedIn] = useState(null);
-  
+
   useEffect(() => {
-    
     setProducts(cart.data);
+
     if (cart.data.length === 0) {
       navigate("/");
     }
@@ -29,7 +27,7 @@ function Cart() {
   const getTotal = () => {
     let total = 0;
     product.map((item) => {
-      total = total + item.quantity * item.productSize.price;
+      total = total + item.quantity * item.price;
     });
     return total.toFixed(0);
   };
@@ -70,13 +68,13 @@ function Cart() {
                         <div className="product-info">
                           <div className="product-title">
                             <p className="mb-0 fw-bold ">
-                              {item.productName} ({item.productSize.size}
-                              {item.productSize.unit})
+                              {item.productName} ({item.size}
+                              {item.unit})
                             </p>
                           </div>
                           <div className="product-price">
                             <p className="mb-0 fw-bold text-success ">
-                              ₹ {item.productSize.price}
+                              ₹ {item.price}
                             </p>
                           </div>
                         </div>
@@ -108,7 +106,7 @@ function Cart() {
                       </td>
                       <td>
                         <p className="mb-0 fw-bold text-success ">
-                          ₹ {item.productSize.price * item.quantity}
+                          ₹ {item.price * item.quantity}
                         </p>
                       </td>
                       <td></td>
@@ -129,13 +127,13 @@ function Cart() {
                       className="btn btn-warning"
                       onClick={() => {
                         if (userLoggedIn === null) {
-                          navigate("/login");
+                          navigate("/login", { state: { product } });
                         } else {
                           navigate("/checkout");
                         }
                       }}
                     >
-                      Pay & Buy
+                      Checkout
                     </button>
                   </td>
                 </tr>

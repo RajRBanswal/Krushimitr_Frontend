@@ -93,8 +93,8 @@ console.log(newsDate);
                                         <td>{news.news_link}</td>
                                         <td><img src={`https://krushimitr.in/upload/${news.news_image[0]}`} width={'100px'} alt={news.category_image} /></td>
                                         <td>
-                                        <button type="button" className='btn btn-primary btn-sm me-1' data-bs-toggle="modal" data-bs-target={`#editModal` + news._id}><i class="fas fa-edit"></i></button>
-                                        <button type="button" onClick={()=>DeleteOne(news._id)} className='btn btn-danger btn-sm me-1' ><i class="fas fa-trash"></i></button>
+                                        <button type="button" className='btn btn-primary btn-sm me-1' data-bs-toggle="modal" data-bs-target={`#editModal` + news._id}><i className="fas fa-edit"></i></button>
+                                        <button type="button" onClick={()=>DeleteOne(news._id)} className='btn btn-danger btn-sm me-1' ><i className="fas fa-trash"></i></button>
                                         </td>
                                           
 

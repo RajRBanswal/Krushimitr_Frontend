@@ -17,21 +17,21 @@ function EditOrder() {
   const [deliveryDate, setDeliveryDate] = useState(
     moment(dates).format("DD-MM-YYYY")
   );
-  
+
   const [orderId, setorderId] = useState(
     "KRUSHIMITR" + Math.floor(100000 + Math.random() * 900000)
-    );
-    
-    useEffect(() => {
-    console.log(moment(dates).format("DD-MM-YYYY"));
+  );
 
+  useEffect(() => {
+    console.log(moment(dates).format("DD-MM-YYYY"));
   }, []);
 
   const ConfirmOrder = async (Id) => {
-    console.log(Id);
-    if(!paymentMethod || !paymentStatus || !deliveryStatus){
-      alert("Please fill all the fields");
-      return;
+    if (orderData.paymentType === "COD") {
+      if (!paymentMethod || !paymentStatus || !deliveryStatus) {
+        alert("Please fill all the fields");
+        return;
+      }
     }
     const response = await fetch("https://krushimitr.in/distributor/confirm", {
       method: "post",
@@ -39,19 +39,19 @@ function EditOrder() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        id:Id,
+        id: Id,
         orderId: orderId,
         paymentMethod: paymentMethod,
         paymentStatus: paymentStatus,
-        deliveryStatus:deliveryStatus,
-        deliveryDate:deliveryDate,
+        deliveryStatus: deliveryStatus,
+        deliveryDate: deliveryDate,
       }),
     });
     const data = await response.json();
     if (data.status === 201) {
       alert(data.result);
-      navigate("/distributors/all-orders")
-    }else{
+      navigate("/distributors/customer-orders");
+    } else {
       alert(data.result);
     }
   };
@@ -244,53 +244,65 @@ function EditOrder() {
                   readOnly
                 />
               </div>
-              {orderData.paymentType === "COD" ? (
-                <>
-                  <div className="col-md-2">
-                    <label className="mb-0">Payment Method</label>
-                    <select
-                      className="form-select form-control"
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                    >
-                      <option value={""}>Select Method</option>
-                      <option value={"UPI"}>UPI</option>
-                      <option value={"Cash"}>Cash</option>
-                      <option value={"Others"}>Others</option>
-                    </select>
-                  </div>
-                  <div className="col-md-2">
-                    <label className="mb-0">Payment Status</label>
-                    <select
-                      className="form-select form-control"
-                      onChange={(e) => setPaymentStatus(e.target.value)}
-                    >
-                      <option value={""}>Select Status</option>
-                      <option value={"Paid"}>Paid</option>
-                      <option value={"Pending"}>Pending</option>
-                    </select>
-                  </div>
-                  <div className="col-md-2">
-                    <label className="mb-0">Delivery Status</label>
-                    <select
-                      className="form-select form-control"
-                      onChange={(e) => setDeliveryStatus(e.target.value)}
-                    >
-                      <option value={""}>Select Status</option>
-                      <option value={"Delivered"}>Delivered</option>
-                      <option value={"Not Delivered"}>Not Delivered</option>
-                    </select>
-                  </div>
-                </>
-              ) : (
-                ""
-              )}
             </div>
           </>
         );
       })}
+
+      <div className="row my-3">
+        {orderData.paymentType === "COD" ? (
+          <>
+            <div className="col-md-4">
+              <label className="mb-0">Payment Method</label>
+              <select
+                className="form-select form-control"
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              >
+                <option value={""}>Select Method</option>
+                <option value={"UPI"}>UPI</option>
+                <option value={"Cash"}>Cash</option>
+                <option value={"Others"}>Others</option>
+              </select>
+            </div>
+            <div className="col-md-4">
+              <label className="mb-0">Payment Status</label>
+              <select
+                className="form-select form-control"
+                onChange={(e) => setPaymentStatus(e.target.value)}
+              >
+                <option value={""}>Select Status</option>
+                <option value={"Paid"}>Paid</option>
+                <option value={"Pending"}>Pending</option>
+              </select>
+            </div>
+            <div className="col-md-4">
+              <label className="mb-0">Delivery Status</label>
+              <select
+                className="form-select form-control"
+                onChange={(e) => setDeliveryStatus(e.target.value)}
+              >
+                <option value={""}>Select Status</option>
+                <option value={"Delivered"}>Delivered</option>
+                <option value={"Not Delivered"}>Not Delivered</option>
+              </select>
+            </div>
+          </>
+        ) : (
+          <div className="col-md-4">
+            <label className="mb-0">Delivery Status</label>
+            <select
+              className="form-select form-control"
+              onChange={(e) => setDeliveryStatus(e.target.value)}
+            >
+              <option value={""}>Select Status</option>
+              <option value={"Delivered"}>Delivered</option>
+              <option value={"Not Delivered"}>Not Delivered</option>
+            </select>
+          </div>
+        )}
+      </div>
       <div className="row mt-4">
-        <div className="col-md-5"></div>
-        <div className="col-md-2">
+        <div className="col-md-2 m-auto">
           <button
             className="btn btn-primary w-100"
             onClick={() => ConfirmOrder(orderData._id)}

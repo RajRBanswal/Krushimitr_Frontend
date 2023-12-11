@@ -2,21 +2,18 @@ import React, { useEffect, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
-import { Link, useNavigate } from "react-router-dom";
-import moment from "moment";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { forEditOrder } from "../redux/slice/OrderSlice";
 import { emptyCart } from "../redux/slice/CartSlice";
-
-function DAllOrders() {
+function UserAllOrders() {
   const [products, setProducts] = useState([]);
   const [prod, setProd] = useState([]);
   const [orderDone, setOrderDone] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  let distr = localStorage.getItem("distributor_id");
-  const [distributor, setDistributor] = useState(distr);
-
+  let user = localStorage.getItem("user_id");
+  const [useId, setUserId] = useState(user);
 
   let data = [];
   let datas = [];
@@ -26,22 +23,22 @@ function DAllOrders() {
     const all_orders = await all_products.json();
     if (all_orders.status === 201) {
       all_orders.result.map((item) => {
-        if (distributor === item.vendorId) {
+        if (useId === item.userId) {
           data.push(item);
           console.log(data);
         }
-        if (item.vendorId == distributor && item.orderStatus == "Pending") {
+        if (item.userId === useId && item.orderStatus === "Pending") {
           datas.push(item);
           console.log(datas);
         }
-        if (item.vendorId == distributor && item.orderStatus === "Done") {
+        if (item.userId === useId && item.orderStatus === "Done") {
           datass.push(item);
           console.log(datass);
         }
       });
       setProducts(data);
       setProd(datas);
-      setOrderDone(datass)
+      setOrderDone(datass);
     } else {
       setProducts(all_orders.result);
     }
@@ -55,14 +52,14 @@ function DAllOrders() {
   const filterApplyTemplate = (options) => {
     return (
       <div className="row">
-        <div className="col-lg-4">
-          <Button
-            type="button"
-            icon="pi pi-pencil"
-            onClick={() => alert(options.productName)}
-            severity="primary"
-          ></Button>
-        </div>
+        {/* <div className="col-lg-4">
+            <Button
+              type="button"
+              icon="pi pi-pencil"
+              onClick={() => alert(options.productName)}
+              severity="primary"
+            ></Button>
+          </div> */}
         <div className="col-lg-4">
           <Button
             type="button"
@@ -96,35 +93,12 @@ function DAllOrders() {
       alert(get_orders.result);
     }
   };
-
-  //   const [venderdata, setVendorData] = useState([]);
-  //   const getVendorData = async (options) => {};
-
-  //   const [distributors, setDistributors] = useState([]);
-  //   const verifiedBodyTemplate = (rowData) => {
-  //     return (
-  //       <div className="row">
-  //         <div className="col-lg-12">
-  //           <Button
-  //             type="button"
-  //             onClick={() => getDistributor(rowData._id)}
-  //             severity="success"
-  //             data-bs-toggle="modal"
-  //             data-bs-target="#exampleModals"
-  //           >
-  //             View Vender
-  //           </Button>
-  //         </div>
-  //       </div>
-  //     );
-  //   };
-
   return (
-    <div className="p-3">
-      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-        <li class="nav-item" role="presentation">
+    <div className="">
+      <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li className="nav-item" role="presentation">
           <button
-            class="nav-link active "
+            className="nav-link active "
             id="pills-home-tab"
             data-bs-toggle="pill"
             data-bs-target="#pills-home"
@@ -136,9 +110,9 @@ function DAllOrders() {
             <h5 className="mb-0">All Orders</h5>
           </button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li className="nav-item" role="presentation">
           <button
-            class="nav-link"
+            className="nav-link"
             id="pills-profile-tab"
             data-bs-toggle="pill"
             data-bs-target="#pills-profile"
@@ -150,9 +124,9 @@ function DAllOrders() {
             <h5 className="mb-0">Pending Orders</h5>
           </button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li className="nav-item" role="presentation">
           <button
-            class="nav-link"
+            className="nav-link"
             id="pills-contact-tab"
             data-bs-toggle="pill"
             data-bs-target="#pills-contact"
@@ -165,9 +139,9 @@ function DAllOrders() {
           </button>
         </li>
       </ul>
-      <div class="tab-content" id="pills-tabContent">
+      <div className="tab-content" id="pills-tabContent">
         <div
-          class="tab-pane fade show active"
+          className="tab-pane fade show active"
           id="pills-home"
           role="tabpanel"
           aria-labelledby="pills-home-tab"
@@ -194,6 +168,12 @@ function DAllOrders() {
               sortable
             ></Column>
             <Column
+              field="deliveryStatus"
+              header="Deli. Status"
+              sortable
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+            ></Column>
+            <Column
               header="Action"
               field="_id"
               style={{ minWidth: "12rem" }}
@@ -203,7 +183,7 @@ function DAllOrders() {
           </DataTable>
         </div>
         <div
-          class="tab-pane fade"
+          className="tab-pane fade"
           id="pills-profile"
           role="tabpanel"
           aria-labelledby="pills-profile-tab"
@@ -245,7 +225,7 @@ function DAllOrders() {
           </DataTable>
         </div>
         <div
-          class="tab-pane fade"
+          className="tab-pane fade"
           id="pills-contact"
           role="tabpanel"
           aria-labelledby="pills-contact-tab"
@@ -264,7 +244,7 @@ function DAllOrders() {
               field="paymentStatus"
               header="Pay Status"
               sortable
-              bodyStyle={{ color: "green",fontWeight:'bold' }}
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
             ></Column>
             <Column
               field="shippingAddress"
@@ -275,7 +255,7 @@ function DAllOrders() {
               field="deliveryStatus"
               header="Deli. Status"
               sortable
-              bodyStyle={{ color: "green",fontWeight:'bold' }}
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
             ></Column>
             <Column
               header="Action"
@@ -353,16 +333,24 @@ function DAllOrders() {
                                   </td>
                                   <td colSpan={2}>{item.productName}</td>
                                   <td className="fw-bold text-nowrap">
-                                    {" "}
+                                    {"  "}
                                     Quantity : {item.quantity}
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td className="fw-bold text-nowrap">Price</td>
-                                  <td>{item.price * item.quantity}</td>
-                                  <td className="fw-bold text-nowrap">Size</td>
-                                  <td>
-                                    {item.size} {item.unit ? item.unit : ""}
+                                  <td className="fw-bold text-nowrap">
+                                    MRP : {item.price}
+                                  </td>
+                                  <td
+                                    colSpan={2}
+                                    className="fw-bold text-nowrap"
+                                  >
+                                    {"  "}
+                                    Total Price : {item.price * item.quantity}
+                                  </td>
+                                  <td className="fw-bold text-nowrap">
+                                    Size : {item.size}{" "}
+                                    {item.unit ? item.unit : ""}
                                   </td>
                                 </tr>
                               </>
@@ -373,28 +361,15 @@ function DAllOrders() {
                           <td className="text-danger fw-bold">
                             {item.finalAmount}
                           </td>
-                          <td></td>
-                          <td className="text-end">
-                            <button
-                              type="button"
-                              className="btn btn-success btn-sm"
-                              onClick={() => {
-                                dispatch(forEditOrder(item));
-                                navigate("/distributors/edit-orders");
-                              }}
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                            >
-                              Dispatch
-                            </button>
-                            {/* <Link
-                              to={"/distributors/edit-orders"}
-                              state={{ item: JSON.stringify(item) }}
-                              type="button"
-                              className="btn btn-success btn-sm"
-                            >
-                              Dispatch 
-                            </Link> */}
+                          <td className="text-success fw-bold">
+                            {item.deliveryStatus === "Delivered"
+                              ? "DeliveryStatus"
+                              : ""}
+                          </td>
+                          <td className="text-success fw-bold">
+                            {item.deliveryStatus === "Delivered"
+                              ? "Delivered"
+                              : "Pending"}
                           </td>
                         </tr>
                       </tbody>
@@ -409,4 +384,4 @@ function DAllOrders() {
   );
 }
 
-export default DAllOrders;
+export default UserAllOrders;

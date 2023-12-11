@@ -12,7 +12,7 @@ const CartSlice = createSlice({
       tempData.map((item) => {
         if (
           item._id === action.payload._id &&
-          item.productSize.size === action.payload.productSize.size
+          item.size === action.payload.size
         ) {
           isItemExist = true;
           item.quantity = item.quantity + 1;
@@ -27,8 +27,8 @@ const CartSlice = createSlice({
       let tempData = state.data;
       tempData.map((item) => {
         if (
-          item._id == action.payload._id &&
-          item.productSize.size === action.payload.productSize.size
+          item._id === action.payload._id &&
+          item.size === action.payload.size
         ) {
           item.quantity = item.quantity - 1;
         }
@@ -37,7 +37,17 @@ const CartSlice = createSlice({
     },
     removeFromCart(state, action) {
       let tempData = state.data;
-      tempData = tempData.splice(action.payload, 1);
+      tempData.splice(action.payload, 1);
+      state.data = tempData;
+    },
+    deleteFromCart(state, action) {
+      let tempData = state.data;
+      if (action.payload === 0) {
+        tempData.splice(action.payload, 1);
+      } else {
+        tempData.splice(action.payload);
+        console.log(tempData);
+      }
       state.data = tempData;
     },
     emptyCart(state, action) {
@@ -46,6 +56,11 @@ const CartSlice = createSlice({
   },
 });
 
-export const { addToCart, reduceFromCart, removeFromCart, emptyCart } =
-  CartSlice.actions;
+export const {
+  addToCart,
+  reduceFromCart,
+  removeFromCart,
+  deleteFromCart,
+  emptyCart,
+} = CartSlice.actions;
 export default CartSlice.reducer;

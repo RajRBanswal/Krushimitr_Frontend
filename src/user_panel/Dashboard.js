@@ -18,14 +18,22 @@ function Dashboard() {
   return (
     <div>
         <div className='row'>
-            <div className='col-lg-8 m-auto'>
-                <div className='card p-4 '>
-                    <div className='row'>
-                        <div className='col-lg-4 col-8'>
-
-                        </div>
-                    </div>
-                    {/* <h3 className='text-center'>{users.name}</h3> */}
+            <div className='col-lg-4'>
+                <div className='card bg-primary p-3 text-center'>
+                    <h3>Total Orders</h3>
+                    <h4>10</h4>
+                </div>
+            </div>
+            <div className='col-lg-4'>
+                <div className='card bg-warning p-3 text-center'>
+                    <h3>Complete Orders</h3>
+                    <h4>10</h4>
+                </div>
+            </div>
+            <div className='col-lg-4'>
+                <div className='card bg-danger p-3 text-center'>
+                    <h3 className='text-white'>Pending Orders</h3>
+                    <h4 className='text-white'>10</h4>
                 </div>
             </div>
         </div>

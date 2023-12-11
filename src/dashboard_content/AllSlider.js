@@ -96,8 +96,8 @@ function AllSlider() {
                                         <td>{item.heading}</td>
                                         <td>{item.sub_heading}</td>
                                         <td><img src={`https://krushimitr.in/upload/${item.slider_image}`} width={'100px'} alt={item.slider_image} /></td>
-                                        <td><button type="button" className='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target={`#editModal` + item._id}><i class="fas fa-edit"></i></button>
-                                            <button type="button" className='btn btn-danger' onClick={() => DeleteOne(item._id)}><i class="fa fa-trash" aria-hidden="true"></i></button></td>
+                                        <td><button type="button" className='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target={`#editModal` + item._id}><i className="fas fa-edit"></i></button>
+                                            <button type="button" className='btn btn-danger' onClick={() => DeleteOne(item._id)}><i className="fa fa-trash" aria-hidden="true"></i></button></td>
                                         <div className="modal fade" id={`editModal` + item._id} tabIndex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
                                             <div className="modal-dialog modal-lg">
                                                 <div className="modal-content">

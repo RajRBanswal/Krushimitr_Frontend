@@ -1,5 +1,5 @@
 import { City, State } from "country-state-city";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import loading from "../images/loading.gif";
@@ -19,6 +19,15 @@ function UserRegister() {
   const isFocused = useRef(null);
   const [userType, setUserType] = useState("");
   const [loadings, setLoadings] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [productId, setProductId] = useState("");
+
+  useEffect(() => {
+    const user_id = localStorage.getItem("USERID");
+    setUserId(user_id);
+    const product_id = localStorage.getItem("PRODUCT_ID");
+    setProductId(product_id);
+  }, []);
 
   const StoreData = async (e) => {
     e.preventDefault();
@@ -42,6 +51,8 @@ function UserRegister() {
       } else {
         formData.append("profile_image", "");
       }
+      formData.append("referenceId", userId);
+      formData.append("referenceProductId", productId);
 
       if (userType === "Users") {
         const result = await fetch(
@@ -68,7 +79,7 @@ function UserRegister() {
             body: formData,
           }
         ).then((result) => result.json());
-         
+
         if (result.status === 201) {
           setLoadings(false);
           alert(result.result);
@@ -113,9 +124,9 @@ function UserRegister() {
                   <hr className="my-2" />
                   <div className="row">
                     <div className="col-lg-6 text-end">
-                      <div class="form-check">
+                      <div className="form-check">
                         <input
-                          class="form-check-input"
+                          className="form-check-input"
                           type="radio"
                           name="flexRadioDefault"
                           id="flexRadioDefault1"
@@ -123,23 +134,23 @@ function UserRegister() {
                           ref={isFocused}
                           onChange={(e) => setUserType(e.target.value)}
                         />
-                        <label class="form-check-label" for="flexRadioDefault1">
+                        <label className="form-check-label" for="flexRadioDefault1">
                           Users
                         </label>
                       </div>
                     </div>
                     <div className="col-lg-6">
-                      <div class="form-check">
+                      <div className="form-check">
                         <input
-                          class="form-check-input"
+                          className="form-check-input"
                           type="radio"
                           name="flexRadioDefault"
                           value="Distributors"
                           id="flexRadioDefault2"
                           onChange={(e) => setUserType(e.target.value)}
                         />
-                        <label class="form-check-label" for="flexRadioDefault2">
-                          Distributors
+                        <label className="form-check-label" for="flexRadioDefault2">
+                          Distributors / Vendor
                         </label>
                       </div>
                     </div>
@@ -208,7 +219,7 @@ function UserRegister() {
                         State<span className="text-danger">*</span>
                       </label>
                       <select
-                        class="form-select form-control"
+                        className="form-select form-control"
                         onChange={onChangeHandler}
                       >
                         {State.getStatesOfCountry("IN").map((state) => (
@@ -225,7 +236,7 @@ function UserRegister() {
                         City<span className="text-danger">*</span>
                       </label>
                       <select
-                        class="form-select form-control"
+                        className="form-select form-control"
                         onChange={(e) => setCity(e.target.value)}
                       >
                         {City.getCitiesOfState("IN", cityCode).map((city) => (

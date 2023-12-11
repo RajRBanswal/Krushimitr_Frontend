@@ -187,7 +187,7 @@ function AllDistributors() {
       <div
         className="modal fade"
         id="exampleModal"
-        tabindex="-1"
+        tabIndex="-1"
         aria-labelledby="exampleModalLabel"
         aria-hidden="true"
       >
@@ -268,7 +268,7 @@ function AllDistributors() {
                     State<span className="text-danger">*</span>
                   </label>
                   <select
-                    class="form-select form-control"
+                    className="form-select form-control"
                     onChange={onChangeHandler}
                   >
                     {State.getStatesOfCountry("IN").map((state) => (
@@ -285,7 +285,7 @@ function AllDistributors() {
                     City<span className="text-danger">*</span>
                   </label>
                   <select
-                    class="form-select form-control"
+                    className="form-select form-control"
                     onChange={(e) => setCity(e.target.value)}
                   >
                     {City.getCitiesOfState("IN", cityCode).map((city) => (

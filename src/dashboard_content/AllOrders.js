@@ -1,13 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
+import { Toast } from "primereact/toast";
+import { Toolbar } from "primereact/toolbar";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
 import moment from "moment";
 function AllOrders() {
+  let emptyProduct = {
+    _id: null,
+    name: "",
+    email: null,
+    mobile: "",
+    address: null,
+    city: 0,
+    state: 0,
+    pincode: 0,
+  };
   const [products, setProducts] = useState([]);
   const [prod, setProd] = useState([]);
   const [compOrders, setCompOrders] = useState([]);
+  const [deleteUserDialog, setDeleteUserDialog] = useState(false);
+  const [user, setUser] = useState(emptyProduct);
+  const [selectedUsers, setSelectedUsers] = useState(null);
+  const [globalFilter, setGlobalFilter] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useRef(null);
+  const dt = useRef(null);
+  const orderCmplt = useRef(null);
   let data = [];
   let datas = [];
   let datass = [];
@@ -20,7 +42,7 @@ function AllOrders() {
           data.push(item);
         } else if (item.vendorId !== "" && item.orderStatus === "Done") {
           datass.push(item);
-        } else {
+        } else if (item.orderStatus === "Pending") {
           datas.push(item);
         }
       });
@@ -33,19 +55,20 @@ function AllOrders() {
   };
   useEffect(() => {
     getProductData();
-  }, []);
+    setIsLoading(false);
+  }, [isLoading]);
 
   const filterApplyTemplate = (options) => {
     return (
       <div className="row">
-        <div className="col-lg-4">
+        {/* <div className="col-lg-4">
           <Button
             type="button"
             icon="pi pi-pencil"
             onClick={() => alert(options.productName)}
             severity="primary"
           ></Button>
-        </div>
+        </div> */}
         <div className="col-lg-4">
           <Button
             type="button"
@@ -115,12 +138,27 @@ function AllOrders() {
     let orderTransferDate = moment().format("DD-MM-YYYY");
     const adminId = localStorage.getItem("admin_id");
     const adminName = localStorage.getItem("admin_name");
+
+    const distAddress =
+      vendorData.address +
+      ", " +
+      vendorData.city +
+      ", " +
+      vendorData.state +
+      ", " +
+      vendorData.pincode +
+      ".";
+    const distName = vendorData.name;
+    const distMobile = vendorData.mobile;
     let all_products = await fetch(
       "https://krushimitr.in/admin/send-to-vendor",
       {
         method: "post",
         body: JSON.stringify({
           vendorId: vendorData._id,
+          distName: distName,
+          distMobile: distMobile,
+          distAddress: distAddress,
           orderId: id,
           adminId: adminId,
           adminName: adminName,
@@ -134,6 +172,7 @@ function AllOrders() {
     );
     const get_orders = await all_products.json();
     if (get_orders.status === 201) {
+      setIsLoading(true);
       alert(get_orders.result);
     } else {
       alert(get_orders.result);
@@ -146,7 +185,8 @@ function AllOrders() {
   const [distributors, setDistributors] = useState([]);
 
   const getDistributor = async (id) => {
-    let all_products = await fetch("https://krushimitr.in/distributor/distributor-profile",
+    let all_products = await fetch(
+      "https://krushimitr.in/distributor/distributor-profile",
       {
         method: "post",
         body: JSON.stringify({ distributor_id: id }),
@@ -172,29 +212,226 @@ function AllOrders() {
             onClick={() => getDistributor(rowData.vendorId)}
             severity="success"
             className="btn btn-sm btn-primary"
-            style={{fontSize:'0px'}} 
+            style={{ fontSize: "0px" }}
           >
-            <i className="fa fa-eye" style={{fontSize:'14px'}}></i>
+            <i className="fa fa-eye" style={{ fontSize: "14px" }}></i>
           </Button>
-          {distributors&& 
-                  (
-                    <>
-                      <p className="mb-0" style={{fontSize:'14px',}}>{distributors.name}</p>
-                      <p className="mb-0" style={{fontSize:'14px',}}>{distributors.mobile}</p>
-                    </>
-                  )
-          }
+          {distributors && (
+            <>
+              <p className="mb-0" style={{ fontSize: "14px" }}>
+                {distributors.name}
+              </p>
+              <p className="mb-0" style={{ fontSize: "14px" }}>
+                {distributors.mobile}
+              </p>
+            </>
+          )}
         </div>
       </div>
     );
   };
 
+  const deleteProduct = async () => {
+    let user_id = user._id;
+    const delete_users = await fetch(
+      "https://krushimitr.in/admin/delete-user",
+      {
+        method: "POST",
+        body: JSON.stringify({ user_id }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = await delete_users.json();
+    console.log(response);
+    if (response.status === 201) {
+      setDeleteUserDialog(false);
+      setUser(emptyProduct);
+      toast.current.show({
+        severity: "success",
+        summary: "Successful",
+        detail: response.result,
+        life: 3000,
+      });
+    } else {
+      toast.current.show({
+        severity: "danger",
+        summary: "Not Successful",
+        detail: response.result,
+        life: 3000,
+      });
+    }
+  };
+
+  const exportCSV = () => {
+    dt.current.exportCSV();
+  };
+
+  const exportCSVS = () => {
+    orderCmplt.current.exportCSV();
+  };
+
+  const hideDeleteUserDialog = () => {
+    setDeleteUserDialog(false);
+  };
+
+  const rightToolbarTemplate = () => {
+    return (
+      <>
+        <Button
+          label="Excel"
+          icon="pi pi-upload"
+          className="p-button-help"
+          onClick={exportCSV}
+        />
+        <Button
+          label="Pdf"
+          icon="pi pi-file-pdf"
+          className="ms-1 p-button-primary"
+          onClick={exportPdf}
+        />
+      </>
+    );
+  };
+
+  const rightToolbarTemplateCompleted = () => {
+    return (
+      <>
+        <Button
+          label="Excel"
+          icon="pi pi-upload"
+          className="p-button-help"
+          onClick={exportCSVS}
+        />
+        <Button
+          label="Pdf"
+          icon="pi pi-file-pdf"
+          className="ms-1 p-button-primary"
+          onClick={exportPdf}
+        />
+      </>
+    );
+  };
+
+  const cols = [
+    { field: "orderNumber", header: "Order No." },
+    { field: "userName", header: "Name" },
+    { field: "orderDate", header: "Date" },
+    { field: "finalAmount", header: "Amount" },
+    { field: "paymentStatus", header: "Pay Status" },
+    { field: "paymentMethod", header: "Pay Method" },
+    { field: "shippingAddress", header: "Shipping Address" },
+    { field: "distName", header: "Distributor Name" },
+    { field: "distAddress", header: "Distributor Address" },
+    { field: "orderStatus", header: "Order Status" },
+    { field: "deliveryStatus", header: "Delivery Status" },
+    { field: "deliveryDate", header: "Delivery Date" },
+  ];
+
+  const exportColumns = cols.map((col) => ({
+    title: col.header,
+    dataKey: col.field,
+  }));
+  const exportPdf = () => {
+    import("jspdf").then((jsPDF) => {
+      import("jspdf-autotable").then(() => {
+        const doc = new jsPDF.default(0, 0);
+
+        doc.autoTable(exportColumns, compOrders);
+        doc.save("users.pdf");
+      });
+    });
+  };
+
+  const deleteUserDialogFooter = (
+    <React.Fragment>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        outlined
+        onClick={hideDeleteUserDialog}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        severity="danger"
+        className="ms-2"
+        onClick={deleteProduct}
+      />
+    </React.Fragment>
+  );
+
+  const header = (
+    <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
+      <h4 className="m-0">All Orders</h4>
+      <span className="p-input-icon-left">
+        <i className="pi pi-search" />
+        <InputText
+          type="search"
+          onInput={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Search..."
+        />
+      </span>
+      <Toolbar className="p-0" right={rightToolbarTemplate}></Toolbar>
+    </div>
+  );
+  const headerComplete = (
+    <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
+      <h4 className="m-0">Completed Orders Users</h4>
+      <span className="p-input-icon-left">
+        <i className="pi pi-search" />
+        <InputText
+          type="search"
+          onInput={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Search..."
+        />
+      </span>
+      <Toolbar className="p-0 " right={rightToolbarTemplateCompleted}></Toolbar>
+    </div>
+  );
+
+  const getItemData = (rowData) => {
+    let xyz = JSON.parse(rowData.itemsData);
+    let arr = [];
+    for (let index = 0; index < xyz.length; index++) {
+      let rr =
+        index +
+        1 +
+        "). Name: " +
+        xyz[index].productName +
+        ", Price: " +
+        xyz[index].price +
+        ", Qty: " +
+        xyz[index].quantity +
+        ", Total: " +
+        xyz[index].price * xyz[index].quantity +
+        "\n";
+      arr.push(rr);
+    }
+    return arr;
+    // rowData.itemsData.map((item) => {
+    // return xyz[0].productName;
+    //  (
+    //   <>
+    //     <p className="mb-0">
+    //       {item[0].productName} ({item[0].size + "" + item[0].unit})
+    //     </p>
+    //     <p className="mb-0">{item[0].price}</p>
+    //     <p className="mb-0">{item[0].quantity}</p>
+    //     <p className="mb-0">{item[0].price * item[0].quantity}</p>
+    //   </>
+    // );
+    // });
+  };
+
   return (
     <div className="p-3">
-      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-        <li class="nav-item" role="presentation">
+      <Toast ref={toast} />
+      <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li className="nav-item" role="presentation">
           <button
-            class="nav-link active "
+            className="nav-link active "
             id="pills-home-tab"
             data-bs-toggle="pill"
             data-bs-target="#pills-home"
@@ -206,9 +443,9 @@ function AllOrders() {
             <h5 className="mb-0">All Orders</h5>
           </button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li className="nav-item" role="presentation">
           <button
-            class="nav-link"
+            className="nav-link"
             id="pills-profile-tab"
             data-bs-toggle="pill"
             data-bs-target="#pills-profile"
@@ -217,12 +454,12 @@ function AllOrders() {
             aria-controls="pills-profile"
             aria-selected="false"
           >
-            <h5 className="mb-0">All Sending to Vendor</h5>
+            <h5 className="mb-0">All Sending to Distributor</h5>
           </button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li className="nav-item" role="presentation">
           <button
-            class="nav-link"
+            className="nav-link"
             id="pills-contact-tab"
             data-bs-toggle="pill"
             data-bs-target="#pills-contact"
@@ -235,40 +472,105 @@ function AllOrders() {
           </button>
         </li>
       </ul>
-      <div class="tab-content" id="pills-tabContent">
+      <div className="tab-content" id="pills-tabContent">
         <div
-          class="tab-pane fade show active"
+          className="tab-pane fade show active"
           id="pills-home"
           role="tabpanel"
           aria-labelledby="pills-home-tab"
         >
-          <DataTable
-            value={products}
-            sortMode="multiple"
-            paginator
-            rows={10}
-            rowsPerPageOptions={[5, 10, 25, 50, 100]}
-            tableStyle={{ minWidth: "100%" }}
+          <div className="card px-3 UserCard">
+            <DataTable
+              ref={dt}
+              value={products}
+              selection={selectedUsers}
+              onSelectionChange={(e) => setSelectedUsers(e.value)}
+              dataKey="id"
+              paginator
+              rows={10}
+              rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+              globalFilter={globalFilter}
+              header={header}
+            >
+              <Column
+                field="orderNumber"
+                header="Order No."
+                bodyStyle={{ color: "green",fontSize:14}}
+              ></Column>
+              <Column field="userName" header="Name" sortable></Column>
+              <Column field="orderDate" header="Date" sortable></Column>
+              <Column
+                field={getItemData}
+                header="Purchase Item / Price / Qty / Total"
+                body={getItemData}
+                style={{ display: "none" }}
+              ></Column>
+
+              <Column
+                field="finalAmount"
+                header="Amount"
+                style={{ display: "none" }}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="paymentMethod"
+                header="Pay Status"
+                style={{ display: "none" }}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="paymentStatus"
+                header="Pay Status"
+                sortable
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="shippingAddress"
+                header="Shipping Address"
+                sortable
+              ></Column>
+              <Column
+                field="orderStatus"
+                header="Order Status"
+                style={{ display: "none" }}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                header="Action"
+                field="_id"
+                style={{ minWidth: "4rem" }}
+                body={filterApplyTemplate}
+                severity="success"
+              ></Column>
+            </DataTable>
+          </div>
+
+          <Dialog
+            visible={deleteUserDialog}
+            style={{ width: "32rem" }}
+            breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+            header="Confirm"
+            modal
+            footer={deleteUserDialogFooter}
+            onHide={hideDeleteUserDialog}
           >
-            <Column field="userName" header="Name" sortable></Column>
-            <Column field="orderDate" header="Date" sortable></Column>
-            <Column field="paymentStatus" header="Pay Status" sortable></Column>
-            <Column
-              field="shippingAddress"
-              header="Shipping Address"
-              sortable
-            ></Column>
-            <Column
-              header="Action"
-              field="_id"
-              style={{ minWidth: "12rem" }}
-              body={filterApplyTemplate}
-              severity="success"
-            ></Column>
-          </DataTable>
+            <div className="confirmation-content">
+              <i
+                className="pi pi-exclamation-triangle mr-3"
+                style={{ fontSize: "2rem" }}
+              />
+              {user && (
+                <span>
+                  Are you sure you want to delete <b>{user.name}</b>?
+                </span>
+              )}
+            </div>
+          </Dialog>
         </div>
         <div
-          class="tab-pane fade"
+          className="tab-pane fade"
           id="pills-profile"
           role="tabpanel"
           aria-labelledby="pills-profile-tab"
@@ -290,66 +592,135 @@ function AllOrders() {
               sortable
             ></Column>
             <Column
-              field="vendorId"
+              field={"distName"}
               header="VenderDetails"
-              body={verifiedBodyTemplate}
-              severity="success"
+              // body={verifiedBodyTemplate}
+              bodyStyle={{ color: "green" }}
             ></Column>
-                        <Column
+            <Column
               field="orderStatus"
               header="Status"
               bodyStyle={{ color: "green", fontWeight: "bold" }}
             ></Column>
-            {/* <Column
-              header="Action"
-              field="_id"
-              style={{ minWidth: "12rem" }}
-              body={filterApplyTemplate}
-              severity="success"
-            ></Column> */}
           </DataTable>
         </div>
         <div
-          class="tab-pane fade"
+          className="tab-pane fade"
           id="pills-contact"
           role="tabpanel"
           aria-labelledby="pills-contact-tab"
         >
-          <DataTable
-            value={compOrders}
-            sortMode="multiple"
-            paginator
-            rows={10}
-            rowsPerPageOptions={[5, 10, 25, 50, 100]}
-            tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
+          <div className="card px-3 UserCard">
+            <DataTable
+              ref={orderCmplt}
+              value={compOrders}
+              selection={selectedUsers}
+              onSelectionChange={(e) => setSelectedUsers(e.value)}
+              dataKey="id"
+              paginator
+              rows={10}
+              rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+              globalFilter={globalFilter}
+              header={headerComplete}
+            >
+              <Column
+                field="orderNumber"
+                header="Order No."
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column field="userName" header="Name" sortable></Column>
+              <Column field="orderDate" header="Date" sortable></Column>
+              <Column
+                field={getItemData}
+                header="Purchase Item / Price / Qty / Total"
+                body={getItemData}
+                style={{ display: "none" }}
+              ></Column>
+
+              <Column
+                field="finalAmount"
+                header="Amount"
+                style={{ display: "none" }}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="paymentMethod"
+                header="Pay Status"
+                style={{ display: "none" }}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="paymentStatus"
+                header="Pay Status"
+                sortable
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="shippingAddress"
+                header="Shipping Address"
+                sortable
+              ></Column>
+              <Column
+                field={"distName"}
+                header="Distributor Name"
+                // body={verifiedBodyTemplate}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="distAddress"
+                header="Distributor Address"
+                style={{ display: "none" }}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="orderStatus"
+                header="Order Status"
+                style={{ display: "none" }}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="deliveryStatus"
+                header="Deli. Status"
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                field="deliveryDate"
+                header="Deli Date"
+                style={{ display: "none" }}
+                bodyStyle={{ color: "green", fontWeight: "bold" }}
+              ></Column>
+              <Column
+                header="Action"
+                style={{ minWidth: "4rem" }}
+                body={filterApplyTemplate}
+                severity="success"
+              ></Column>
+            </DataTable>
+          </div>
+
+          <Dialog
+            visible={deleteUserDialog}
+            style={{ width: "32rem" }}
+            breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+            header="Confirm"
+            modal
+            footer={deleteUserDialogFooter}
+            onHide={hideDeleteUserDialog}
           >
-            <Column field="userName" header="Name" sortable></Column>
-            <Column field="orderDate" header="Date" sortable></Column>
-            <Column field="paymentStatus" header="Pay Status" sortable bodyStyle={{ color: "green", fontWeight: "bold" }}></Column>
-            <Column
-              field="shippingAddress"
-              header="Shipping Address"
-              sortable
-            ></Column>
-            <Column
-              field="vendorId"
-              header="VenderDetails"
-              body={verifiedBodyTemplate}
-              bodyStyle={{ color: "green", fontWeight: "bold" }}
-            ></Column>
-            <Column
-              field="orderStatus"
-              header="Status"
-              bodyStyle={{ color: "green", fontWeight: "bold" }}
-            ></Column>
-            <Column
-              header="Action"
-              field="_id"
-              style={{ minWidth: "12rem" }}
-              body={filterApplyTemplate}
-              severity="success"
-            ></Column>
-          </DataTable>
+            <div className="confirmation-content">
+              <i
+                className="pi pi-exclamation-triangle mr-3"
+                style={{ fontSize: "2rem" }}
+              />
+              {user && (
+                <span>
+                  Are you sure you want to delete <b>{user.name}</b>?
+                </span>
+              )}
+            </div>
+          </Dialog>
         </div>
       </div>
 
@@ -452,7 +823,7 @@ function AllOrders() {
                                   getAddressWiseVender(item.shippingAddress);
                                 }}
                               >
-                                Shipped to Vendor
+                                Shipped to Distributor
                               </button>
                               <ul className="dropdown-menu">
                                 {distributor &&
@@ -468,6 +839,7 @@ function AllOrders() {
                                           onClick={() => {
                                             sendToVendor(ele, item, item._id);
                                           }}
+                                          data-bs-dismiss="modal"
                                         >
                                           {ele.name} ( {ele.address}, {ele.city}
                                           , {ele.pincode} )

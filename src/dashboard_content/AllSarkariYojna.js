@@ -113,14 +113,14 @@ function AllSarkariYojna() {
                       data-bs-toggle="modal"
                       data-bs-target={`#editModal` + sy._id}
                     >
-                      <i class="fas fa-edit"></i>
+                      <i className="fas fa-edit"></i>
                     </button>
                     <button
                       type="button"
                       onClick={() => DeleteOne(sy._id)}
                       className="btn btn-danger btn-sm me-1"
                     >
-                      <i class="fas fa-trash"></i>
+                      <i className="fas fa-trash"></i>
                     </button>
                   </td>
                 </tr>

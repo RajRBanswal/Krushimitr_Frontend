@@ -31,7 +31,7 @@ function About() {
                         <div className="col-lg-8 pb-5">
                             <div className="mb-2 pb-2">
                                 <h6 className="text-primary text-uppercase">About Us</h6>
-                                <h4 className="mb-0">We Produce Organic Food For Your Family</h4>
+                                {/* <h4 className="mb-0">We Produce Organic Food For Your Family</h4> */}
                             </div>
                             <p className="mb-1"><b>1.</b> Shivneri Business is a state-of-the-art agri technology company, we help millions of farmers across the country to live a happy life, and strive to grow new farming technologies, increase productivity, and grow safe and sustainable food.</p>
                             <p className="mb-1"><b>2.</b> We know the problems of farmers and are ready to bring changes in them.</p>

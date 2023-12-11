@@ -1,10 +1,16 @@
 import React, { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import loading from "../images/loading.gif";
 function UserLogin() {
+  const { state } = useLocation();
+  console.log(state);
   const [username, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [type, setType] = useState("password");
+  const [icon, setIcon] = useState("fa fa-solid fa-eye-slash");
+
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState("");
   const isFocused = useRef(null);
@@ -26,7 +32,11 @@ function UserLogin() {
         localStorage.setItem("user_name", result.user.name);
         // alert("User Logged In");
         // alert(result.result);
-        navigate("/users/user-dashboard");
+        if (state && state.product.length > 0) {
+          navigate("/cart-details");
+        } else {
+          navigate("/users/user-dashboard");
+        }
       } else {
         setLoadings(false);
         alert("User Not Found");
@@ -45,6 +55,10 @@ function UserLogin() {
         setLoadings(false);
         localStorage.setItem("distributor_id", result.distributor._id);
         localStorage.setItem("distributor_name", result.distributor.name);
+        localStorage.setItem(
+          "distributor_token",
+          result.distributor.tokens[result.distributor.tokens.length - 1].token
+        );
         // alert("User Logged In");
         // alert(result.result);
         navigate("/distributors");
@@ -57,6 +71,15 @@ function UserLogin() {
     }
 
     // console.warn(result.email);
+  };
+  const handleToggle = () => {
+    if (type === "password") {
+      setIcon("fa fa-eye");
+      setType("text");
+    } else {
+      setIcon("fa fa-solid fa-eye-slash");
+      setType("password");
+    }
   };
   return (
     <div className="main_div py-3 h-100 w-100">
@@ -76,9 +99,9 @@ function UserLogin() {
                 <hr className="my-2" />
                 <div className="row">
                   <div className="col-lg-6 text-end">
-                    <div class="form-check">
+                    <div className="form-check">
                       <input
-                        class="form-check-input"
+                        className="form-check-input"
                         type="radio"
                         name="flexRadioDefault"
                         id="flexRadioDefault1"
@@ -86,23 +109,29 @@ function UserLogin() {
                         ref={isFocused}
                         onChange={(e) => setUserType(e.target.value)}
                       />
-                      <label class="form-check-label" for="flexRadioDefault1">
+                      <label
+                        className="form-check-label"
+                        for="flexRadioDefault1"
+                      >
                         Users
                       </label>
                     </div>
                   </div>
                   <div className="col-lg-6">
-                    <div class="form-check">
+                    <div className="form-check">
                       <input
-                        class="form-check-input"
+                        className="form-check-input"
                         type="radio"
                         name="flexRadioDefault"
                         value="Distributors"
                         id="flexRadioDefault2"
                         onChange={(e) => setUserType(e.target.value)}
                       />
-                      <label class="form-check-label" for="flexRadioDefault2">
-                        Distributors
+                      <label
+                        className="form-check-label"
+                        for="flexRadioDefault2"
+                      >
+                        Distributors / Vendor
                       </label>
                     </div>
                   </div>
@@ -119,19 +148,25 @@ function UserLogin() {
                     placeholder="Enter Mobile Number"
                   />
                 </div>
-                <div className="form-group mt-2">
+                <div className="form-group mt-2 position-relative">
                   <label htmlFor="password" className="form-label">
                     Password
                   </label>
                   <input
-                    type="password"
+                    type={type}
                     className="form-control"
                     id="password"
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter Password"
                   />
+                  <span
+                    class="flex justify-around items-center"
+                    onClick={handleToggle}
+                  >
+                    <i class={"absolute passwordIcon " + icon} size={25} />
+                  </span>
                 </div>
-                <div className="form-group mt-2">
+                <div className="form-group mt-2 d-flex justify-content-between">
                   <div className="form-check">
                     <input
                       className="form-check-input"
@@ -143,6 +178,70 @@ function UserLogin() {
                       Remember Me
                     </label>
                   </div>
+                  <div className="form-check">
+                    <Link
+                      className="form-check-label"
+                      htmlFor="Remember"
+                      data-bs-toggle="modal"
+                      data-bs-target="#exampleModal"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
+                </div>
+
+                <div
+                  className="modal fade"
+                  id="exampleModal"
+                  tabIndex="-1"
+                  aria-labelledby="exampleModalLabel"
+                  aria-hidden="true"
+                >
+                  <div className="modal-dialog">
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <h5 className="modal-title" id="exampleModalLabel">
+                          Forgot Password
+                        </h5>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          data-bs-dismiss="modal"
+                          aria-label="Close"
+                        ></button>
+                      </div>
+                      <div className="modal-body">
+                        <div className="row">
+                          <div className="col-lg-12">
+                            <div className="form-group">
+                              <label htmlFor="name" className="form-label">
+                                Mobile Number
+                              </label>
+                              <input
+                                type="number"
+                                className="form-control"
+                                id="mobile"
+                                onChange={(e) => setMobile(e.target.value)}
+                                placeholder="Enter Mobile Number"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="modal-footer">
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          data-bs-dismiss="modal"
+                        >
+                          Close
+                        </button>
+                        <button type="button" className="btn btn-primary">
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="form-group mt-3 text-center">
                   <button
@@ -150,7 +249,7 @@ function UserLogin() {
                     onClick={LoginPage}
                     className="btn btn-danger"
                   >
-                    Primary
+                    Login
                   </button>
                 </div>
                 <div className="row mt-1">

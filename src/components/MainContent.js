@@ -50,6 +50,7 @@ function MainContent() {
   const [two, setTwo] = useState(false);
   const [three, setThree] = useState(false);
   const [four, setFour] = useState(false);
+  const [five, setFive] = useState(false);
   const project = (event, ids) => {
     // event.preventDefault();
     switch (ids) {
@@ -58,28 +59,40 @@ function MainContent() {
           first ? setFirst(false) : setFirst(true),
           setTwo(false),
           setThree(false),
-          setFour(false)
+          setFour(false),
+          setFive(false)
         );
       case "two":
         return (
           setFirst(false),
           two ? setTwo(false) : setTwo(true),
           setThree(false),
-          setFour(false)
+          setFour(false),
+          setFive(false)
         );
       case "three":
         return (
           setFirst(false),
           setTwo(false),
           three ? setThree(false) : setThree(true),
-          setFour(false)
+          setFour(false),
+          setFive(false)
         );
       case "four":
         return (
           setFirst(false),
           setTwo(false),
           setThree(false),
-          four ? setFour(false) : setFour(true)
+          four ? setFour(false) : setFour(true),
+          setFive(false)
+        );
+      case "five":
+        return (
+          setFirst(false),
+          setTwo(false),
+          setThree(false),
+          setFour(false),
+          five ? setFive(false) : setFive(true)
         );
 
       default:
@@ -91,10 +104,10 @@ function MainContent() {
       <div
         className={`page-wrapper chiller-theme ${isActive ? "toggled" : ""}`}
       >
-        <nav class="navbar navbar-expand-lg bg-dark" style={{ zIndex: 99 }}>
-          <div class="container-fluid">
+        <nav className="navbar navbar-expand-lg bg-dark" style={{ zIndex: 99 }}>
+          <div className="container-fluid">
             <button
-              class="navbar-toggler"
+              className="navbar-toggler"
               type="button"
               data-bs-toggle="collapse"
               data-bs-target="#navbarSupportedContent"
@@ -111,20 +124,23 @@ function MainContent() {
                 <i className="fas fa-bars"></i>
               </Link>
             </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
+            <div
+              className="collapse navbar-collapse"
+              id="navbarSupportedContent"
+            >
+              <ul className="navbar-nav me-auto mb-2 mb-lg-0"></ul>
             </div>
-            <div class="d-flex" role="search">
+            <div className="d-flex" role="search">
               <input
-                class="form-control me-2"
+                className="form-control me-2"
                 type="search"
                 placeholder="Search"
                 aria-label="Search"
               />
 
-              <div class="dropdown">
+              <div className="dropdown">
                 <button
-                  class="btn btn-primary dropdown-toggle"
+                  className="btn btn-primary dropdown-toggle"
                   type="button"
                   id="dropdownMenuButton1"
                   data-bs-toggle="dropdown"
@@ -132,9 +148,12 @@ function MainContent() {
                 >
                   {adminName}
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <ul
+                  className="dropdown-menu"
+                  aria-labelledby="dropdownMenuButton1"
+                >
                   <li>
-                    <a class="dropdown-item" href="" onClick={Logout}>
+                    <a className="dropdown-item" href="" onClick={Logout}>
                       Logout
                     </a>
                   </li>
@@ -256,6 +275,22 @@ function MainContent() {
                     </ul>
                   </div>
                 </li>
+                <li className={`sidebar-dropdown ${five ? "active" : ""}`}>
+                  <Link to="#" onClick={(event) => project(event, "five")}>
+                    <i className="fa fa-chart-line"></i>
+                    <span>Reports</span>
+                  </Link>
+                  <div className={`sidebar-submenu ${five ? "active" : ""}`}>
+                    <ul>
+                      <li>
+                        <Link to="all-orders-reports">All Reports</Link>
+                      </li>
+                      <li>
+                        <Link to="all-orders">Completed Orders Reports</Link>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
                 {/* <li className="header-menu">
                                     <span>Extra</span>
                                 </li> */}
@@ -265,6 +300,12 @@ function MainContent() {
                     <span>All Applications</span>
                   </Link>
                 </li>
+                {/* <li>
+                  <Link to="demo-products">
+                    <i className="fa fa-book"></i>
+                    <span>All Demo Products</span>
+                  </Link>
+                </li> */}
               </ul>
             </div>
           </div>

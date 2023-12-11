@@ -228,7 +228,7 @@ function AllProducts () {
                     data-bs-toggle="modal"
                     data-bs-target={`#editModal` + product._id}
                   >
-                    <i class="fas fa-edit" />
+                    <i className="fas fa-edit" />
                   </button> */}
                   <button
                     type="button"
@@ -236,14 +236,14 @@ function AllProducts () {
                     onClick={() =>
                       navigate ('/admin/edit-product/' + product._id)}
                   >
-                    <i class="fas fa-edit" />
+                    <i className="fas fa-edit" />
                   </button>
                   <button
                     type="button"
                     className="btn btn-danger btn-sm"
                     onClick={() => DeleteOne (product._id)}
                   >
-                    <i class="fa fa-trash" aria-hidden="true" />
+                    <i className="fa fa-trash" aria-hidden="true" />
                   </button>
                 </td>
                 <div

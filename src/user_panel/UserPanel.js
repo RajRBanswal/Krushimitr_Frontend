@@ -6,6 +6,7 @@ function UserPanel() {
   let userId = "";
   const navigate = useNavigate();
   userId = localStorage.getItem("user_id");
+  const userName = localStorage.getItem("user_name");
   if (!userId) {
     navigate("/login");
   }
@@ -13,6 +14,8 @@ function UserPanel() {
     localStorage.clear("");
     navigate("/login");
   };
+
+ 
   return (
     <div>
       <div className="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary userPanel ">
@@ -39,49 +42,39 @@ function UserPanel() {
               className="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0 text-center"
               to="#"
             >
-              <img src={"/assets/logo.png"}
-                alt="..."
-                width={80}
-              />
+              <img src={"/assets/logo.png"} alt="..." width={80} />
             </Link>
             {/* <!-- User menu (mobile) --> */}
-            <div className="navbar-user d-lg-none">
-              {/* <!-- Dropdown --> */}
-              <div className="dropdown">
-                {/* <!-- Toggle --> */}
+            <ul className="float-right navbar-user d-lg-none">
+              <li className="nav-item dropdown">
                 <Link
+                  className="nav-link dropdown-toggle"
                   to="#"
-                  id="sidebarAvatar"
+                  id="navbarDarkDropdownMenuLink"
                   role="button"
                   data-bs-toggle="dropdown"
-                  aria-haspopup="true"
                   aria-expanded="false"
                 >
-                  <div className="avatar-parent-child">
-                    <span className="avatar-child avatar-badge bg-success"></span>
-                  </div>
+                  <Link className="ps-3">{userName}</Link>
                 </Link>
-                {/* <!-- Menu --> */}
-                <div
-                  className="dropdown-menu dropdown-menu-end"
-                  aria-labelledby="sidebarAvatar"
+                <ul
+                  className="dropdown-menu w-100"
+                  aria-labelledby="navbarDarkDropdownMenuLink"
                 >
-                  <Link to="#" className="dropdown-item">
-                    Profile
-                  </Link>
-                  <Link to="#" className="dropdown-item">
-                    Settings
-                  </Link>
-                  <Link to="#" className="dropdown-item">
-                    Billing
-                  </Link>
-                  <hr className="dropdown-divider" />
-                  <Link to="#" className="dropdown-item">
-                    Logout
-                  </Link>
-                </div>
-              </div>
-            </div>
+                  <li>
+                    <Link className="dropdown-item" to="/">
+                      Home
+                    </Link>
+                  </li>
+                  <hr className="my-0" />
+                  <li>
+                    <Link className="dropdown-item" to="">
+                      Profile
+                    </Link>
+                  </li>
+                </ul>
+              </li>
+            </ul>
             {/* <!-- Collapse --> */}
             <div className="collapse navbar-collapse" id="sidebarCollapse">
               {/* <!-- Navigation --> */}
@@ -92,8 +85,8 @@ function UserPanel() {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="#">
-                    <i className="bi bi-bar-chart"></i> Analitycs
+                  <Link className="nav-link" to="user-orders">
+                    <i className="bi bi-bar-chart"></i> All Orders
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -101,22 +94,45 @@ function UserPanel() {
                     <i className="bi bi-chat"></i> Messages
                   </Link>
                 </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="#">
-                    <i className="bi bi-bookmarks"></i> Collections
+                <li className="nav-item has-submenu">
+                  <Link className="nav-link" href="#">
+                  <i className="bi bi-list"></i>
+                    More menus{" "}
                   </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="#">
-                    <i className="bi bi-people"></i> Users
-                  </Link>
+                  <ul className="submenu collapse">
+                    <li>
+                      <Link className="nav-link" href="#">
+                        Submenu item 4{" "}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="nav-link" href="#">
+                        Submenu item 5{" "}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="nav-link" href="#">
+                        Submenu item 6{" "}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="nav-link" href="#">
+                        Submenu item 7{" "}
+                      </Link>
+                    </li>
+                  </ul>
                 </li>
               </ul>
               {/* <!-- User (md) --> */}
               <ul className="navbar-nav">
+              <li className="nav-item">
+                  <Link className="nav-link" to="user-wallet">
+                  <i className="bi bi-wallet"></i> Wallet
+                  </Link>
+                </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="#">
-                    <i className="bi bi-person-square"></i> Account
+                  <Link className="nav-link" to="user-profile">
+                    <i className="bi bi-person-square"></i> User Profile
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -129,40 +145,40 @@ function UserPanel() {
           </div>
         </nav>
         {/* <!-- Main content --> */}
-        <div className="h-screen flex-grow-1 overflow-y-lg-auto d-lg-block d-none">
+        <div className="h-screen flex-grow-1 overflow-y-lg-auto ">
           {/* <!-- Header --> */}
-          <header className="bg-surface-primary border-bottom py-2">
+          <header className="bg-surface-primary border-bottom d-lg-block d-none ">
             <div className="container-fluid">
               <div className="mb-npx">
                 <div className="row align-items-center">
                   {/* <!-- Actions --> */}
                   <div className="col-sm-12 col-12 text-sm-end">
                     <div className="mx-n1">
-                      <ul class="navbar-nav float-right">
-                        <li class="nav-item dropdown">
-                          <a
-                            class="nav-link dropdown-toggle"
-                            href="#"
+                      <ul className="navbar-nav float-right">
+                        <li className="nav-item dropdown">
+                          <Link
+                            className="nav-link dropdown-toggle"
+                            to="#"
                             id="navbarDarkDropdownMenuLink"
                             role="button"
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                           >
-                            <img src={"/assets/logo.png"} alt="" width={"50"} />
-                            <Link className="ps-3">Rajesh Ramji Banswal</Link>
-                          </a>
+                            {/* <img src={"/assets/logo.png"} alt="" width={"50"} /> */}
+                            <Link className="ps-3">{userName}</Link>
+                          </Link>
                           <ul
-                            class="dropdown-menu w-100"
+                            className="dropdown-menu w-100"
                             aria-labelledby="navbarDarkDropdownMenuLink"
                           >
                             <li>
-                              <Link class="dropdown-item" to="/">
+                              <Link className="dropdown-item" to="/">
                                 Home
                               </Link>
                             </li>
                             <hr className="my-0" />
                             <li>
-                              <Link class="dropdown-item" to="">
+                              <Link className="dropdown-item" to="">
                                 Profile
                               </Link>
                             </li>
@@ -176,9 +192,11 @@ function UserPanel() {
             </div>
           </header>
           {/* <!-- Main --> */}
-          <main className="py-6 bg-surface-secondary">
-            <div className="container-fluid">
-              <Outlet />
+          <main className="py-3 bg-surface-secondary">
+            <div className="p-1">
+              <div className="card p-3">
+                <Outlet />
+              </div>
             </div>
           </main>
         </div>

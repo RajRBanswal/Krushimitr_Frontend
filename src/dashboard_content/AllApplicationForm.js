@@ -61,8 +61,8 @@ function AllApplicationForm() {
                                         <td>{item.type_of_license}</td>
                                         <td><img src={`https://krushimitr.in/upload/${item.license_image}`} width={'100px'} alt={item.license_image} /></td>
                                         <td>
-                                            <button type="button" className='btn btn-primary btn-sm me-1' data-bs-toggle="modal" data-bs-target={`#editModal` + item._id}><i class="fas fa-edit"></i></button>
-                                            <button type="button" onClick={() => deleteApplication(item._id)} className='btn btn-danger btn-sm me-1' ><i class="fas fa-trash"></i></button>
+                                            <button type="button" className='btn btn-primary btn-sm me-1' data-bs-toggle="modal" data-bs-target={`#editModal` + item._id}><i className="fas fa-edit"></i></button>
+                                            <button type="button" onClick={() => deleteApplication(item._id)} className='btn btn-danger btn-sm me-1' ><i className="fas fa-trash"></i></button>
                                         </td>
 
 

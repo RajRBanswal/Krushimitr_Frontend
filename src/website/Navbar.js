@@ -1,20 +1,44 @@
+import { Image } from "primereact/image";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-const logo = "../logo.png";
+const logo = "/logo.png";
+const google = window.google;
 function Navbar() {
   const cart = useSelector((state) => state.cart);
   const [cartProducs, setCartProduct] = useState([]);
   const [userLoggedIn, setUserLoggedIn] = useState(null);
   const [username, setUsername] = useState(null);
 
-  useEffect(() => {
+  const getDataFromCart = () => {
     setCartProduct(cart.data);
+  };
+  useEffect(() => {
     let user = localStorage.getItem("user_id");
-    let username = localStorage.getItem("user_name");
+    let usernames = localStorage.getItem("user_name");
     setUserLoggedIn(user);
-    setUsername(username);
-  },[]);
+    setUsername(usernames);
+  });
+
+  const googleTranslateElementInit = () => {
+    new window.google.translate.TranslateElement(
+      {
+        pageLanguage: "en",
+        layout: window.google.translate.TranslateElement.FloatPosition.TOP_LEFT,
+      },
+      "google_translate_element"
+    );
+  };
+
+  useEffect(() => {
+    var addScript = document.createElement("script");
+    addScript.setAttribute(
+      "src",
+      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+    );
+    document.body.appendChild(addScript);
+    window.googleTranslateElementInit = googleTranslateElementInit;
+  }, []);
 
   return (
     <>
@@ -66,7 +90,7 @@ function Navbar() {
       <nav className="navbar navbar-expand-lg bg-white navbar-dark shadow py-sm-3 py-lg-0 px-3 px-lg-5">
         <Link to="/" className="navbar-brand  ps-lg-5">
           <h1 className="m-0 display-4 text-secondary">
-            <img src={logo} alt="logo" width={100} />
+            <Image src={logo} alt="logo" width={100} />
           </h1>
         </Link>
         <button
@@ -122,7 +146,12 @@ function Navbar() {
               </Link>
             )}
             <div className="nav-item dropdown">
-              <Link to="/cart" className="nav-link" data-bs-toggle="dropdown">
+              <Link
+                to="/cart"
+                className="nav-link"
+                onClick={() => getDataFromCart()}
+                data-bs-toggle="dropdown"
+              >
                 <i className="fa fa-solid fa-shopping-cart"></i>
                 <span className="badge rounded-pill bg-success text-light">
                   {cart.data.length}
@@ -158,14 +187,14 @@ function Navbar() {
                                   to={"./cart-details"}
                                   className="mb-0 p-0 fw-bold"
                                 >
-                                  {item.productName} ({item.productSize.size}
-                                  {item.productSize.unit})
+                                  {item.productName} ({item.size}
+                                  {item.unit})
                                 </Link>
                               </td>
                               <td>
                                 <p className="mb-0 p-0">
                                   <span className="fw-bold text-success">
-                                    Price : {item.productSize.price}
+                                    Price : {item.price}
                                   </span>
                                 </p>
                               </td>

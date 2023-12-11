@@ -110,8 +110,8 @@ function AllCategories() {
                                     <tr key={ca._id}>
                                         <td>{ca.category_name}</td>
                                         <td><img src={`https://krushimitr.in/upload/${ca.category_image}`} width={'100px'} alt={ca.category_image} /></td>
-                                        <td><button type="button" className='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target={`#editModal` + ca._id}><i class="fas fa-edit"></i></button>
-                                            <button type="button" onClick={() => DeleteOne(ca._id)} className='btn btn-danger' ><i class="fa fa-trash" aria-hidden="true"></i></button></td>
+                                        <td><button type="button" className='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target={`#editModal` + ca._id}><i className="fas fa-edit"></i></button>
+                                            <button type="button" onClick={() => DeleteOne(ca._id)} className='btn btn-danger' ><i className="fa fa-trash" aria-hidden="true"></i></button></td>
                                         <div className="modal fade" id={`editModal` + ca._id} tabIndex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
                                             <div className="modal-dialog">
                                                 <div className="modal-content">

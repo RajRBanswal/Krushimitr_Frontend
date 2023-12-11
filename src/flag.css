@@ -1017,3 +1017,24 @@ img.flag {
 .p-button {
     padding: 5px 10px !important;
 }
+
+.p-datatable-tbody td:nth-child(2){
+    text-wrap: nowrap !important;
+}
+
+.UserCard .p-datatable .p-datatable-tbody>tr>td, .UserCard .p-datatable .p-datatable-thead>tr>th {
+    padding: 5px 15px !important;
+    border: 0.5px solid rgb(177, 177, 177) !important;
+}
+
+.p-datatable-header{
+    padding: 5px;
+}
+.UserCardReports td, .UserCardReports th{
+    font-size: 14px !important;
+    padding: 3px !important;
+}
+
+.UserCardReports .p-datatable-tbody td:nth-child(2){
+    text-wrap: wrap !important;
+}
