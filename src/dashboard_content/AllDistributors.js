@@ -5,6 +5,7 @@ import { DataTable } from "primereact/datatable";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { City, State } from "country-state-city";
+import { Dialog } from "primereact/dialog";
 
 function AllDistributors() {
   const [name, setName] = useState("");
@@ -22,6 +23,7 @@ function AllDistributors() {
   const isFocused = useRef(null);
   const [userType, setUserType] = useState("");
   const [loadings, setLoadings] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   const StoreData = async (e) => {
     e.preventDefault();
@@ -32,6 +34,7 @@ function AllDistributors() {
 
     try {
       const formData = new FormData();
+      formData.append("type", type);
       formData.append("name", name);
       formData.append("mobile", mobile);
       formData.append("email", email);
@@ -47,7 +50,7 @@ function AllDistributors() {
       }
 
       const result = await fetch(
-        "https://krushimitr.in/distributor/distributor-register",
+        "https://krushimitr.in/api/distributor/distributor-register",
         {
           method: "post",
           body: formData,
@@ -57,7 +60,6 @@ function AllDistributors() {
       if (result.status === 201) {
         setLoadings(false);
         alert(result.result);
-        navigate("/login");
       } else {
         setLoadings(false);
         alert(result.result);
@@ -75,22 +77,43 @@ function AllDistributors() {
     setState(el.getAttribute("value"));
   };
 
-  const [distributor, setDistributor] = useState([]);
+  const [activeDistributor, setActiveDistributor] = useState([]);
+  const [deactiveDistributor, setDeactiveDistributor] = useState([]);
+  const [pendingDistributor, setPendingVendor] = useState([]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getAllDistributor = async () => {
-    const all_users = await fetch("https://krushimitr.in/admin/distributor");
-    const uu = await all_users.json();
-    if (uu.status === 201) {
-      setDistributor(uu.distributor);
+    let aDistributor = [];
+    let dDistributor = [];
+    let pendingDist = [];
+    const all_users = await fetch(
+      "https://krushimitr.in/api/admin/distributor"
+    );
+    const result = await all_users.json();
+    if (result.status === 201) {
+      result.distributor.map((item) => {
+        if (item.type === "Distributor" && item.status === "Active") {
+          aDistributor.push(item);
+        } else if (item.type === "Distributor" && item.status === "Deactive") {
+          dDistributor.push(item);
+        } else if (item.type === "Distributor" && item.status === "Pending") {
+          pendingDist.push(item);
+        }
+      });
+
+      setActiveDistributor(aDistributor);
+      setDeactiveDistributor(dDistributor);
+      setPendingVendor(pendingDist);
     } else {
-      alert(uu.message);
+      alert(result.message);
     }
   };
   useEffect(() => {
     getAllDistributor();
-  }, []);
+  }, [getAllDistributor]);
   const getAddressData = (rowData) => {
     return (
-      <p className="mb-0" style={{fontSize:'14px'}}>
+      <p className="mb-0" style={{ fontSize: "14px" }}>
         {rowData.address}, {rowData.city}, {rowData.state} {rowData.pincode}
       </p>
     );
@@ -104,86 +127,229 @@ function AllDistributors() {
     );
   };
 
-  const filterApplyTemplate = (options) => {
+  const [userData, setUserData] = useState([]);
+  const filterApplyTemplate = (rowData) => {
     return (
-      <div className="row">
-        {/* <div className="col-lg-4">
-          <button
-            type="button"
-            icon="pi pi-pencil"
-            onClick={() => alert(options.productName)}
-            severity="primary"
-            className="btn btn-sm btn-primary"
-          >
-            <i className="fa fa-edit"></i>
-          </button>
-        </div>
-        <div className="col-lg-4">
-          <button
-            type="button"
-            icon="pi pi-eye"
-            // onClick={() => getOrderData(options._id)}
-            severity="success"
-            className="btn btn-info"
-          >
-            <i className="fa fa-eye"></i>
-          </button>
-        </div> */}
+      <div>
+        <button
+          className="btn btn-outline-primary btn-sm"
+          onClick={() => {
+            setVisible(true);
+            setUserData(rowData);
+          }}
+        >
+          <i className="fa fa-eye"></i>View
+        </button>
       </div>
     );
   };
+
+  const hideDialog = () => {
+    setVisible(false);
+  };
+  const changeStatus = async (status, Ids) => {
+    const vendorStatus = await fetch(
+      "https://krushimitr.in/api/distributor/vendor-status",
+      {
+        method: "post",
+        body: JSON.stringify({ status: status, vendorId: Ids }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const result = await vendorStatus.json();
+    if (result.status === 201) {
+      alert(result.result);
+      hideDialog();
+    } else {
+      alert(result.message);
+    }
+  };
+  const vendorDialogFooter = (
+    <React.Fragment>
+      <Button label="Close" icon="pi pi-times" outlined onClick={hideDialog} />
+    </React.Fragment>
+  );
+
   return (
     <>
-      <div className="card p-3">
-        <div className="row mb-2">
-          <div className="col-lg-8">
-            <h4 className="text-uppercase">All Distributors</h4>
-          </div>
-          <div className="col-lg-4">
+      <div className="card p-3 adminPanelCode">
+        <button
+          type="button"
+          className="btn btn-primary float-end btn-sm position-absolute"
+          style={{ right: 20, top: 10 }}
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+        >
+          Add Distributor
+        </button>
+
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+          <li class="nav-item" role="presentation">
             <button
+              class="nav-link active"
+              id="pills-Pending-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-Pending"
               type="button"
-              className="btn btn-primary float-end btn-sm"
-              data-bs-toggle="modal"
-              data-bs-target="#exampleModal"
+              role="tab"
+              aria-controls="pills-Pending"
+              aria-selected="true"
             >
-              Add Distributor
+              Pending Distributor
             </button>
-          </div>
-        </div>
-        <div className="table-responsive" style={{ overflow: "auto" }}>
-          <DataTable
-            value={distributor}
-            sortMode="multiple"
-            paginator
-            rows={10}
-            rowsPerPageOptions={[5, 10, 25, 50, 100]}
-            tableStyle={{ minWidth: "100%" }}
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="pills-home-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-home"
+              type="button"
+              role="tab"
+              aria-controls="pills-home"
+              aria-selected="true"
+            >
+              Active Distributor
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link "
+              id="pills-profile-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-profile"
+              type="button"
+              role="tab"
+              aria-controls="pills-profile"
+              aria-selected="false"
+            >
+              Deactive Distributor
+            </button>
+          </li>
+        </ul>
+        <div class="tab-content" id="pills-tabContent">
+          <div
+            class="tab-pane fade show active"
+            id="pills-Pending"
+            role="tabpanel"
+            aria-labelledby="pills-Pending-tab"
           >
-            <Column field="name" header="Name" sortable></Column>
-            <Column field="email" header="Email" sortable></Column>
-            <Column field="mobile" header="Mobile No." sortable></Column>
-            <Column
-              field="address"
-              header="Address"
-              sortable
-              body={getAddressData}
-            ></Column>
-            <Column
-              field=""
-              header="Reg. Date"
-              sortable
-              body={getRegisterDate}
-            ></Column>
-            {/* <Column
-              header="Action"
-              field="_id"
-              style={{ minWidth: "12rem" }}
-              body={filterApplyTemplate}
-              severity="success"
-            ></Column> */}
-          </DataTable>
+            <div className="table-responsive" style={{ overflow: "auto" }}>
+              <DataTable
+                value={pendingDistributor}
+                sortMode="multiple"
+                paginator
+                rows={10}
+                rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                tableStyle={{ minWidth: "100%" }}
+              >
+                <Column field="name" header="Name" sortable></Column>
+                <Column field="email" header="Email" sortable></Column>
+                <Column field="mobile" header="Mobile No." sortable></Column>
+                <Column
+                  field="address"
+                  header="Address"
+                  sortable
+                  body={getAddressData}
+                ></Column>
+                <Column
+                  field=""
+                  header="Reg. Date"
+                  sortable
+                  body={getRegisterDate}
+                ></Column>
+                <Column field="status" header="Status" sortable></Column>
+                <Column
+                  header="Action"
+                  field="_id"
+                  body={filterApplyTemplate}
+                ></Column>
+              </DataTable>
+            </div>
+          </div>
+          <div
+            class="tab-pane fade"
+            id="pills-home"
+            role="tabpanel"
+            aria-labelledby="pills-home-tab"
+          >
+            <div className="table-responsive" style={{ overflow: "auto" }}>
+              <DataTable
+                value={activeDistributor}
+                sortMode="multiple"
+                paginator
+                rows={10}
+                rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                tableStyle={{ minWidth: "100%" }}
+              >
+                <Column field="name" header="Name" sortable></Column>
+                <Column field="email" header="Email" sortable></Column>
+                <Column field="mobile" header="Mobile No." sortable></Column>
+                <Column
+                  field="address"
+                  header="Address"
+                  sortable
+                  body={getAddressData}
+                ></Column>
+                <Column
+                  field=""
+                  header="Reg. Date"
+                  sortable
+                  body={getRegisterDate}
+                ></Column>
+                <Column field="status" header="Status" sortable></Column>
+                <Column
+                  header="Action"
+                  field="_id"
+                  body={filterApplyTemplate}
+                ></Column>
+              </DataTable>
+            </div>
+          </div>
+          <div
+            class="tab-pane fade "
+            id="pills-profile"
+            role="tabpanel"
+            aria-labelledby="pills-profile-tab"
+          >
+            <div className="table-responsive" style={{ overflow: "auto" }}>
+              <DataTable
+                value={deactiveDistributor}
+                sortMode="multiple"
+                paginator
+                rows={10}
+                rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                tableStyle={{ minWidth: "100%" }}
+              >
+                <Column field="name" header="Name" sortable></Column>
+                <Column field="email" header="Email" sortable></Column>
+                <Column field="mobile" header="Mobile No." sortable></Column>
+                <Column
+                  field="address"
+                  header="Address"
+                  sortable
+                  body={getAddressData}
+                ></Column>
+                <Column
+                  field=""
+                  header="Reg. Date"
+                  sortable
+                  body={getRegisterDate}
+                ></Column>
+                <Column field="status" header="Status" sortable></Column>
+                <Column
+                  header="Action"
+                  field="_id"
+                  body={filterApplyTemplate}
+                ></Column>
+              </DataTable>
+            </div>
+          </div>
         </div>
       </div>
+
       <div
         className="modal fade"
         id="exampleModal"
@@ -243,14 +409,13 @@ function AllDistributors() {
                     type="number"
                     className="form-control"
                     name="mobile"
+                    min={10}
+                    max={10}
                     placeholder="Mobile Number"
                     onChange={(e) => setMobile(e.target.value)}
                   />
                 </div>
-                <div
-                  className="col-lg-4 col-6"
-                  
-                >
+                <div className="col-lg-4 col-6">
                   <label>
                     Type<span className="text-danger">*</span>
                   </label>
@@ -352,6 +517,160 @@ function AllDistributors() {
           </div>
         </div>
       </div>
+
+      <Dialog
+        visible={visible}
+        style={{ width: "40rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header="Confirm"
+        modal
+        footer={vendorDialogFooter}
+        onHide={hideDialog}
+      >
+        <div className="confirmation-content">
+          <div className="row">
+            <div className="col-lg-12">
+              <h4 className="mb-2 underline">
+                <b>Vendor Details </b>
+              </h4>
+            </div>
+            <div className="row">
+              <div className="col-lg-9 py-3">
+                <p className="mb-1">
+                  <b>Name : </b>
+                  {userData && userData.name}
+                </p>
+
+                <p className="mb-1">
+                  <b>Mobile : </b>
+                  {userData && userData.mobile}
+                </p>
+
+                <p className="mb-1">
+                  <b>Address : </b>
+                  {userData &&
+                    userData.address +
+                      ", " +
+                      userData.city +
+                      ", " +
+                      userData.pincode}
+                </p>
+                <p className="mb-1">
+                  <b>Email : </b>
+                  {userData && userData.email}
+                </p>
+              </div>
+              <div className="col-lg-3">
+                <img
+                  src={`https://krushimitr.in/upload/${
+                    userData && userData.profile_image
+                  }`}
+                  width={"100%"}
+                  alt=""
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-lg-12">
+              <h4 className="my-2 underline">
+                <b>Shop Details </b>
+              </h4>
+            </div>
+
+            <div className="col-lg-6">
+              <p className="mb-1">
+                <b>Shop Name : </b>
+                {userData && userData.shopName}
+              </p>
+            </div>
+            <div className="col-lg-6 ">
+              <p className="mb-1">
+                <b>Shop Mobile : </b>
+                {userData && userData.shopMobile}
+              </p>
+            </div>
+            <div className="col-lg-6 ">
+              <p className="mb-1">
+                <b>Shop Mail : </b>
+                {userData && userData.shopEmail}
+              </p>
+            </div>
+            <div className="col-lg-6">
+              <p className="mb-1">
+                <b>Shop License : </b>
+                {userData && userData.shopLicense}
+              </p>
+            </div>
+            <div className="col-lg-6 ">
+              <p className="mb-1">
+                <b>GST No : </b>
+                {userData && userData.gstNo}
+              </p>
+            </div>
+            <div className="col-lg-6 ">
+              {userData && userData.status === "Active" ? (
+                <p className="mb-1 text-success">
+                  <b>Status : </b>
+                  {userData.status}
+                </p>
+              ) : userData.status === "Deactive" ? (
+                <p className="mb-1 text-danger">
+                  <b>Status : </b>
+                  {userData.status}
+                </p>
+              ) : (
+                <p className="mb-1 text-info">
+                  <b>Status : </b>
+                  {userData.status}
+                </p>
+              )}
+            </div>
+            <div className="col-lg-12 ">
+              <p className="mb-1">
+                <b>Shop Address : </b>
+                {userData &&
+                  userData.address +
+                    ", " +
+                    userData.city +
+                    ", " +
+                    userData.pincode}
+              </p>
+            </div>
+          </div>
+          <div className="row mt-3">
+            <div className="col-lg-6 m-auto">
+              {(userData && userData.status === "Pending") ||
+              userData.status === "Deactive" ? (
+                <button
+                  className="btn btn-outline-success"
+                  onClick={() =>
+                    changeStatus("Active", userData && userData._id)
+                  }
+                >
+                  <i className="fa fa-check"></i> Active
+                </button>
+              ) : (
+                ""
+              )}
+              {(userData && userData.status === "Pending") ||
+              userData.status === "Active" ? (
+                <button
+                  className="btn btn-outline-danger ms-2"
+                  onClick={() =>
+                    changeStatus("Deactive", userData && userData._id)
+                  }
+                >
+                  <i className="fa fa-close"></i> Deactive
+                </button>
+              ) : (
+                ""
+              )}
+            </div>
+          </div>
+        </div>
+      </Dialog>
     </>
   );
 }

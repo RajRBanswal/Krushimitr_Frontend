@@ -18,7 +18,7 @@ function DistributorProfile() {
 
   const getDistributor = async () => {
     const response = await fetch(
-      "https://krushimitr.in/distributor/distributor-profile",
+      "https://krushimitr.in/api/distributor/distributor-profile",
       {
         method: "post",
         body: JSON.stringify({ distributor_id: distId }),
@@ -47,7 +47,7 @@ function DistributorProfile() {
     formData.append("shopLogo", shopLogo);
 
     let response = await fetch(
-      "https://krushimitr.in/distributor/update-shopdetails",
+      "https://krushimitr.in/api/distributor/update-shopdetails",
       {
         method: "post",
         body: formData,
@@ -71,9 +71,9 @@ function DistributorProfile() {
             <div className="card-body p-3">
               <div className="d-flex justify-content-between">
                 <h4 className="my-0">User Profile</h4>
-                <button className="btn btn-primary btn-sm">
+                {/* <button className="btn btn-primary btn-sm">
                   <i className="fa fa-edit"></i>
-                </button>
+                </button> */}
               </div>
               <table className="table table-borderless w-100">
                 <tbody>

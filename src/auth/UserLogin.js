@@ -5,14 +5,13 @@ import "react-toastify/dist/ReactToastify.css";
 import loading from "../images/loading.gif";
 function UserLogin() {
   const { state } = useLocation();
-  console.log(state);
   const [username, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [type, setType] = useState("password");
   const [icon, setIcon] = useState("fa fa-solid fa-eye-slash");
 
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState("");
+  const [userType, setUserType] = useState("Users");
   const isFocused = useRef(null);
   const navigate = useNavigate();
   const [loadings, setLoadings] = useState(false);
@@ -20,18 +19,16 @@ function UserLogin() {
   const LoginPage = async () => {
     setLoadings(true);
     if (userType === "Users") {
-      let result = await fetch("https://krushimitr.in/users/user-login", {
+      let result = await fetch("https://krushimitr.in/api/users/user-login", {
         method: "post",
         body: JSON.stringify({ username, password }),
         headers: { "Content-Type": "application/json" },
       }).then((resp) => resp.json());
-      console.log(result);
       if (result.status === 201) {
         setLoadings(false);
-        localStorage.setItem("user_id", result.user._id);
-        localStorage.setItem("user_name", result.user.name);
-        // alert("User Logged In");
-        // alert(result.result);
+        localStorage.setItem("user_id", result.user[0]._id);
+        localStorage.setItem("user_name", result.user[0].name);
+        localStorage.setItem("user_pincode", result.user[0].pincode);
         if (state && state.product.length > 0) {
           navigate("/cart-details");
         } else {
@@ -43,7 +40,7 @@ function UserLogin() {
       }
     } else if (userType === "Distributors") {
       let result = await fetch(
-        "https://krushimitr.in/distributor/distributor-login",
+        "https://krushimitr.in/api/distributor/distributor-login",
         {
           method: "post",
           body: JSON.stringify({ username, password }),
@@ -82,7 +79,10 @@ function UserLogin() {
     }
   };
   return (
-    <div className="main_div py-3 h-100 w-100">
+    <div
+      className="main_div py-3 h-100 w-100"
+      style={{ backgroundImage: "url('./assets/images/bgImg.jpg')" }}
+    >
       <div className="container">
         <div className="row">
           <img
@@ -179,12 +179,7 @@ function UserLogin() {
                     </label>
                   </div>
                   <div className="form-check">
-                    <Link
-                      className="form-check-label"
-                      htmlFor="Remember"
-                      data-bs-toggle="modal"
-                      data-bs-target="#exampleModal"
-                    >
+                    <Link to={"/forgot-password/" + userType}>
                       Forgot Password?
                     </Link>
                   </div>

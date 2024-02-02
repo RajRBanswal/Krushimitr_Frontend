@@ -13,7 +13,7 @@ function UserRegister() {
   const [address, setAddress] = useState("");
   const [pincode, setPincode] = useState("");
   const [cityCode, setCityCode] = useState([]);
-  const [type, setType] = useState([]);
+  const [type, setType] = useState("");
   const [profileImage, setProfileImage] = useState([]);
   const navigate = useNavigate();
   const isFocused = useRef(null);
@@ -21,6 +21,7 @@ function UserRegister() {
   const [loadings, setLoadings] = useState(false);
   const [userId, setUserId] = useState("");
   const [productId, setProductId] = useState("");
+  const typeRef = useRef(null);
 
   useEffect(() => {
     const user_id = localStorage.getItem("USERID");
@@ -36,62 +37,65 @@ function UserRegister() {
       alert("Please fill out all required fields.");
     }
 
-    try {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("mobile", mobile);
-      formData.append("email", email);
-      formData.append("password", password);
-      formData.append("state", state);
-      formData.append("city", city);
-      formData.append("address", address);
-      formData.append("pincode", pincode);
-      if (profileImage) {
-        formData.append("profile_image", profileImage);
-      } else {
-        formData.append("profile_image", "");
-      }
-      formData.append("referenceId", userId);
-      formData.append("referenceProductId", productId);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("mobile", mobile);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("state", state);
+    formData.append("city", city);
+    formData.append("address", address);
+    formData.append("pincode", pincode);
+    if (profileImage) {
+      formData.append("profile_image", profileImage);
+    } else {
+      formData.append("profile_image", "");
+    }
+    formData.append("referenceId", userId);
+    formData.append("referenceProductId", productId);
 
-      if (userType === "Users") {
-        const result = await fetch(
-          "https://krushimitr.in/users/user-register",
-          {
-            method: "post",
-            body: formData,
-          }
-        ).then((result) => result.json());
-        if (result.status === 201) {
-          setLoadings(false);
-          alert(result.result);
-          navigate("/login");
-        } else {
-          setLoadings(false);
-          alert(result.result);
+    if (userType === "Users") {
+      const result = await fetch(
+        "https://krushimitr.in/api/users/user-register",
+        {
+          method: "post",
+          body: formData,
         }
-      } else if (userType === "Distributors") {
-        formData.append("type", type);
-        const result = await fetch(
-          "https://krushimitr.in/distributor/distributor-register",
-          {
-            method: "post",
-            body: formData,
-          }
-        ).then((result) => result.json());
-
-        if (result.status === 201) {
-          setLoadings(false);
-          alert(result.result);
-          navigate("/login");
-        } else {
-          setLoadings(false);
-          alert(result.result);
-        }
+      ).then((result) => result.json());
+      if (result.status === 201) {
+        setLoadings(false);
+        alert(result.result);
+        navigate("/login");
       } else {
-        isFocused.current.focus();
+        setLoadings(false);
+        alert(result.result);
       }
-    } catch (error) {}
+    } else if (userType === "Distributors") {
+      if (type === "") {
+        typeRef.current.focus();
+        setLoadings(false);
+      }
+      formData.append("type", type);
+      const res = await fetch(
+        "https://krushimitr.in/api/distributor/distributor-register",
+        {
+          method: "post",
+          body: formData,
+        }
+      );
+      const result = await res.json();
+      if (result.status === 201) {
+        setLoadings(false);
+        alert(result.result);
+        navigate("/login");
+      } else {
+        setLoadings(false);
+        alert(result.result);
+      }
+    } else {
+      isFocused.current.focus();
+      setLoadings(false);
+    }
   };
 
   const onChangeHandler = (e) => {
@@ -111,7 +115,10 @@ function UserRegister() {
         className={"loader " + (loadings ? "d-block" : "d-none")}
         alt=""
       />
-      <div className="main_div h-100 w-100">
+      <div
+        className="main_div h-100 w-100 "
+        style={{ backgroundImage: "url('./assets/images/bgImg.jpg')" }}
+      >
         <div className="container py-3">
           <div className="row">
             <ToastContainer />
@@ -134,7 +141,10 @@ function UserRegister() {
                           ref={isFocused}
                           onChange={(e) => setUserType(e.target.value)}
                         />
-                        <label className="form-check-label" for="flexRadioDefault1">
+                        <label
+                          className="form-check-label"
+                          for="flexRadioDefault1"
+                        >
                           Users
                         </label>
                       </div>
@@ -149,7 +159,10 @@ function UserRegister() {
                           id="flexRadioDefault2"
                           onChange={(e) => setUserType(e.target.value)}
                         />
-                        <label className="form-check-label" for="flexRadioDefault2">
+                        <label
+                          className="form-check-label"
+                          for="flexRadioDefault2"
+                        >
                           Distributors / Vendor
                         </label>
                       </div>
@@ -206,6 +219,7 @@ function UserRegister() {
                         Type<span className="text-danger">*</span>
                       </label>
                       <select
+                        ref={typeRef}
                         className="form-control"
                         onChange={(e) => setType(e.target.value)}
                       >
@@ -215,7 +229,7 @@ function UserRegister() {
                       </select>
                     </div>
                     <div className="col-lg-4 col-6">
-                      <label htmlFor="name" className="form-label">
+                      <label htmlFor="name" className="form-label mb-0">
                         State<span className="text-danger">*</span>
                       </label>
                       <select
@@ -232,7 +246,7 @@ function UserRegister() {
                   </div>
                   <div className="row g-5">
                     <div className="col-lg-3 col-6">
-                      <label htmlFor="name" className="form-label">
+                      <label htmlFor="name" className="form-label mb-0">
                         City<span className="text-danger">*</span>
                       </label>
                       <select
@@ -270,13 +284,14 @@ function UserRegister() {
                   <div className="row g-5">
                     <div className="col-lg-6 col-6">
                       <label>
-                        Password<span className="text-danger">*</span>
+                        Password <small>(Website use only)</small>
+                        <span className="text-danger">*</span>
                       </label>
                       <input
                         type="password"
                         className="form-control"
                         name="address"
-                        placeholder="Password"
+                        placeholder="Password for Website"
                         onChange={(e) => setPassword(e.target.value)}
                       />
                     </div>

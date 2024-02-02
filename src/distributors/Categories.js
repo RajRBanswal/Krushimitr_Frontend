@@ -10,7 +10,7 @@ function Categories() {
   const [cate, setCate] = useState([]);
   const distributor_id = localStorage.getItem("distributor_id");
   const getCategoryData = async () => {
-    let all_category = await fetch("https://krushimitr.in/admin/all-category");
+    let all_category = await fetch("https://krushimitr.in/api/admin/all-category");
     const getCat = await all_category.json();
 
     if (getCat.getCate !== "") {
@@ -26,7 +26,7 @@ function Categories() {
   }, []);
 
   const DeleteOne = async (id) => {
-    let resultDel = await fetch("https://krushimitr.in/admin/delete-category", {
+    let resultDel = await fetch("https://krushimitr.in/api/admin/delete-category", {
       method: "post",
       body: JSON.stringify({ id }),
       headers: {
@@ -49,7 +49,7 @@ function Categories() {
     formData.append("category_name", category_name);
     formData.append("vendor_id", distributor_id);
     formData.append("image", image);
-    let result = await fetch("https://krushimitr.in/admin/add-category", {
+    let result = await fetch("https://krushimitr.in/api/admin/add-category", {
       method: "post",
       body: formData,
     }).then((result) => result.json());

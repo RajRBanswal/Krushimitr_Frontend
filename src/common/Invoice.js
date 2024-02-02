@@ -9,9 +9,15 @@ function Invoice() {
   const [orderData, setOrderData] = useState(location.state.data);
   const [customer, setCustomer] = useState("");
   const [product, setProduct] = useState([]);
+  let distID = "";
   let distr = localStorage.getItem("distributor_id");
-  const distID = distr;
-  const [distributor, setDistributor] = useState(distr);
+  console.log(orderData.vendorId);
+  if (distr) {
+    distID = distr;
+  } else {
+    distID = orderData.vendorId;
+  }
+  const [distributor, setDistributor] = useState(distID);
 
   const [taxableTotal, setTaxableTotal] = useState("");
   const [InclTotal, setInclTotal] = useState("");
@@ -29,21 +35,27 @@ function Invoice() {
     });
 
     setProduct(JSON.parse(arr));
+    let ddd = JSON.parse(arr);
     let ttl = 0;
     let InclTotal = 0;
-    product.map((item) => {
-      let ttls = getFinalTotal(item.price, item.quantity, item.gst);
-      ttl = parseFloat(ttl) + parseFloat(ttls);
+    ddd.map((item) => {
+      let exprice =
+        getTotal(item.price, item.quantity, item.gst) * item.quantity;
+      ttl = parseFloat(ttl) + parseFloat(exprice);
+
       let abc = item.price * item.quantity;
       InclTotal = parseInt(InclTotal) + parseInt(abc);
     });
-    console.log(ttl);
     setTaxableTotal(ttl.toFixed(2));
     setInclTotal(InclTotal);
   }, [route]);
 
+  window.onafterprint = function () {
+    window.history.go(-1);
+  };
+
   const getTotal = (price, quantity, gst) => {
-    let reeta = price * quantity;
+    let reeta = price;
     let tot_price = "";
     if (gst === "28") {
       tot_price = reeta / 1.28;
@@ -59,25 +71,13 @@ function Invoice() {
     return tot_price.toFixed(2);
   };
 
-  const getFinalTotal = (price, quantity, gst) => {
-    let reeta = price * quantity;
-    let tot_price = "";
-    if (gst === "28") {
-      tot_price = reeta / 1.28;
-    } else if (gst === "18") {
-      tot_price = reeta / 1.18;
-    } else if (gst === "12") {
-      tot_price = reeta / 1.12;
-    } else if (gst === "5") {
-      tot_price = reeta / 1.05;
-    } else if (gst === "0") {
-      tot_price = reeta / 1.0;
-    }
-    return tot_price.toFixed(2);
+  const realPrice = (price, gst) => {
+    let gstTtl = (price * gst) / 100;
+    return price - gstTtl;
   };
   const getDistributor = async () => {
     const response = await fetch(
-      "https://krushimitr.in/distributor/distributor-profile",
+      "https://krushimitr.in/api/distributor/distributor-profile",
       {
         method: "post",
         body: JSON.stringify({ distributor_id: distID }),
@@ -103,7 +103,7 @@ function Invoice() {
   };
   return (
     <>
-      <div className="container mb-3 " style={{ overflowY: "scroll" }}>
+      <div className="container mb-3 ">
         <div className="row">
           <div className="col-1">
             <button
@@ -111,6 +111,10 @@ function Invoice() {
               onClick={() => {
                 route === "distributor"
                   ? navigate("/distributors/customer-orders")
+                  : route === "admin"
+                  ? navigate("/admin/all-orders")
+                  : route === "users"
+                  ? navigate("/users/user-orders")
                   : navigate("");
               }}
             >
@@ -129,7 +133,7 @@ function Invoice() {
         </div>
         <div className="InvoiceBill" id="InvoiceBill">
           <div className="row p-3 afterPrint">
-            <div className="col-lg-4 textStart">
+            <div className="col-lg-4 col-4 col-md-6 textStart">
               {distributor.shopLogo === "" ? (
                 <Image src="../logo.png" width="120" alt="" />
               ) : (
@@ -139,14 +143,19 @@ function Invoice() {
                   alt=""
                 />
               )}
+              <span
+                className="font-weight-bold d-lg-none d-block"
+                style={{ fontSize: 20 }}
+              >
+                Invoice Bill
+              </span>
             </div>
-            <div className="col-lg-4 col-12 col-md-4  d-flex justify-content-center align-items-center order-lg-1 order-md-1 order-2">
-              {" "}
+            <div className="col-lg-4 col-4 col-md-4 d-none d-lg-block  d-lg-flex justify-content-center align-items-center ">
               <span className="font-weight-bold" style={{ fontSize: 20 }}>
                 Invoice Bill
-              </span>{" "}
+              </span>
             </div>
-            <div className="col-lg-4 col-12 col-md-4 order-md-2 textEnd order-lg-2 order-1">
+            <div className="col-lg-4 col-8 col-md-6 text-end">
               <p className="mb-0" style={{ fontSize: 14 }}>
                 {distributor.shopName}
               </p>
@@ -168,7 +177,7 @@ function Invoice() {
               <tbody>
                 <tr>
                   <th className="uppercase" style={{ width: "33%" }}>
-                    ORDER ID : {orderData._id}
+                    ORDER ID : {orderData.orderNumber}
                   </th>
                   <th className="text-center" style={{ width: "33%" }}>
                     GST No : {distributor.gstNo}
@@ -185,7 +194,9 @@ function Invoice() {
               <tbody>
                 <tr className="add">
                   <td className="py-1">To</td>
-                  <td className="text-end pe-3 py-1">From</td>
+                  <td className="text-end pe-3 py-1">
+                    From <b>({distributor.type})</b>
+                  </td>
                 </tr>
                 <tr className="invoice_content">
                   <td className="py-1">
@@ -199,7 +210,7 @@ function Invoice() {
                       {customer.email}
                     </p>
                     <p className="mb-0" style={{ fontSize: 14 }}>
-                      {customer.address}, {customer.city}, {customer.state},{" "}
+                      {customer.address}, {customer.city}, {customer.state},
                       {customer.pincode}
                     </p>
                   </td>
@@ -214,7 +225,7 @@ function Invoice() {
                       {distributor.email}
                     </p>
                     <p className="mb-0" style={{ fontSize: 14 }}>
-                      {distributor.address}, {distributor.city},{" "}
+                      {distributor.address}, {distributor.city},
                       {distributor.state}, {distributor.pincode}
                     </p>
                   </td>
@@ -223,17 +234,20 @@ function Invoice() {
             </table>
           </div>
           <hr className="mb-3" />
-          <div className="products table-responsive p-2 overflow-auto">
+          <div className="products table-responsive p-2">
             <table className="table table-bordered mb-3">
               <thead>
                 <tr className="add">
-                  <th>Product Name / Description</th>
-                  <th className="text-center">Size</th>
-                  <th className="text-end">Price</th>
-                  <th className="text-center">Quantity</th>
-                  <th className="text-end">Incl Rate</th>
+                  <th>Name / Desc</th>
+                  <th className="">Size</th>
+                  <th className="">BtcNo</th>
+                  <th>HsnNo</th>
+                  <th>Guar. / Warr.</th>
+
+                  <th className="text-center">Rate</th>
+                  <th className="text-center">Qty</th>
                   <th className="text-center">GST </th>
-                  <th className="text-end">Total</th>
+                  <th className="text-end">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -245,12 +259,24 @@ function Invoice() {
                         {item.size}
                         {item.unit}
                       </td>
-                      <td className="text-end">{item.price}</td>
+                      <td className="text-center">
+                        {item.batchNo !== undefined ? item.batchNo : ""}
+                      </td>
+                      <td class="text-center">
+                        {item.HSNNo !== undefined ? item.HSNNo : ""}
+                      </td>
+                      <td class="text-center">
+                        {item.guarantee !== undefined ? item.guarantee : ""} /
+                        {item.warranty !== undefined ? item.warranty : ""}
+                      </td>
+                      <td className="text-center">
+                        {getTotal(item.price, item.quantity, item.gst)}
+                      </td>
                       <td className="text-center">{item.quantity}</td>
-                      <td className="text-end">{item.price * item.quantity}</td>
                       <td className="text-center">{item.gst}</td>
                       <td className="text-end">
-                        {getTotal(item.price, item.quantity, item.gst)}
+                        {getTotal(item.price, item.quantity, item.gst) *
+                          item.quantity}
                       </td>
                     </tr>
                   );
@@ -265,11 +291,13 @@ function Invoice() {
                   <th></th>
                   <th></th>
                   <th></th>
+                  <th></th>
+                  <th></th>
                 </tr>
               </thead>
               <thead className="table-dark">
                 <tr className="add">
-                  <th colSpan={6} className="text-white">
+                  <th colSpan={8} className="text-white">
                     Total
                   </th>
 
@@ -279,11 +307,8 @@ function Invoice() {
 
               <tbody>
                 <tr className="add finalAdd">
-                  <th rowSpan={5} colSpan={5} className="text-start">
-                    Do not send an Excel Invoice file to your clients, use PDF
-                    converter/printer to create a PDF file
-                  </th>
-                  <th>Subtotal</th>
+                  <th rowSpan={5} colSpan={6} className="text-start"></th>
+                  <th colSpan={2}>Subtotal</th>
                   <td className="w-15 text-nowrap">
                     <i className="fa fa-rupee"></i>&nbsp;
                     {taxableTotal}
@@ -297,15 +322,17 @@ function Invoice() {
                   </td>
                 </tr> */}
                 <tr className="add finalAdd">
-                  <th>GST</th>
+                  <th colSpan={2}>GST</th>
                   <td className="w-15 text-nowrap">
                     <i className="fa fa-rupee"></i> &nbsp;
                     {(InclTotal - taxableTotal).toFixed(2)}
                   </td>
                 </tr>
                 <tr className="add finalAdd">
-                  <th>Total</th>
-                  <td className="w-15 text-nowrap">
+                  <th colSpan={2} className="fw-bold">
+                    Final Total
+                  </th>
+                  <td className="w-15 text-nowrap fw-bold">
                     <i className="fa fa-rupee"></i>&nbsp;
                     {InclTotal}.00
                   </td>
@@ -330,28 +357,20 @@ function Invoice() {
             </table>
           </div>
           <hr className="my-0" />
-          <div className="address table-responsive p-2 overflow-auto">
-            <table className="table table-borderless">
-              <tbody>
-                <tr className="add">
-                  <th>Bank Details</th>
-                  <th></th>
-                  <th className="text-center">Signature</th>
-                </tr>
-                <tr className="invoice_content">
-                  <td>
-                    {" "}
-                    Bank Name : ADS BANK <br /> Swift Code : ADS1234Q <br />{" "}
-                    Account Holder : Jelly Pepper <br /> Account Number :
-                    5454542WQR <br />{" "}
-                  </td>
-                  <td></td>
-                  <td className="text-end">
-                    <textarea rows={4} className="form-control"></textarea>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="address p-3">
+            <div className="row">
+              <div className="col-lg-8 col-8">
+                <p class="mb-0 fw-bold">Powered By</p>
+                <h4 class="mb-0">Krushimitr</h4>
+                <p class="mb-0">Contact No. : </p>
+                <p class="mb-0">Account No. : </p>
+                <p class="mb-0">IFSC Code : </p>
+              </div>
+              <div className="col-lg-4 col-4">
+                <p className="text-center">Signature</p>
+                <textarea rows={4} className="form-control"></textarea>
+              </div>
+            </div>
           </div>
         </div>
       </div>

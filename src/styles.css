@@ -706,13 +706,16 @@ a {
     .textEnd {
         text-align: center !important;
     }
-    .invoice_content td{
+
+    .invoice_content td {
         font-size: 14px !important;
     }
-    .add th{
+
+    .add th {
         font-size: 14px !important;
     }
-    .OrderIDgstID th{
+
+    .OrderIDgstID th {
         font-size: 12px;
     }
 }
@@ -797,6 +800,10 @@ a {
         text-align: end !important;
     }
 
+    .InvoiceBill {
+        border: 1px solid #6e6e6e !important;
+    }
+
 }
 
 @page {
@@ -818,12 +825,16 @@ a {
     .textEnd {
         text-align: end !important;
     }
+    .InvoiceBill {
+        border: 1px solid #6e6e6e !important;
+    }
 }
 
-.removeDiv{
+.removeDiv {
     position: static !important;
 }
-.removeDiv .remove{
+
+.removeDiv .remove {
     position: absolute !important;
     right: -46px !important;
     /* left: 100%; */
@@ -836,16 +847,18 @@ a {
     opacity: 1;
 }
 
-.form-control-sm{
+.form-control-sm {
     border: 1px solid #ced4da !important;
     min-height: calc(1em + (0.5rem + 2px)) !important;
     width: 100%;
 }
 
-.selectedSizes .table th, .selectedSizes .table td {
-    padding: 0.25rem 0.5rem !important; 
+.selectedSizes .table th,
+.selectedSizes .table td {
+    padding: 0.25rem 0.5rem !important;
     text-align: center;
 }
+
 .p-inputtext {
-    height: 40px !important;
+    height: 35px !important;
 }

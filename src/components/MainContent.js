@@ -10,7 +10,6 @@ function MainContent() {
   const [isActive, setIsActive] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
   const [isToken, setIsToken] = useState(localStorage.getItem("admin_token"));
-  const [isDToken, setIsDToken] = useState("");
 
   const toogle = (e) => {
     e.preventDefault();
@@ -19,8 +18,9 @@ function MainContent() {
   // console.log(isToken);
   const admin_id = localStorage.getItem("admin_id");
   const adminName = localStorage.getItem("admin_name");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getProfile = async () => {
-    let result = await fetch("https://krushimitr.in/admin/admin_profile", {
+    let result = await fetch("https://krushimitr.in/api/admin/admin_profile", {
       method: "post",
       body: JSON.stringify({ admin_id }),
       headers: {
@@ -36,11 +36,31 @@ function MainContent() {
       navigate("/admin_login");
     }
   };
+  const [filterData, setFilterData] = useState([]);
+  const getAdminWalletData = async () => {
+    let success = [];
+    let all_rent_chages = await fetch(
+      "https://krushimitr.in/api/admin/admin-wallet"
+    );
+    const allCharge = await all_rent_chages.json();
+    if (allCharge.status === 201) {
+      allCharge.result.map((item) => {
+        success.push(item);
+      });
+      setFilterData(allCharge.result);
+    } else {
+      alert(allCharge.result);
+    }
+  };
+
   // console.log(isDToken + " main" + isToken);
   useEffect(() => {
     getProfile();
-    project(event, "defalut");
-  }, []);
+    if (admin_id === null) {
+      navigate("/admin_login");
+    }
+    getAdminWalletData();
+  }, [admin_id, getProfile, navigate]);
   const Logout = () => {
     setIsAuth(false);
     localStorage.clear("");
@@ -51,6 +71,9 @@ function MainContent() {
   const [three, setThree] = useState(false);
   const [four, setFour] = useState(false);
   const [five, setFive] = useState(false);
+  const [six, setSix] = useState(false);
+  const [seven, setSeven] = useState(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const project = (event, ids) => {
     // event.preventDefault();
     switch (ids) {
@@ -60,7 +83,9 @@ function MainContent() {
           setTwo(false),
           setThree(false),
           setFour(false),
-          setFive(false)
+          setFive(false),
+          setSix(false),
+          setSeven(false)
         );
       case "two":
         return (
@@ -68,7 +93,9 @@ function MainContent() {
           two ? setTwo(false) : setTwo(true),
           setThree(false),
           setFour(false),
-          setFive(false)
+          setFive(false),
+          setSix(false),
+          setSeven(false)
         );
       case "three":
         return (
@@ -76,7 +103,9 @@ function MainContent() {
           setTwo(false),
           three ? setThree(false) : setThree(true),
           setFour(false),
-          setFive(false)
+          setFive(false),
+          setSix(false),
+          setSeven(false)
         );
       case "four":
         return (
@@ -84,7 +113,9 @@ function MainContent() {
           setTwo(false),
           setThree(false),
           four ? setFour(false) : setFour(true),
-          setFive(false)
+          setFive(false),
+          setSix(false),
+          setSeven(false)
         );
       case "five":
         return (
@@ -92,13 +123,48 @@ function MainContent() {
           setTwo(false),
           setThree(false),
           setFour(false),
-          five ? setFive(false) : setFive(true)
+          five ? setFive(false) : setFive(true),
+          setSix(false),
+          setSeven(false)
+        );
+      case "six":
+        return (
+          setFirst(false),
+          setTwo(false),
+          setThree(false),
+          setFour(false),
+          setFive(false),
+          six ? setSix(false) : setSix(true),
+          setSeven(false)
+        );
+      case "seven":
+        return (
+          setFirst(false),
+          setTwo(false),
+          setThree(false),
+          setFour(false),
+          setFive(false),
+          setSix(false),
+          seven ? setSeven(false) : setSeven(true)
         );
 
       default:
         return setFirst(false), setTwo(false), setThree(false), setFour(false);
     }
   };
+
+  const getTotal = () => {
+    let total = 0;
+    filterData.map((item) => {
+      if (item.type === "Credit") {
+        total += parseInt(item.amount);
+      } else if (item.type === "Debit") {
+        total -= parseInt(item.amount);
+      }
+    });
+    return total;
+  };
+
   return (
     <>
       <div
@@ -130,6 +196,15 @@ function MainContent() {
             >
               <ul className="navbar-nav me-auto mb-2 mb-lg-0"></ul>
             </div>
+            <div className="me-3">
+              <Link
+                to={"admin-wallet"}
+                class="btn btn-outline-light position-relative"
+              >
+                <i class="fa fa-solid fa-wallet"></i> {"  "}
+                {getTotal()}
+              </Link>
+            </div>
             <div className="d-flex" role="search">
               <input
                 className="form-control me-2"
@@ -153,9 +228,9 @@ function MainContent() {
                   aria-labelledby="dropdownMenuButton1"
                 >
                   <li>
-                    <a className="dropdown-item" href="" onClick={Logout}>
+                    <Link className="dropdown-item" to="" onClick={Logout}>
                       Logout
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -215,13 +290,16 @@ function MainContent() {
                       <li>
                         <Link to="all-distributor">All Distributor</Link>
                       </li>
+                      <li>
+                        <Link to="all-vendor">All Vendor</Link>
+                      </li>
                     </ul>
                   </div>
                 </li>
                 <li className={`sidebar-dropdown ${two ? "active" : ""}`}>
                   <Link to="#" onClick={(event) => project(event, "two")}>
-                    <i className="fa fa-cog"></i>
-                    <span>Components</span>
+                    <i className="far fa-gem"></i>
+                    <span>Categories / Products </span>
                   </Link>
                   <div className={`sidebar-submenu ${two ? "active" : ""}`}>
                     <ul>
@@ -236,7 +314,7 @@ function MainContent() {
                 </li>
                 <li className={`sidebar-dropdown ${three ? "active" : ""}`}>
                   <Link to="#" onClick={(event) => project(event, "three")}>
-                    <i className="far fa-gem"></i>
+                    <i className="fa fa-cog"></i>
                     <span>Settings</span>
                   </Link>
                   <div className={`sidebar-submenu ${three ? "active" : ""}`}>
@@ -257,6 +335,24 @@ function MainContent() {
                         <Link to="all-sarkari-yojna">
                           <i className="fa fa-newspaper"></i>
                           <span>Sarkari Yojna</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="reward-points-calci">
+                          <i className="fa fa-newspaper"></i>
+                          <span>Reward Points Cal.</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="rent-pay-charges">
+                          <i className="fa fa-coins"></i>
+                          <span>Rent Pay Carges</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="all-notifications">
+                          <i className="fa fa-coins"></i>
+                          <span>All Notifications</span>
                         </Link>
                       </li>
                     </ul>
@@ -286,18 +382,107 @@ function MainContent() {
                         <Link to="all-orders-reports">All Reports</Link>
                       </li>
                       <li>
-                        <Link to="all-orders">Completed Orders Reports</Link>
+                        <Link to="orders-complated-reports">
+                          Completed Orders Reports
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="orders-pending-reports">
+                          Pending Orders Reports
+                        </Link>
                       </li>
                     </ul>
                   </div>
                 </li>
+                <li className={`sidebar-dropdown ${seven ? "active" : ""}`}>
+                  <Link to="#" onClick={(event) => project(event, "seven")}>
+                    <i className="fa fa-chart-line"></i>
+                    <span>Wallet Reports</span>
+                  </Link>
+                  <div className={`sidebar-submenu ${seven ? "active" : ""}`}>
+                    <ul>
+                      <li>
+                        <Link to="admin-wallet-reports">
+                          Admin Wallet Reports
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="users-wallet-reports">
+                          Users Wallet Reports
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="vendor-distributor-wallet-reports">
+                          Vendor/Distributor Wallet Reports
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+
                 {/* <li className="header-menu">
                                     <span>Extra</span>
                                 </li> */}
                 <li>
+                  <Link to="manage-packages">
+                    <i class="fa fa-solid fa-box-open"></i>
+                    <span>Manage Packages</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="all-transaction">
+                    <i className="fa fa-book"></i>
+                    <span>All Transaction</span>
+                  </Link>
+                </li>
+                <li className={`sidebar-dropdown ${six ? "active" : ""}`}>
+                  <Link to="#" onClick={(event) => project(event, "six")}>
+                    <i className="fa fa-chart-line"></i>
+                    <span>Wallets & Points Mgmt</span>
+                  </Link>
+                  <div className={`sidebar-submenu ${six ? "active" : ""}`}>
+                    <ul>
+                      <li>
+                        <Link to="wallet-management">
+                          User Wallet Management
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="vd-wallet-management">
+                          Vendor / Distributor Wallet
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+                {/* <li>
+                  <Link to="wallet-management">
+                    <i class="fa fa-duotone fa-wallet"></i>
+                    <span></span>
+                  </Link>
+                </li> */}
+                <li>
+                  <Link to="redeem-request">
+                    <i class="fa fa-coins"></i>
+                    <span>Commission Management</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="redeem-request">
+                    <i class="fa fa-coins"></i>
+                    <span>Withdraw Requests</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="all-rent-pay-data">
+                    <i className="fa fa-book"></i>
+                    <span>All Rent Pay Data</span>
+                  </Link>
+                </li>
+                <li>
                   <Link to="all-application-form">
                     <i className="fa fa-book"></i>
-                    <span>All Applications</span>
+                    <span>All Applications Form</span>
                   </Link>
                 </li>
                 {/* <li>

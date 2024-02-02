@@ -985,11 +985,13 @@ img.flag {
 
 .p-datatable .p-datatable-tbody>tr>td,
 .p-datatable .p-datatable-thead>tr>th {
-    padding: 5px 15px !important;
+    padding: 5px !important;
     border: 0.5px solid rgb(177, 177, 177) !important;
+    font-size: 14px;
 }
 
 @media (max-width:768px) {
+
     .p-datatable .p-datatable-tbody>tr>td,
     .p-datatable .p-datatable-thead>tr>th {
         font-size: 16px !important;
@@ -1018,23 +1020,71 @@ img.flag {
     padding: 5px 10px !important;
 }
 
-.p-datatable-tbody td:nth-child(2){
+.p-datatable-tbody td:nth-child(2) {
     text-wrap: nowrap !important;
 }
 
-.UserCard .p-datatable .p-datatable-tbody>tr>td, .UserCard .p-datatable .p-datatable-thead>tr>th {
-    padding: 5px 15px !important;
+.UserCard .p-datatable .p-datatable-tbody>tr>td,
+.UserCard .p-datatable .p-datatable-thead>tr>th {
+    padding: 5px !important;
     border: 0.5px solid rgb(177, 177, 177) !important;
+    font-size: 14px !important;
 }
 
-.p-datatable-header{
+.p-datatable-header {
     padding: 5px;
 }
-.UserCardReports td, .UserCardReports th{
+
+.UserCardReports td,
+.UserCardReports th {
     font-size: 14px !important;
     padding: 3px !important;
 }
 
-.UserCardReports .p-datatable-tbody td:nth-child(2){
+.UserCardReports .p-datatable-tbody td:nth-child(2) {
     text-wrap: wrap !important;
+}
+
+.btn-action button i {
+    font-size: 20px;
+}
+
+.productDetailsPage .owl-stage-outer {
+    height: 403px;
+}
+
+.productDetailsPage .product-item {
+    padding: 0 !important;
+}
+
+.productDetailsPage .product-item p {
+    font-size: 14px;
+}
+
+.productDetailsPage .product-item .card-body {
+    height: 100px;
+}
+
+.productDetailsPage .product-item .card-header {
+    height: 200px;
+}
+
+.p-dialog-header,
+.p-dialog-footer {
+    padding: 5px 15px;
+    border-bottom: 1px solid #d9d9d9;
+}
+
+.p-dialog-content {
+    padding: 20px;
+    border-bottom: 1px solid #d9d9d9;
+}
+.p-datatable-header .btn {
+    display: flex;
+    padding: 7px 15px;
+    margin: auto;
+}
+.applicationDetails tr td{
+    padding: 0px 10px;
+    border: 1px solid #d9d9d9; 
 }

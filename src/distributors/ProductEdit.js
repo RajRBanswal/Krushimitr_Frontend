@@ -17,16 +17,23 @@ function ProductEdit() {
   const [defaultValue, setDefaultValue] = useState([]);
   const [image, setImage] = useState([]);
   const distributor_id = localStorage.getItem("distributor_id");
-
+  const [commission, setCommission] = useState("");
+  const [cod, setCOD] = useState("");
+  const [link, setLink] = useState("");
+  const [vCommission1, setVCommission1] = useState("");
+  const [vCommissionPercent1, setVCommissionPercent1] = useState("");
   const getProductDatas = async () => {
-    let all_products = await fetch("https://krushimitr.in/admin/get-product/", {
-      method: "post",
-      body: JSON.stringify({ id: productId }),
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/get-product/",
+      {
+        method: "post",
+        body: JSON.stringify({ id: productId }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
     const getProd = await all_products.json();
     if (getProd.status === 201) {
       setProducts(getProd.product_data);
@@ -37,7 +44,12 @@ function ProductEdit() {
       // setGST(getProd.product_data[0].gst);
       setProductGuarantee(getProd.product_data[0].guarantee);
       setProductWarranty(getProd.product_data[0].warranty);
+      setLink(getProd.product_data[0].link);
+      setCOD(getProd.product_data[0].cod);
       setImage(getProd.product_data[0].image);
+      setCommission(getProd.product_data[0].vCommissionId);
+      setVCommission1(getProd.product_data[0].vCommission);
+      setVCommissionPercent1(getProd.product_data[0].vCommissionPercent);
       let datas = getProd.product_data[0].size.map((item) => {
         let data = JSON.parse(item);
         return {
@@ -47,9 +59,9 @@ function ProductEdit() {
           buying_price: data.buying_price,
           gst: data.gst,
           quantity: data.quantity,
-          commission: data.commission,
         };
       });
+
       setDefaultValue(datas);
       setProductSize(datas);
     } else {
@@ -65,7 +77,6 @@ function ProductEdit() {
       buying_price: "",
       gst: "",
       quantity: "",
-      commission: "",
     },
   ]);
 
@@ -93,7 +104,6 @@ function ProductEdit() {
         buying_price: "",
         gst: "",
         quantity: "",
-        commission: "",
       },
     ]);
   };
@@ -107,7 +117,9 @@ function ProductEdit() {
   //Get All Category
   const [cate, setCate] = useState([]);
   const getCategoryData = async () => {
-    let all_category = await fetch("https://krushimitr.in/admin/all-category");
+    let all_category = await fetch(
+      "https://krushimitr.in/api/admin/all-category"
+    );
     const getCat = await all_category.json();
     setCate(getCat.getCate);
   };
@@ -121,13 +133,23 @@ function ProductEdit() {
 
   //Add Products
   const updateProduct = async () => {
+    let vCommission = "";
+    let vCommissionPercent = 0;
+    allCommission &&
+      allCommission.map((item) => {
+        if (item._id === commission) {
+          vCommission = item.packageName;
+          vCommissionPercent = item.companyCommission;
+        }
+      });
     let arr = [];
-    Object.values(defaultValue[0]).forEach((item) => {
+    Object.values(defaultValue).forEach((item) => {
       arr.push(item);
     });
     Object.values(formValues).forEach((item) => {
       arr.push(item);
     });
+
     const formData = new FormData();
     formData.append("id", productId);
     formData.append("vendor_id", distributor_id);
@@ -137,6 +159,16 @@ function ProductEdit() {
     formData.append("productCompany", productCompany);
     formData.append("productGuarantee", productGuarantee);
     formData.append("productWarranty", productWarranty);
+    formData.append("vCommissionId", commission);
+    formData.append("vCommission", vCommission);
+    formData.append("vCommissionPercent", vCommissionPercent);
+    formData.append("rewardPoints", "");
+    formData.append("batchNo", "");
+    formData.append("HSNNo", "");
+    formData.append("mfd", "");
+    formData.append("commission", "");
+    formData.append("cod", cod);
+    formData.append("link", link);
     Object.values(arr).forEach((item) => {
       if (item.size !== "") {
         formData.append("sizes", JSON.stringify(item));
@@ -146,15 +178,33 @@ function ProductEdit() {
       formData.append("image", file);
     });
 
-    let result = await fetch("https://krushimitr.in/admin/update-product", {
+    let result = await fetch("https://krushimitr.in/api/admin/update-product", {
       method: "POST",
       body: formData,
     }).then((result) => result.json());
     if (result.status === 201) {
       alert(result.result);
-      navigate("/admin/all-products");
+      navigate("/distributors/allproducts");
     } else {
       alert(result.result);
+    }
+  };
+
+  const [allCommission, setAllCommission] = useState([]);
+  const getCommission = async (category_name) => {
+    let all_commission = await fetch(
+      "https://krushimitr.in/api/admin/get-allCommission"
+    );
+    const allComm = await all_commission.json();
+    console.log(allComm);
+    if (allComm.status === 201) {
+      let arr = [];
+      allComm.result.map((item) => {
+        if (item.category == category_name) {
+          arr.push(item);
+        }
+      });
+      setAllCommission(arr);
     }
   };
 
@@ -167,18 +217,38 @@ function ProductEdit() {
           </div>
         </div>
         <div className="row">
-          <div className="col-lg-6">
+          <div className="col-lg-3">
             <label htmlFor="">Category</label>
             <select
               name="category"
               value={product.category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                getCommission(e.target.value);
+              }}
               className="form-control form-select"
             >
               <option value={category}>{category}</option>
               {cate.map((cc) => (
                 <option key={cc._id} value={cc.category_name}>
                   {cc.category_name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-lg-3">
+            <label htmlFor="">Select Commission</label>
+            <select
+              name="category"
+              onChange={(e) => setCommission(e.target.value)}
+              className="form-control form-select"
+            >
+              <option value={commission}>
+                {vCommission1} ({vCommissionPercent1}%)
+              </option>
+              {allCommission.map((ac) => (
+                <option key={ac._id} value={ac._id}>
+                  {ac.packageName + " (" + ac.companyCommission + "%)"}
                 </option>
               ))}
             </select>
@@ -287,16 +357,6 @@ function ProductEdit() {
                     onChange={(e) => handleChanges(index, e)}
                   />
                 </div>
-                <div className="col-lg-2">
-                  <input
-                    type="text"
-                    name="commission"
-                    className="form-control"
-                    placeholder="Commission"
-                    value={item.commission || ""}
-                    onChange={(e) => handleChanges(index, e)}
-                  />
-                </div>
               </div>
             ))}
           </div>
@@ -368,16 +428,6 @@ function ProductEdit() {
                     className="form-control"
                     placeholder="Qty"
                     value={element.quantity || ""}
-                    onChange={(e) => handleChange(index, e)}
-                  />
-                </div>
-                <div className="col-lg-2">
-                  <input
-                    type="text"
-                    name="commission"
-                    className="form-control"
-                    placeholder="Commission"
-                    value={element.commission || ""}
                     onChange={(e) => handleChange(index, e)}
                   />
                 </div>
@@ -457,6 +507,50 @@ function ProductEdit() {
               placeholder="Product Image"
               className="form-control"
             />
+          </div>
+          <div className="col-lg-6 mt-2">
+            <label htmlFor="">Video Link</label>
+            <input
+              type="text"
+              name="link"
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="Video Link"
+              className="form-control"
+              value={link}
+            />
+          </div>
+          <div className="col-lg-6 mt-2">
+            <p className="mb-1">Cash On Delivery</p>
+            <div className="d-flex text-center">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="flexRadioDefault"
+                  id="flexRadioDefault1"
+                  value={"Yes"}
+                  checked={cod === "Yes"}
+                  onChange={(e) => setCOD(e.currentTarget.value)}
+                />
+                <label class="form-check-label" for="flexRadioDefault1">
+                  Yes
+                </label>
+              </div>
+              <div class="form-check ms-5">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="flexRadioDefault"
+                  id="flexRadioDefault2"
+                  value={"No"}
+                  checked={cod === "No"}
+                  onChange={(e) => setCOD(e.currentTarget.value)}
+                />
+                <label class="form-check-label" for="flexRadioDefault2">
+                  No
+                </label>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -19,6 +19,7 @@ function Cart() {
     setProducts(cart.data);
 
     if (cart.data.length === 0) {
+      alert("Your cart is empty")
       navigate("/");
     }
     let user = localStorage.getItem("user_id");

@@ -9,18 +9,29 @@ import { InputText } from "primereact/inputtext";
 import moment from "moment";
 
 function All_Users() {
-  // const [tt, setTT] = useState(false);
   const [users, setUsers] = useState([]);
+  const [deletedUsers, setDeletedUsers] = useState([]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getAllUsers = async () => {
-    const all_users = await fetch("https://krushimitr.in/admin/all-users");
+    const all_users = await fetch("https://krushimitr.in/api/admin/all-users");
     const uu = await all_users.json();
-    // console.log(uu);
-    setUsers(uu);
+    if (uu) {
+      let allUsers = [];
+      let DeleteUsers = [];
+      uu.map((item) => {
+        if (item.status === "Active") {
+          allUsers.push(item);
+        } else {
+          DeleteUsers.push(item);
+        }
+      });
+      setUsers(allUsers);
+      setDeletedUsers(DeleteUsers);
+    }
   };
   useEffect(() => {
     getAllUsers();
-    // setTT(false)
-  }, []);
+  }, [getAllUsers]);
 
   let emptyProduct = {
     _id: null,
@@ -52,17 +63,16 @@ function All_Users() {
   const deleteProduct = async () => {
     let user_id = user._id;
     const delete_users = await fetch(
-      "https://krushimitr.in/admin/delete-user",
+      "https://krushimitr.in/api/admin/delete-user",
       {
         method: "POST",
         body: JSON.stringify({ user_id }),
-        headers:{
-            "Content-Type":"application/json"
-        }
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
     const response = await delete_users.json();
-    console.log(response);
     if (response.status === 201) {
       setDeleteUserDialog(false);
       setUser(emptyProduct);
@@ -104,6 +114,41 @@ function All_Users() {
       </>
     );
   };
+  const leftToolbarTemplate = () => {
+    return (
+      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="pills-home-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-home"
+            type="button"
+            role="tab"
+            aria-controls="pills-home"
+            aria-selected="true"
+          >
+            Active Users
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="pills-profile-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-profile"
+            type="button"
+            role="tab"
+            aria-controls="pills-profile"
+            aria-selected="false"
+          >
+            Deleted Users
+          </button>
+        </li>
+      </ul>
+    );
+  };
+
   const cols = [
     { field: "_id", header: "id" },
     { field: "name", header: "Name" },
@@ -223,70 +268,142 @@ function All_Users() {
       <Toast ref={toast} />
       <Toolbar
         className="py-2"
-        //   left={leftToolbarTemplate}
+        left={leftToolbarTemplate}
         right={rightToolbarTemplate}
       ></Toolbar>
-      <div className="card px-3 UserCard">
-        <DataTable
-          ref={dt}
-          value={users}
-          selection={selectedUsers}
-          onSelectionChange={(e) => setSelectedUsers(e.value)}
-          dataKey="id"
-          paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25, 50, 100]}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
-          globalFilter={globalFilter}
-          header={header}
-        >
-          <Column
-            field="createdAt"
-            header="Date"
-            sortable
-            body={dateBodyTemplate}
-          ></Column>
-          <Column
-            field="name"
-            header="Name"
-            sortable
-            style={{ minWidth: "8rem" }}
-          ></Column>
-          <Column
-            field="email"
-            header="Email"
-            sortable
-            className="text-break"
-            style={{ minWidth: "16rem" }}
-          ></Column>
-          <Column
-            field="mobile"
-            header="Mobile"
-            sortable
-            style={{ minWidth: "8rem" }}
-          ></Column>
-          <Column
-            field="address"
-            header="Address"
-            body={addressBodyTemplate}
-            sortable
-            style={{ minWidth: "16rem" }}
-          ></Column>
-          <Column
-            field="image"
-            header="Image"
-            body={imageBodyTemplate}
-          ></Column>
-          <Column
-            header="Action"
-            body={actionBodyTemplate}
-            exportable={false}
-            style={{ minWidth: "4rem" }}
-          ></Column>
-        </DataTable>
-      </div>
 
+      <div class="tab-content" id="pills-tabContent">
+        <div
+          class="tab-pane fade show active"
+          id="pills-home"
+          role="tabpanel"
+          aria-labelledby="pills-home-tab"
+        >
+          <DataTable
+            ref={dt}
+            value={users}
+            selection={selectedUsers}
+            onSelectionChange={(e) => setSelectedUsers(e.value)}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            globalFilter={globalFilter}
+            header={header}
+          >
+            <Column
+              field="createdAt"
+              header="Date"
+              sortable
+              body={dateBodyTemplate}
+            ></Column>
+            <Column
+              field="name"
+              header="Name"
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
+              field="email"
+              header="Email"
+              sortable
+              className="text-break"
+              style={{ minWidth: "16rem" }}
+            ></Column>
+            <Column
+              field="mobile"
+              header="Mobile"
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
+              field="address"
+              header="Address"
+              body={addressBodyTemplate}
+              sortable
+              style={{ minWidth: "16rem" }}
+            ></Column>
+            <Column
+              field="image"
+              header="Image"
+              body={imageBodyTemplate}
+            ></Column>
+            <Column
+              header="Action"
+              body={actionBodyTemplate}
+              exportable={false}
+              style={{ minWidth: "4rem" }}
+            ></Column>
+          </DataTable>
+        </div>
+        <div
+          class="tab-pane fade"
+          id="pills-profile"
+          role="tabpanel"
+          aria-labelledby="pills-profile-tab"
+        >
+          <DataTable
+            ref={dt}
+            value={deletedUsers}
+            selection={selectedUsers}
+            onSelectionChange={(e) => setSelectedUsers(e.value)}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            globalFilter={globalFilter}
+            header={header}
+          >
+            <Column
+              field="createdAt"
+              header="Date"
+              sortable
+              body={dateBodyTemplate}
+            ></Column>
+            <Column
+              field="name"
+              header="Name"
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
+              field="email"
+              header="Email"
+              sortable
+              className="text-break"
+              style={{ minWidth: "16rem" }}
+            ></Column>
+            <Column
+              field="mobile"
+              header="Mobile"
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
+              field="address"
+              header="Address"
+              body={addressBodyTemplate}
+              sortable
+              style={{ minWidth: "16rem" }}
+            ></Column>
+            <Column
+              field="image"
+              header="Image"
+              body={imageBodyTemplate}
+            ></Column>
+            {/* <Column
+              header="Action"
+              body={actionBodyTemplate}
+              exportable={false}
+              style={{ minWidth: "4rem" }}
+            ></Column> */}
+          </DataTable>
+        </div>
+      </div>
       <Dialog
         visible={deleteUserDialog}
         style={{ width: "32rem" }}

@@ -2292,4 +2292,20 @@ hr:not([size]) {
 .InvoiceBill .table-bordered th,
 .InvoiceBill .table-bordered td {
     border: 1px solid #888888;
+
+}
+
+@media (max-width:768px) {
+
+    .InvoiceBill .table-bordered th,
+    .InvoiceBill .table-bordered td {
+        font-size: 13px !important;
+
+    }
+
+    .products table th,
+    .products table th {
+        font-size: 13px !important;
+        padding: 0px 5px;
+    }
 }

@@ -14,7 +14,7 @@ function AllCategories() {
     const formData = new FormData();
     formData.append("category_name", category_name);
     formData.append("image", image);
-    let result = await fetch("https://krushimitr.in/admin/add-category", {
+    let result = await fetch("https://krushimitr.in/api/admin/add-category", {
       method: "post",
       body: formData,
     }).then((result) => result.json());
@@ -35,7 +35,7 @@ function AllCategories() {
     formData.append("image", image);
     formData.append("id", id);
     let resultUpdate = await fetch(
-      "https://krushimitr.in/admin/update-category",
+      "https://krushimitr.in/api/admin/update-category",
       {
         method: "POST",
         body: formData,
@@ -53,7 +53,7 @@ function AllCategories() {
     }
   };
   const DeleteOne = async (id) => {
-    let resultDel = await fetch("https://krushimitr.in/admin/delete-category", {
+    let resultDel = await fetch("https://krushimitr.in/api/admin/delete-category", {
       method: "post",
       body: JSON.stringify({ id }),
       headers: {
@@ -72,7 +72,7 @@ function AllCategories() {
 
   const [cate, setCate] = useState([]);
   const getCategoryData = async () => {
-    let all_category = await fetch("https://krushimitr.in/admin/all-category");
+    let all_category = await fetch("https://krushimitr.in/api/admin/all-category");
     const getCat = await all_category.json();
 
     console.log(getCat.getCate);

@@ -10,12 +10,14 @@ function Products() {
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productCompany, setProductCompany] = useState("");
+  const [commission, setCommission] = useState("");
   //   const [gst, setGST] = useState("");
   const [productGuarantee, setProductGuarantee] = useState("");
   const [productWarranty, setProductWarranty] = useState("");
   const [image, setImage] = useState([]);
   const distributor_id = localStorage.getItem("distributor_id");
-
+  const [cod, setCOD] = useState("Yes");
+  const [link, setLink] = useState("");
   const [formValues, setFormValues] = useState([
     {
       size: "",
@@ -30,6 +32,8 @@ function Products() {
 
   //Add Products
   const storeProducts = async () => {
+    let vCommission = "";
+    let vCommissionPercent = "";
     const formData = new FormData();
     formData.append("vendor_id", distributor_id);
     formData.append("category", category);
@@ -38,6 +42,16 @@ function Products() {
     formData.append("productCompany", productCompany);
     formData.append("productGuarantee", productGuarantee);
     formData.append("productWarranty", productWarranty);
+    formData.append("vCommissionId", commission);
+    formData.append("vCommission", vCommission);
+    formData.append("vCommissionPercent", vCommissionPercent);
+    formData.append("rewardPoints", "");
+    formData.append("batchNo", "");
+    formData.append("HSNNo", "");
+    formData.append("mfd", "");
+    formData.append("commission", "");
+    formData.append("cod", cod);
+    formData.append("link", link);
     Object.values(formValues).forEach((item) => {
       formData.append("sizes", JSON.stringify(item));
     });
@@ -46,7 +60,7 @@ function Products() {
       formData.append("image", file);
     });
 
-    let result = await fetch("https://krushimitr.in/admin/add-product", {
+    let result = await fetch("https://krushimitr.in/api/admin/add-product", {
       method: "POST",
       body: formData,
     }).then((result) => result.json());
@@ -69,14 +83,17 @@ function Products() {
 
   //Delete Product
   const DeleteOne = async (id) => {
-    let resultDel = await fetch("https://krushimitr.in/admin/delete-product", {
-      method: "post",
-      body: JSON.stringify({ id }),
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    }).then((resultDel) => resultDel.json());
+    let resultDel = await fetch(
+      "https://krushimitr.in/api/admin/delete-product",
+      {
+        method: "post",
+        body: JSON.stringify({ id }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    ).then((resultDel) => resultDel.json());
     if (resultDel.status === 201) {
       alert(resultDel.result);
       setIsSet(false);
@@ -87,8 +104,11 @@ function Products() {
   };
 
   //Get All Products
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getProductData = async () => {
-    let all_products = await fetch("https://krushimitr.in/admin/all-products");
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/all-products"
+    );
     const getProd = await all_products.json();
     if (getProd.status === 201) {
       setProducts(getProd.product_data);
@@ -100,8 +120,11 @@ function Products() {
 
   //Get All Category
   const [cate, setCate] = useState([]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getCategoryData = async () => {
-    let all_category = await fetch("https://krushimitr.in/admin/all-category");
+    let all_category = await fetch(
+      "https://krushimitr.in/api/admin/all-category"
+    );
     const getCat = await all_category.json();
     setCate(getCat.getCate);
   };
@@ -110,7 +133,7 @@ function Products() {
     getCategoryData();
     getProductData();
     setTime(false);
-  }, [time]);
+  }, []);
 
   //Add More Fields
   let handleChange = (i, e) => {
@@ -139,6 +162,23 @@ function Products() {
     let newFormValues = [...formValues];
     newFormValues.splice(i, 1);
     setFormValues(newFormValues);
+  };
+
+  const [allCommission, setAllCommission] = useState([]);
+  const getCommission = async (category_name) => {
+    let all_commission = await fetch(
+      "https://krushimitr.in/api/admin/get-allCommission"
+    );
+    const allComm = await all_commission.json();
+    if (allComm.status === 201) {
+      let arr = [];
+      allComm.result.map((item) => {
+        if (item.category == category_name) {
+          arr.push(item);
+        }
+      });
+      setAllCommission(arr);
+    }
   };
 
   return (
@@ -251,23 +291,37 @@ function Products() {
             </div>
             <div className="modal-body p-4">
               <div className="row">
-                <div className="col-lg-6">
+                <div className="col-lg-3">
                   <label htmlFor="">Category</label>
                   <select
                     name="category"
-                    onChange={(e) => setCategory(e.target.value)}
+                    onChange={(e) => {
+                      setCategory(e.target.value);
+                      getCommission(e.target.value);
+                    }}
                     className="form-control form-select"
                   >
                     <option value="">Select Category</option>
-                    {cate.map((cc) =>
-                      distributor_id === cc.vendor_id ? (
-                        <option key={cc._id} value={cc.category_name}>
-                          {cc.category_name}
-                        </option>
-                      ) : (
-                        ""
-                      )
-                    )}
+                    {cate.map((cc) => (
+                      <option key={cc._id} value={cc.category_name}>
+                        {cc.category_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-lg-3">
+                  <label htmlFor="">Select Commission</label>
+                  <select
+                    name="category"
+                    onChange={(e) => setCommission(e.target.value)}
+                    className="form-control form-select"
+                  >
+                    <option value="">Select Category</option>
+                    {allCommission.map((ac) => (
+                      <option key={ac._id} value={ac._id}>
+                        {ac.packageName + " (" + ac.companyCommission + "%)"}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="col-lg-6">
@@ -372,16 +426,6 @@ function Products() {
                           onChange={(e) => handleChange(index, e)}
                         />
                       </div>
-                      <div className="col-lg-2">
-                        <input
-                          type="number"
-                          name="commission"
-                          className="form-control"
-                          placeholder="Commission (in %)"
-                          value={element.commission || ""}
-                          onChange={(e) => handleChange(index, e)}
-                        />
-                      </div>
                       {index ? (
                         <div className="col-lg-1 removeDiv">
                           <button
@@ -441,6 +485,49 @@ function Products() {
                     placeholder="Product Image"
                     className="form-control"
                   />
+                </div>
+                <div className="col-lg-6 mt-2">
+                  <label htmlFor="">Video Link</label>
+                  <input
+                    type="text"
+                    name="link"
+                    onChange={(e) => setLink(e.target.value)}
+                    placeholder="Video Link"
+                    className="form-control"
+                  />
+                </div>
+                <div className="col-lg-6 mt-2">
+                  <p className="mb-1">Cash On Delivery</p>
+                  <div className="d-flex text-center">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="flexRadioDefault"
+                        id="flexRadioDefault1"
+                        value={"Yes"}
+                        checked={cod === "Yes"}
+                        onChange={(e) => setCOD(e.currentTarget.value)}
+                      />
+                      <label class="form-check-label" for="flexRadioDefault1">
+                        Yes
+                      </label>
+                    </div>
+                    <div class="form-check ms-5">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="flexRadioDefault"
+                        id="flexRadioDefault2"
+                        value={"No"}
+                        checked={cod === "No"}
+                        onChange={(e) => setCOD(e.currentTarget.value)}
+                      />
+                      <label class="form-check-label" for="flexRadioDefault2">
+                        No
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

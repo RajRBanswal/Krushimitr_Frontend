@@ -43,7 +43,7 @@ function ProductAll() {
       formData.append("image", file);
     });
 
-    let result = await fetch("https://krushimitr.in/admin/add-product", {
+    let result = await fetch("https://krushimitr.in/api/admin/add-product", {
       method: "POST",
       body: formData,
     }).then((result) => result.json());
@@ -67,7 +67,7 @@ function ProductAll() {
 
   //Delete Product
   const DeleteOne = async (id) => {
-    let resultDel = await fetch("https://krushimitr.in/admin/delete-product", {
+    let resultDel = await fetch("https://krushimitr.in/api/admin/delete-product", {
       method: "post",
       body: JSON.stringify({ id }),
       headers: {
@@ -99,7 +99,7 @@ function ProductAll() {
     });
     formData.append("id", id);
 
-    let result = await fetch("https://krushimitr.in/admin/update-product", {
+    let result = await fetch("https://krushimitr.in/api/admin/update-product", {
       method: "POST",
       body: formData,
     }).then((result) => result.json());
@@ -115,7 +115,7 @@ function ProductAll() {
 
   //Get All Products
   const getProductData = async () => {
-    let all_products = await fetch("https://krushimitr.in/admin/all-products");
+    let all_products = await fetch("https://krushimitr.in/api/admin/all-products");
     const getProd = await all_products.json();
     if (getProd.status === 201) {
       setProducts(getProd.product_data);
@@ -128,7 +128,7 @@ function ProductAll() {
   //Get All Category
   const [cate, setCate] = useState([]);
   const getCategoryData = async () => {
-    let all_category = await fetch("https://krushimitr.in/admin/all-category");
+    let all_category = await fetch("https://krushimitr.in/api/admin/all-category");
     const getCat = await all_category.json();
     setCate(getCat.getCate);
   };

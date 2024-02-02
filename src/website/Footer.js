@@ -54,10 +54,6 @@ function Footer() {
                   <i className="bi bi-arrow-right text-white me-2"></i>Contact
                   Us
                 </Link>
-                <Link className="text-white mb-0" to="/terms-and-condition">
-                  <i className="bi bi-arrow-right text-white me-2"></i>Terms and
-                  Conditions
-                </Link>
                 <Link className="text-white mb-0" to="/privacy-policy">
                   <i className="bi bi-arrow-right text-white me-2"></i>Privacy
                   Policy
@@ -70,9 +66,9 @@ function Footer() {
                 className="d-flex justify-content-start"
                 style={{ flexDirection: "column" }}
               >
-                <Link className="text-white mb-0" to="/donation-form">
-                  <i className="bi bi-arrow-right text-white me-2"></i>Donation
-                  Form
+                <Link className="text-white mb-0" to="/terms-and-condition">
+                  <i className="bi bi-arrow-right text-white me-2"></i>Terms and
+                  Conditions
                 </Link>
 
                 <Link className="text-white mb-0" to="/shipping-policy">

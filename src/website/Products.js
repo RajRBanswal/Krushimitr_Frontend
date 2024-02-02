@@ -9,22 +9,23 @@ function Products() {
   const navigate = useNavigate();
   const [product, setProduct] = useState([]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getProductData = async () => {
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/all-products"
+    );
+    const getProd = await all_products.json();
+    if (getProd.status === 201) {
+      setProduct(getProd.product_data);
+    } else {
+      setProduct(getProd.result);
+    }
+  };
   useEffect(() => {
-    const getProductData = async () => {
-      let all_products = await fetch(
-        "https://krushimitr.in/admin/all-products"
-      );
-      const getProd = await all_products.json();
-      if (getProd.status === 201) {
-        setProduct(getProd.product_data);
-      } else {
-        setProduct(getProd.result);
-      }
-    };
     getProductData();
-  }, []);
+  }, [getProductData]);
 
-  console.log(product);
+  // console.log(product);
 
   return (
     <>
@@ -108,46 +109,52 @@ function Products() {
           </div>
 
           <div className="row">
-            {product.map((item) => (
-              <div className="col-lg-3 mt-3">
-                <div className="card h-100">
-                  <div className="card-body p-0 productImage">
-                    <img
-                      src={`https://krushimitr.in/upload/${item.image[0]}`}
-                      style={{ margin: "auto" }}
-                      width={"100%"}
-                      alt={item.image}
-                    />
-                  </div>
-                  <div className="p-3">
-                    <p className="text-dark text-center fw-bold">
-                      {item.productName}
-                    </p>
-                    {/* <p><label className="text-primary fw-bold mb-0"><i className='fa fa-rupee' ></i>{item.price}</label> &nbsp;  {item.oldPrice ? <del className=''><i className='fa fa-rupee' ></i>{item.oldPrice}</del> : ''}</p> */}
-                  </div>
-                  <div className="btn-action d-flex justify-content-center pb-3">
-                    <button
-                      className="btn bg-secondary py-2 px-3 mx-2 btn-sm"
-                      onClick={() =>
-                        navigate("/product-details", { state: { item: item } })
-                      }
-                    >
-                      <i className="bi bi-eye text-white"></i>
-                    </button>
-                  </div>
-                  <div className="productPercentage">
-                    {item.discount ? (
-                      <span>
-                        {item.discount}
-                        {item.percentSbl}
-                      </span>
-                    ) : (
-                      ""
-                    )}
+            {product.map((item) =>
+              item.status === "Active" ? (
+                <div className="col-lg-3 mt-3">
+                  <div className="card h-100">
+                    <div className="card-body p-0 productImage">
+                      <img
+                        src={`https://krushimitr.in/upload/${item.image[0]}`}
+                        style={{ margin: "auto" }}
+                        width={"100%"}
+                        alt={item.image}
+                      />
+                    </div>
+                    <div className="p-3">
+                      <p className="text-dark text-center fw-bold">
+                        {item.productName}
+                      </p>
+                      {/* <p><label className="text-primary fw-bold mb-0"><i className='fa fa-rupee' ></i>{item.price}</label> &nbsp;  {item.oldPrice ? <del className=''><i className='fa fa-rupee' ></i>{item.oldPrice}</del> : ''}</p> */}
+                    </div>
+                    <div className="btn-action d-flex justify-content-center pb-3">
+                      <button
+                        className="btn bg-secondary py-2 px-3 mx-2 btn-sm"
+                        onClick={() =>
+                          navigate("/product-details", {
+                            state: { item: item },
+                          })
+                        }
+                      >
+                        <i className="bi bi-eye text-white"></i>
+                      </button>
+                    </div>
+                    <div className="productPercentage">
+                      {item.discount ? (
+                        <span>
+                          {item.discount}
+                          {item.percentSbl}
+                        </span>
+                      ) : (
+                        ""
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ) : (
+                ""
+              )
+            )}
           </div>
         </div>
       </div>

@@ -11,7 +11,7 @@ function Login() {
   const [icon, setIcon] = useState("fa fa-solid fa-eye-slash");
 
   const LoginPage = async () => {
-    let result = await fetch("https://krushimitr.in/admin/admin_login", {
+    let result = await fetch("https://krushimitr.in/api/admin/admin_login", {
       method: "post",
       body: JSON.stringify({ email, password }),
       headers: {

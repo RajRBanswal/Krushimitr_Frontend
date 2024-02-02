@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Button } from "primereact/button";
-import { Link, useNavigate } from "react-router-dom";
-import moment from "moment";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { forEditOrder } from "../redux/slice/OrderSlice";
 import { emptyCart } from "../redux/slice/CartSlice";
@@ -11,116 +9,163 @@ function CustomerOrders() {
   const [products, setProducts] = useState([]);
   const [prod, setProd] = useState([]);
   const [orderDone, setOrderDone] = useState([]);
+  const [userCancel, setUserCancel] = useState([]);
+  const [rejectOrder, setRejectOrder] = useState([]);
+  const [rejectData, setRejectData] = useState([]);
+  const [reason, setReason] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   let distr = localStorage.getItem("distributor_id");
+  let distrName = localStorage.getItem("distributor_name");
   const [distributor, setDistributor] = useState(distr);
 
-  let data = [];
-  let datas = [];
-  let datass = [];
+  const getRejectedOrders = async () => {
+    getProductData();
+    let all_rejected = await fetch(
+      "https://krushimitr.in/api/distributor/get-reject-orders",
+      {
+        method: "post",
+        body: JSON.stringify({ distributor }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const all_orders = await all_rejected.json();
+    if (all_orders.status === 201) {
+      setRejectOrder(all_orders.result);
+    } else {
+      console.log(all_orders.result);
+    }
+  };
   const getProductData = async () => {
-    let all_products = await fetch("https://krushimitr.in/admin/all-orders");
+    let data = [];
+    let datas = [];
+    let datass = [];
+    let usercancel = [];
+    let rejects = [];
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/all-orders"
+    );
     const all_orders = await all_products.json();
     if (all_orders.status === 201) {
       all_orders.result.map((item) => {
-        if (distributor === item.vendorId) {
+        if (distributor === item.vendorId && item.status === "Active") {
           data.push(item);
-          console.log(data);
         }
-        if (item.vendorId == distributor && item.orderStatus == "Pending") {
+        if (
+          item.vendorId === distributor &&
+          item.orderStatus === "Pending" &&
+          item.status === "Active"
+        ) {
           datas.push(item);
-          console.log(datas);
         }
-        if (item.vendorId == distributor && item.orderStatus === "Done") {
+        if (item.vendorId === distributor && item.orderStatus === "Done") {
           datass.push(item);
-          console.log(datass);
+        }
+        if (item.vendorId === distributor && item.status === "Cancel") {
+          usercancel.push(item);
+        }
+        if (rejectOrder !== "") {
+          rejectOrder.map((elem) => {
+            if (elem.orderId === item._id) {
+              rejects.push(item);
+            }
+          });
         }
       });
       setProducts(data);
       setProd(datas);
       setOrderDone(datass);
+      setUserCancel(usercancel);
+      setRejectData(rejects);
     } else {
       setProducts(all_orders.result);
     }
   };
 
   useEffect(() => {
-    getProductData();
+    getRejectedOrders();
+
     dispatch(emptyCart());
-  }, []);
+  }, [ getRejectedOrders]);
 
   const completedOrders = (options) => {
     return (
-      <div className="row">
-        <div className="col-lg-4">
-          <Button
-            type="button"
-            icon="pi pi-print"
-            onClick={() => {
-              navigate("/invoice", {
-                state: { data: options, goback: "distributor" },
-              });
-            }}
-            severity="primary"
-          ></Button>
-        </div>
-        <div className="col-lg-4">
-          <Button
-            type="button"
-            icon="pi pi-eye"
-            onClick={() => getOrderData(options._id)}
-            severity="success"
-            data-bs-toggle="modal"
-            data-bs-target="#exampleModal"
-          ></Button>
-        </div>
+      <div className="d-flex">
+        <button
+          type="button"
+          className="btn btn-info btn-sm "
+          onClick={() => {
+            navigate("/invoice", {
+              state: { data: options, goback: "distributor" },
+            });
+          }}
+        >
+          <i className="pi pi-print"></i>
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-primary btn-sm ms-2"
+          onClick={() => getOrderData(options._id)}
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+        >
+          <i className="pi pi-eye"></i>
+        </button>
       </div>
+    );
+  };
+  const CancelByUsers = (options) => {
+    return (
+      <button
+        type="button"
+        className="btn btn-primary btn-sm ms-2"
+        onClick={() => getOrderData(options._id)}
+        data-bs-toggle="modal"
+        data-bs-target="#exampleModal"
+      >
+        <i className="pi pi-eye"></i>
+      </button>
     );
   };
 
   const filterApplyTemplate = (options) => {
     return (
-      <div className="row">
-        {/* <div className="col-lg-4">
-          <Button
-            type="button"
-            icon="pi pi-pencil"
-            onClick={() => {
-              navigate("/distributors/invoice", { state: { data: options } });
-            }}
-            severity="primary"
-          ></Button>
-        </div> */}
-        <div className="col-lg-4">
-          <Button
-            type="button"
-            icon="pi pi-eye"
-            onClick={() => getOrderData(options._id)}
-            severity="success"
-            data-bs-toggle="modal"
-            data-bs-target="#exampleModal"
-          ></Button>
-        </div>
-      </div>
+      <button
+        type="button"
+        className="btn btn-outline-primary btn-sm"
+        // icon="pi pi-eye"
+        onClick={() => {
+          getOrderData(options._id);
+        }}
+        // severity="success"
+        data-bs-toggle="modal"
+        data-bs-target="#exampleModal"
+      >
+        <i className="pi pi-eye"></i>
+      </button>
     );
   };
 
   const [singleData, setSingleData] = useState("");
   const getOrderData = async (Id) => {
-    let all_products = await fetch("https://krushimitr.in/admin/get-orders", {
-      method: "post",
-      body: JSON.stringify({
-        orderId: Id,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/get-orders",
+      {
+        method: "post",
+        body: JSON.stringify({
+          orderId: Id,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const get_orders = await all_products.json();
     if (get_orders.status === 201) {
       setSingleData(get_orders.result);
-      console.log(get_orders.result);
     } else {
       alert(get_orders.result);
     }
@@ -148,6 +193,26 @@ function CustomerOrders() {
   //     );
   //   };
 
+  const RejectOrder = async (orderId) => {
+    const response = await fetch(
+      "https://krushimitr.in/api/distributor/reject-order",
+      {
+        method: "post",
+        body: JSON.stringify({ orderId, distributor, reason, distrName }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const result = await response.json();
+    if (result.status === 201) {
+      alert(result.result);
+      setReason("");
+    } else {
+      alert(result.result);
+      setReason("");
+    }
+  };
   return (
     <div className="p-3">
       <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
@@ -193,6 +258,34 @@ function CustomerOrders() {
             <h5 className="mb-0">Completed Orders</h5>
           </button>
         </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className="nav-link"
+            id="pills-cancel_user-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-cancel_user"
+            type="button"
+            role="tab"
+            aria-controls="pills-cancel_user"
+            aria-selected="false"
+          >
+            <h5 className="mb-0">Cancel By User</h5>
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className="nav-link"
+            id="pills-rejected_orders-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-rejected_orders"
+            type="button"
+            role="tab"
+            aria-controls="pills-rejected_orders"
+            aria-selected="false"
+          >
+            <h5 className="mb-0">Rejected</h5>
+          </button>
+        </li>
       </ul>
       <div className="tab-content" id="pills-tabContent">
         <div
@@ -209,6 +302,12 @@ function CustomerOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%" }}
           >
+            <Column
+              field="orderNumber"
+              header="Order No"
+              sortable
+              bodyStyle={{ fontSize: 12, fontWeight: 600 }}
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column
@@ -223,9 +322,16 @@ function CustomerOrders() {
               sortable
             ></Column>
             <Column
+              field="orderStatus"
+              header="Order Status"
+              style={{ fontSize: 14 }}
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+              sortable
+            ></Column>
+            <Column
               header="Action"
               field="_id"
-              style={{ minWidth: "12rem" }}
+              // style={{ minWidth: "12rem" }}
               body={filterApplyTemplate}
               severity="success"
             ></Column>
@@ -245,6 +351,12 @@ function CustomerOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
           >
+            <Column
+              field="orderNumber"
+              header="Order No"
+              sortable
+              bodyStyle={{ fontSize: 12, fontWeight: 600 }}
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column
@@ -267,7 +379,7 @@ function CustomerOrders() {
             <Column
               header="Action"
               field="_id"
-              style={{ minWidth: "12rem" }}
+              // style={{ minWidth: "12rem" }}
               body={filterApplyTemplate}
               severity="success"
             ></Column>
@@ -287,6 +399,12 @@ function CustomerOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
           >
+            <Column
+              field="orderNumber"
+              header="Order No"
+              sortable
+              bodyStyle={{ fontSize: 12, fontWeight: 600 }}
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column
@@ -309,8 +427,101 @@ function CustomerOrders() {
             <Column
               header="Action"
               field="_id"
-              style={{ minWidth: "12rem" }}
               body={completedOrders}
+              severity="success"
+            ></Column>
+          </DataTable>
+        </div>
+        <div
+          className="tab-pane fade"
+          id="pills-cancel_user"
+          role="tabpanel"
+          aria-labelledby="pills-cancel_user-tab"
+        >
+          <DataTable
+            value={userCancel}
+            sortMode="multiple"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
+          >
+            <Column
+              field="orderNumber"
+              header="Order No"
+              sortable
+              bodyStyle={{ fontSize: 12, fontWeight: 600 }}
+            ></Column>
+            <Column field="userName" header="Name" sortable></Column>
+            <Column field="orderDate" header="Date" sortable></Column>
+            <Column
+              field="paymentStatus"
+              header="Pay Status"
+              sortable
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="shippingAddress"
+              header="Shipping Address"
+              sortable
+            ></Column>
+            <Column
+              field="deliveryStatus"
+              header="Deli. Status"
+              sortable
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+            ></Column>
+            <Column
+              header="Action"
+              field="_id"
+              body={CancelByUsers}
+              severity="success"
+            ></Column>
+          </DataTable>
+        </div>
+        <div
+          className="tab-pane fade"
+          id="pills-rejected_orders"
+          role="tabpanel"
+          aria-labelledby="pills-rejected_orders-tab"
+        >
+          <DataTable
+            value={rejectData}
+            sortMode="multiple"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
+          >
+            <Column
+              field="orderNumber"
+              header="Order No"
+              sortable
+              bodyStyle={{ fontSize: 12, fontWeight: 600 }}
+            ></Column>
+            <Column field="userName" header="Name" sortable></Column>
+            <Column field="orderDate" header="Date" sortable></Column>
+            <Column
+              field="paymentStatus"
+              header="Pay Status"
+              sortable
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="shippingAddress"
+              header="Shipping Address"
+              sortable
+            ></Column>
+            <Column
+              field="deliveryStatus"
+              header="Deli. Status"
+              sortable
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+            ></Column>
+            <Column
+              header="Action"
+              field="_id"
+              body={CancelByUsers}
               severity="success"
             ></Column>
           </DataTable>
@@ -341,22 +552,40 @@ function CustomerOrders() {
               {singleData &&
                 singleData.map((item) => {
                   let orderSize = JSON.parse(item.itemsData);
+                  let orderUser = JSON.parse(item.userData);
                   return (
                     <table className="table table-stripped table-bordered">
                       <tbody>
+                      <tr>
+                          <td className="fw-bold">Order No. : </td>
+                          <td colSpan={2} className="text-success">{item.orderNumber}</td>
+                          <td className="fw-bold text-danger">
+                            Time : {item.orderTime}
+                          </td>
+                        </tr>
                         <tr>
                           <td className="fw-bold">Name : </td>
-                          <td>{item.userName}</td>
-                          <td className="fw-bold text-nowrap">
-                            Total Amount :{" "}
+                          <td colSpan={2}>{item.userName}</td>
+                          <td className="fw-bold text-danger text-nowrap">
+                            Order Date : {item.orderDate}
                           </td>
-                          <td>{item.orderDate}</td>
                         </tr>
+
+                        {orderUser && (
+                          <tr>
+                            <td className="fw-bold">Mobile No. : </td>
+                            <td>{orderUser.mobile}</td>
+                            <td className="fw-bold text-nowrap">Email :</td>
+                            <td>{orderUser.email}</td>
+                          </tr>
+                        )}
                         <tr>
                           <td className="fw-bold text-nowrap">
                             Payment Status :
                           </td>
-                          <td>{item.paymentStatus}</td>
+                          <td className="fw-bold text-warning">
+                            {item.paymentStatus}
+                          </td>
                           <td className="fw-bold text-nowrap">
                             Shipping Address :
                           </td>
@@ -402,20 +631,104 @@ function CustomerOrders() {
                           <td className="text-danger fw-bold">
                             {item.finalAmount}
                           </td>
-                          <td></td>
-                          <td className="text-end">
-                            <button
-                              type="button"
-                              className="btn btn-success btn-sm"
-                              onClick={() => {
-                                dispatch(forEditOrder(item));
-                                navigate("/distributors/edit-orders");
-                              }}
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                            >
-                              Dispatch
-                            </button>
+                          <td>
+                            {" "}
+                            {item.orderStatus === "Pending" &&
+                            item.status === "Active" &&
+                            item.vendorId === distributor ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-success btn-sm"
+                                  data-bs-toggle="modal"
+                                  data-bs-target={"#RejectModal" + item._id}
+                                >
+                                  Reject Order
+                                </button>
+
+                                <div
+                                  class="modal fade"
+                                  id={"RejectModal" + item._id}
+                                  tabindex="-1"
+                                  aria-labelledby="exampleModalLabel"
+                                  aria-hidden="true"
+                                >
+                                  <div class="modal-dialog">
+                                    <div class="modal-content">
+                                      <div class="modal-header py-1">
+                                        <h5
+                                          class="modal-title"
+                                          id="exampleModalLabel"
+                                        >
+                                          Reject Confirm
+                                        </h5>
+                                        <button
+                                          type="button"
+                                          class="btn-close"
+                                          data-bs-dismiss="modal"
+                                          aria-label="Close"
+                                        ></button>
+                                      </div>
+                                      <div class="modal-body">
+                                        <div className="row">
+                                          <div className="col-lg-12">
+                                            <label>Reason</label>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              rows={3}
+                                              value={reason}
+                                              placeholder="Enter Reason Here....."
+                                              onChange={(e) =>
+                                                setReason(e.target.value)
+                                              }
+                                            />
+                                          </div>
+                                          <div className="col-lg-12 mt-4 text-center">
+                                            <button
+                                              type="button"
+                                              class="btn btn-primary"
+                                              onClick={() =>
+                                                RejectOrder(item._id)
+                                              }
+                                              data-bs-dismiss="modal"
+                                            >
+                                              Submit
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              ""
+                            )}
+                          </td>
+                          <td className="text-center">
+                            {item.orderStatus === "Pending" &&
+                            item.status === "Active" &&
+                            item.vendorId === distributor ? (
+                              <button
+                                type="button"
+                                className="btn btn-success btn-sm"
+                                onClick={() => {
+                                  dispatch(forEditOrder(item));
+                                  navigate("/distributors/edit-orders");
+                                }}
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                              >
+                                Confirm
+                              </button>
+                            ) : item.status === "Cancel" ? (
+                              <p className="text-danger">
+                                {item.status + "" + item.userCancelNote}
+                              </p>
+                            ) : (
+                              ""
+                            )}
                           </td>
                         </tr>
                       </tbody>

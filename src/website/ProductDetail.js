@@ -1,7 +1,7 @@
 import { useParams } from "react-router";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { addToCart } from "../redux/slice/CartSlice";
 
 function ProductDetail() {
@@ -18,13 +18,16 @@ function ProductDetail() {
   const [selectedCommission, setSelectedCommission] = useState("");
   let datas = [];
   const getProducts = async () => {
-    const response = await fetch("https://krushimitr.in/admin/get-product/", {
-      method: "post",
-      body: JSON.stringify({ id }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      "https://krushimitr.in/api/admin/get-product/",
+      {
+        method: "post",
+        body: JSON.stringify({ id }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     let data = await response.json();
     if (data.status === 201) {
       setProduct(data.product_data[0]);
@@ -35,7 +38,7 @@ function ProductDetail() {
           setSelectedUnit(itmess.unit);
           setSelectedPrice(itmess.selling_price);
           setSelectedGST(itmess.gst);
-          setSelectedCommission(itmess.commission)
+          setSelectedCommission(itmess.commission);
           setProductSize(item);
           datas.push(JSON.parse(item));
         } else {
@@ -51,14 +54,14 @@ function ProductDetail() {
     getProducts();
     localStorage.setItem("PRODUCT_ID", id);
     localStorage.setItem("USERID", user_id);
-  }, []);
+  }, [getProducts, id, user_id]);
 
   const changePrice = (item) => {
     setSelectedSize(item.size);
     setSelectedUnit(item.unit);
     setSelectedPrice(item.selling_price);
     setSelectedGST(item.gst);
-    setSelectedCommission(item.commission)
+    setSelectedCommission(item.commission);
   };
 
   const [quantity, setQuantity] = useState(1);
@@ -86,7 +89,7 @@ function ProductDetail() {
                         style={{ height: "100% !important" }}
                       >
                         {product &&
-                          product.image &&
+                          Array.isArray(product.image) &&
                           product.image.map((item, index) => {
                             if (index === 0) {
                               return (
@@ -251,6 +254,17 @@ function ProductDetail() {
                                   })}
                               </div>
                             </div>
+                            <div className="col-md-12 mt-3 px-3">
+                              <p style={{ fontSize: 14 }}>
+                                Notes :{" "}
+                                <span className="text-danger">
+                                  "The customer was notified that delivery
+                                  charges not applied to their order. Delivery
+                                  charges will be charged at the time of
+                                  delivery"
+                                </span>
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -265,7 +279,10 @@ function ProductDetail() {
                                     addToCart({
                                       _id: product._id,
                                       productName: product.productName,
-                                      company: product.company,
+                                      company:
+                                        product.company === ""
+                                          ? "NA"
+                                          : product.company,
                                       quantity: quantity,
                                       image: product.image,
                                       description: product.description,
@@ -274,11 +291,20 @@ function ProductDetail() {
                                       size: selectedSize,
                                       unit: selectedUnit,
                                       gst: selectedGST,
-                                      commission:selectedCommission,
+                                      commission: selectedCommission,
+                                      vCommissionPercent:
+                                        product.vCommissionPercent,
                                       guarantee: productSize.guarantee,
                                       warranty: productSize.warranty,
                                       updatedAt: productSize.updatedAt,
                                       createdAt: productSize.createdAt,
+                                      productVendor: product.vendor_id,
+                                      rewardPoints: product.rewardPoints,
+                                      batchNo: product.batchNo
+                                        ? product.batchNo
+                                        : "",
+                                      HSNNo: product.HSNNo ? product.HSNNo : "",
+                                      mfd: product.mfd ? product.mfd : "",
                                       referenceId: user_id,
                                       referenceProductId: id,
                                     })
@@ -295,7 +321,10 @@ function ProductDetail() {
                                     addToCart({
                                       _id: product._id,
                                       productName: product.productName,
-                                      company: product.company,
+                                      company:
+                                        product.company === ""
+                                          ? "NA"
+                                          : product.company,
                                       quantity: quantity,
                                       image: product.image,
                                       description: product.description,
@@ -304,11 +333,20 @@ function ProductDetail() {
                                       size: selectedSize,
                                       unit: selectedUnit,
                                       gst: selectedGST,
-                                      commission:selectedCommission,
+                                      commission: selectedCommission,
+                                      vCommissionPercent:
+                                        product.vCommissionPercent,
                                       guarantee: productSize.guarantee,
                                       warranty: productSize.warranty,
                                       updatedAt: productSize.updatedAt,
                                       createdAt: productSize.createdAt,
+                                      productVendor: product.vendor_id,
+                                      rewardPoints: product.rewardPoints,
+                                      batchNo: product.batchNo
+                                        ? product.batchNo
+                                        : "",
+                                      HSNNo: product.HSNNo ? product.HSNNo : "",
+                                      mfd: product.mfd ? product.mfd : "",
                                       referenceId: user_id,
                                       referenceProductId: id,
                                     })

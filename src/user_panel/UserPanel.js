@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 import "./index.css";
@@ -15,7 +15,41 @@ function UserPanel() {
     navigate("/login");
   };
 
- 
+  const [walletData, setWalletData] = useState([]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getWalletData = async () => {
+    const response = await fetch(
+      "https://krushimitr.in/api/users/rupee-wallet",
+      {
+        method: "post",
+        body: JSON.stringify({ userId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    if (data.status === "201") {
+      setWalletData(data.result);
+    } else {
+      setWalletData([]);
+    }
+  };
+  const getTotal = () => {
+    let total = 0;
+    walletData.map((item) => {
+      if (item.type === "Credit") {
+        total += item.amount;
+      } else if (item.type === "Debit") {
+        total -= item.amount;
+      }
+    });
+    return total;
+  };
+  useEffect(() => {
+    getWalletData();
+  }, [getWalletData, userId]);
+
   return (
     <div>
       <div className="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary userPanel ">
@@ -96,7 +130,7 @@ function UserPanel() {
                 </li>
                 <li className="nav-item has-submenu">
                   <Link className="nav-link" href="#">
-                  <i className="bi bi-list"></i>
+                    <i className="bi bi-list"></i>
                     More menus{" "}
                   </Link>
                   <ul className="submenu collapse">
@@ -125,9 +159,9 @@ function UserPanel() {
               </ul>
               {/* <!-- User (md) --> */}
               <ul className="navbar-nav">
-              <li className="nav-item">
+                <li className="nav-item">
                   <Link className="nav-link" to="user-wallet">
-                  <i className="bi bi-wallet"></i> Wallet
+                    <i className="bi bi-wallet"></i> Wallet
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -136,7 +170,7 @@ function UserPanel() {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="#" onClick={Logout}>
+                  <Link className="nav-link" to="" onClick={Logout}>
                     <i className="bi bi-box-arrow-left"></i> Logout
                   </Link>
                 </li>
@@ -152,41 +186,53 @@ function UserPanel() {
               <div className="mb-npx">
                 <div className="row align-items-center">
                   {/* <!-- Actions --> */}
-                  <div className="col-sm-12 col-12 text-sm-end">
-                    <div className="mx-n1">
-                      <ul className="navbar-nav float-right">
-                        <li className="nav-item dropdown">
-                          <Link
-                            className="nav-link dropdown-toggle"
-                            to="#"
-                            id="navbarDarkDropdownMenuLink"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                          >
-                            {/* <img src={"/assets/logo.png"} alt="" width={"50"} /> */}
-                            <Link className="ps-3">{userName}</Link>
-                          </Link>
-                          <ul
-                            className="dropdown-menu w-100"
-                            aria-labelledby="navbarDarkDropdownMenuLink"
-                          >
-                            <li>
-                              <Link className="dropdown-item" to="/">
-                                Home
-                              </Link>
-                            </li>
-                            <hr className="my-0" />
-                            <li>
-                              <Link className="dropdown-item" to="">
-                                Profile
-                              </Link>
-                            </li>
-                          </ul>
-                        </li>
-                      </ul>
-                    </div>
+                  <div className="col-lg-8 col-12 text-sm-end"></div>
+                  {/* <div className="mx-n1"> */}
+                  <div className="col-lg-2 col-6 text-end">
+                    <Link
+                      to={"user-wallet"}
+                      class="btn btn-outline-info position-relative"
+                    >
+                      <i class="fa fa-solid fa-wallet"></i>
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {getTotal()}
+                      </span>
+                    </Link>
                   </div>
+                  <div className="col-lg-2 col-6 text-end">
+                    <ul className="navbar-nav ">
+                      <li className="nav-item dropdown">
+                        <Link
+                          className="nav-link dropdown-toggle"
+                          to="#"
+                          id="navbarDarkDropdownMenuLink"
+                          role="button"
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          {/* <img src={"/assets/logo.png"} alt="" width={"50"} /> */}
+                          <Link className="ps-3">{userName}</Link>
+                        </Link>
+                        <ul
+                          className="dropdown-menu w-100"
+                          aria-labelledby="navbarDarkDropdownMenuLink"
+                        >
+                          <li>
+                            <Link className="dropdown-item" to="/">
+                              Home
+                            </Link>
+                          </li>
+                          <hr className="my-0" />
+                          <li>
+                            <Link className="dropdown-item" to="">
+                              Profile
+                            </Link>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+                  {/* </div> */}
                 </div>
               </div>
             </div>

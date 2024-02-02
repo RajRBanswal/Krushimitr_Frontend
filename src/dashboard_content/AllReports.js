@@ -30,7 +30,9 @@ function AllReports() {
   let datas = [];
   const [filterData, setFilterData] = useState([]);
   const getProductData = async () => {
-    let all_products = await fetch("https://krushimitr.in/admin/all-orders");
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/all-orders"
+    );
     const all_orders = await all_products.json();
     if (all_orders.status === 201) {
       all_orders.result.map((item) => {
@@ -50,32 +52,34 @@ function AllReports() {
 
   const filterApplyTemplate = (options) => {
     return (
-      <div className="row">
-        <div className="col-lg-4">
-          <Button
-            type="button"
-            icon="pi pi-eye"
-            onClick={() => getOrderData(options._id)}
-            severity="success"
-            data-bs-toggle="modal"
-            data-bs-target="#exampleModal"
-          ></Button>
-        </div>
-      </div>
+      <button
+        type="button"
+        className="btn btn-outline-primary w-100 btn-sm"
+        onClick={() => {
+          getOrderData(options._id);
+        }}
+        data-bs-toggle="modal"
+        data-bs-target="#exampleModal"
+      >
+        <i className="pi pi-eye"></i>
+      </button>
     );
   };
 
   const [singleData, setSingleData] = useState("");
   const getOrderData = async (Id) => {
-    let all_products = await fetch("https://krushimitr.in/admin/get-orders", {
-      method: "post",
-      body: JSON.stringify({
-        orderId: Id,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/get-orders",
+      {
+        method: "post",
+        body: JSON.stringify({
+          orderId: Id,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const get_orders = await all_products.json();
     if (get_orders.status === 201) {
       setSingleData(get_orders.result);
@@ -88,7 +92,7 @@ function AllReports() {
   const deleteProduct = async () => {
     let user_id = user._id;
     const delete_users = await fetch(
-      "https://krushimitr.in/admin/delete-user",
+      "https://krushimitr.in/api/admin/delete-user",
       {
         method: "POST",
         body: JSON.stringify({ user_id }),
@@ -129,18 +133,22 @@ function AllReports() {
   const rightToolbarTemplateCompleted = () => {
     return (
       <>
-        <Button
-          label="Excel"
-          icon="pi pi-upload"
-          className="p-button-help"
+        <button
+          //   label="Excel"
+          //   icon="pi pi-file-excel"
+          className="btn btn-outline-primary btn-sm"
           onClick={exportCSVS}
-        />
-        <Button
-          label="Pdf"
-          icon="pi pi-file-pdf"
-          className="ms-1 p-button-primary"
+        >
+          <i className="pi pi-file-excel"></i>{" "}
+        </button>
+        <button
+          //   label="Pdf"
+          //   icon="pi pi-file-pdf"
+          className="ms-1 btn btn-outline-danger btn-sm"
           onClick={exportPdf}
-        />
+        >
+          <i className="pi pi-file-pdf"></i>{" "}
+        </button>
       </>
     );
   };
@@ -149,16 +157,18 @@ function AllReports() {
     { field: "orderNumber", header: "Order No." },
     { field: "userName", header: "Name" },
     { field: "orderDate", header: "Date" },
+    { field: "orderTime", header: "Time" },
     { field: "finalAmount", header: "Amount" },
     { field: "paymentStatus", header: "Pay Status" },
     { field: "paymentMethod", header: "Pay Method" },
-    { field: "shippingAddress", header: "Shipping Address" },
     { field: "distName", header: "Distributor Name" },
-    { field: "distAddress", header: "Distributor Address" },
     { field: "orderStatus", header: "Order Status" },
     { field: "deliveryStatus", header: "Delivery Status" },
     { field: "deliveryDate", header: "Delivery Date" },
   ];
+
+  // { field: "shippingAddress", header: "Shipping Address" },
+  // { field: "distAddress", header: "Distributor Address" },
 
   const exportColumns = cols.map((col) => ({
     title: col.header,
@@ -261,18 +271,7 @@ function AllReports() {
     let xyz = JSON.parse(rowData.itemsData);
     let arr = [];
     for (let index = 0; index < xyz.length; index++) {
-      let rr =
-        index +
-        1 +
-        "). Product: " +
-        xyz[index].productName +
-        ", Price: " +
-        xyz[index].price +
-        ", Qty: " +
-        xyz[index].quantity +
-        ", Total: " +
-        xyz[index].price * xyz[index].quantity +
-        "    ";
+      let rr = index + 1 + "). Product: " + xyz[index].productName + ",   ";
       arr.push(rr);
     }
     return arr;
@@ -290,11 +289,50 @@ function AllReports() {
     );
   };
 
+  const gstCalculation = (rowData) => {
+    let gstamt = 0;
+    let itemData = JSON.parse(rowData.itemsData);
+    itemData.map((item) => {
+      let qtyprice = item.price * item.quantity;
+      let res = (qtyprice * item.gst) / 100;
+      gstamt += res;
+    });
+    return gstamt / 2;
+  };
+
+  const IGST = (rowData) => {
+    let gstamt = 0;
+    let itemData = JSON.parse(rowData.itemsData);
+    itemData.map((item) => {
+      let qtyprice = item.price * item.quantity;
+      let res = (qtyprice * item.gst) / 100;
+      gstamt += res;
+    });
+    return gstamt;
+  };
+  const gstPercent = (rowData) => {
+    let gstamt = 0;
+    let itemData = JSON.parse(rowData.itemsData);
+    itemData.map((item) => {
+      gstamt = item.gst + "%";
+    });
+    return gstamt;
+  };
+  const Amount = (rowData) => {
+    let gstamt = 0;
+    let itemData = JSON.parse(rowData.itemsData);
+    itemData.map((item) => {
+      let qtyprice = item.price * item.quantity;
+      gstamt += qtyprice;
+    });
+    return gstamt;
+  };
+
   return (
-    <div className="p-3">
+    <div className="">
       <Toast ref={toast} />
 
-      <div className="card px-3 UserCardReports">
+      <div className=" px-3 UserCardReports">
         <DataTable
           ref={orderCmplt}
           value={filterData}
@@ -316,9 +354,10 @@ function AllReports() {
           ></Column>
           <Column field="userName" header="Name" sortable></Column>
           <Column field="orderDate" header="Date" sortable></Column>
+          <Column field="orderTime" header="Time" sortable></Column>
           <Column
             field={getItemData}
-            header="Purchase Item / Price / Qty / Total"
+            header="Purchase Item"
             body={getItemData}
             style={{ display: "none" }}
           ></Column>
@@ -331,7 +370,7 @@ function AllReports() {
           ></Column>
           <Column
             field="paymentMethod"
-            header="Pay Status"
+            header="Pay Method"
             style={{ display: "none" }}
             bodyStyle={{ color: "green", fontWeight: "bold" }}
           ></Column>
@@ -339,26 +378,23 @@ function AllReports() {
             field="paymentStatus"
             header="Pay Status"
             sortable
-            bodyStyle={{ color: "green", fontWeight: "bold" }}
+            bodyStyle={{ color: "green" }}
+          ></Column>
+          {/* <Column field={"distName"} header="Vender Name"></Column> */}
+
+          <Column field={gstPercent} header="GST" body={gstPercent}></Column>
+          <Column
+            field={gstCalculation}
+            header="SGST"
+            body={gstCalculation}
           ></Column>
           <Column
-            field="shippingAddress"
-            header="Shipping Address"
-            style={{ minWidth: "12rem" }}
-            sortable
+            field={gstCalculation}
+            header="CGST"
+            body={gstCalculation}
           ></Column>
-          <Column
-            field={distrBodyTemplate}
-            header="Distributor Name"
-            body={distrBodyTemplate}
-            bodyStyle={{ color: "red", fontWeight: "bold" }}
-          ></Column>
-          {/* <Column
-            field="distAddress"
-            header="Distributor Address"
-            style={{ display: "none" }}
-            bodyStyle={{ color: "green", fontWeight: "bold" }}
-          ></Column> */}
+          <Column field={IGST} header="IGST" body={IGST}></Column>
+          <Column field={Amount} header="FinalAmount" body={Amount}></Column>
           <Column
             field="orderStatus"
             header="Order Status"
@@ -431,22 +467,40 @@ function AllReports() {
               {singleData &&
                 singleData.map((item) => {
                   let orderSize = JSON.parse(item.itemsData);
+                  let orderUser = JSON.parse(item.userData);
                   return (
                     <table className="table table-stripped table-bordered">
                       <tbody>
                         <tr>
                           <td className="fw-bold">Name : </td>
-                          <td>{item.userName}</td>
-                          <td className="fw-bold text-nowrap">
-                            Total Amount :{" "}
+                          <td colSpan={2}>{item.userName}</td>
+                          <td className="fw-bold text-danger text-nowrap">
+                            Order Date : {item.orderDate}
                           </td>
-                          <td>{item.orderDate}</td>
                         </tr>
+                        {orderUser && (
+                          <tr>
+                            <td className="fw-bold">Mobile No. : </td>
+                            <td>{orderUser.mobile}</td>
+                            <td className="fw-bold text-nowrap">Email :</td>
+                            <td>{orderUser.email}</td>
+                          </tr>
+                        )}
                         <tr>
                           <td className="fw-bold text-nowrap">
                             Payment Status :
                           </td>
-                          <td>{item.paymentStatus}</td>
+                          <td className="fw-bold text-warning">
+                            {item.paymentStatus === "Paid" ? (
+                              <p className="text-success">
+                                {item.paymentStatus}
+                              </p>
+                            ) : (
+                              <p className="text-warning">
+                                {item.paymentStatus}
+                              </p>
+                            )}
+                          </td>
                           <td className="fw-bold text-nowrap">
                             Shipping Address :
                           </td>
@@ -478,11 +532,27 @@ function AllReports() {
                                 </tr>
                                 <tr>
                                   <td className="fw-bold text-nowrap">Price</td>
-                                  <td>{item.price * item.quantity}</td>
+                                  <td>
+                                    {item.price - (item.price * item.gst) / 100}
+                                  </td>
                                   <td className="fw-bold text-nowrap">Size</td>
                                   <td>
                                     {item.size} {item.unit ? item.unit : ""}
                                   </td>
+                                </tr>
+                                <tr>
+                                  <td className="fw-bold text-nowrap">GST</td>
+                                  <td>{item.gst}</td>
+                                  <td className="fw-bold text-nowrap">
+                                    GST Amount
+                                  </td>
+                                  <td>
+                                    {(item.price * item.quantity * item.gst) /
+                                      100}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td colSpan={4}> </td>
                                 </tr>
                               </>
                             );

@@ -11,16 +11,19 @@ function UserWallet() {
   const [showTransaction, setShowTransaction] = useState(false);
 
   const getWalletData = async () => {
-    const response = await fetch("https://krushimitr.in/users/wallet", {
-      method: "post",
-      body: JSON.stringify({ userId }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      "https://krushimitr.in/api/users/rupee-wallet",
+      {
+        method: "post",
+        body: JSON.stringify({ userId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const data = await response.json();
 
-    if (data.status == "201") {
+    if (data.status === "201") {
       setWalletData(data.result);
     } else {
       setWalletData([]);
@@ -29,9 +32,9 @@ function UserWallet() {
   const getTotal = () => {
     let total = 0;
     walletData.map((item) => {
-      if (item.status == "Credit") {
+      if (item.type === "Credit") {
         total += parseInt(item.amount);
-      } else if (item.status == "Debit") {
+      } else if (item.type === "Debit") {
         total -= parseInt(item.amount);
       }
     });
@@ -53,7 +56,7 @@ function UserWallet() {
           <div className="header-summary w-50 ps-5">
             <div className="summary-text">My Balance</div>
             <div className="summary-balance">
-              <i className="fa fa-rupee"></i> -{getTotal()}.00
+              <i className="fa fa-rupee"></i> {getTotal()}.00
             </div>
           </div>
           <div className="user-profile w-50 text-end pe-5">
@@ -76,7 +79,7 @@ function UserWallet() {
                 </span>
               </div>
               <div className="card-item">
-                <span>Transaction</span>
+                <span>View Transaction</span>
                 <button
                   className="btn btn-primary"
                   onClick={() => {
@@ -128,7 +131,9 @@ function UserWallet() {
                     <tr>
                       <th scope="col">#</th>
                       <th scope="col">Date</th>
+                      <th scope="col">Time</th>
                       <th scope="col">Type</th>
+                      <th scope="col">Reason</th>
                       <th scope="col">Status</th>
                       <th scope="col" className="text-end">
                         Amount
@@ -139,8 +144,10 @@ function UserWallet() {
                     {walletData.map((item, index) => (
                       <tr key={index}>
                         <th scope="row">{index + 1}</th>
-                        <td>{item.createdDate}</td>
+                        <td>{item.transactionDate}</td>
+                        <td>{item.transactionTime}</td>
                         <td>{item.type}</td>
+                        <td>{item.reason === undefined ? "" : item.reason}</td>
                         <td>{item.status}</td>
                         <td className="text-success text-end">
                           + <i className="fa fa-rupee"></i> {item.amount}

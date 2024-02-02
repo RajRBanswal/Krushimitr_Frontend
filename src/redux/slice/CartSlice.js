@@ -15,7 +15,8 @@ const CartSlice = createSlice({
           item.size === action.payload.size
         ) {
           isItemExist = true;
-          item.quantity = item.quantity + 1;
+          item.quantity =
+            parseInt(item.quantity) + 1;
         }
       });
       if (!isItemExist) {
@@ -30,7 +31,7 @@ const CartSlice = createSlice({
           item._id === action.payload._id &&
           item.size === action.payload.size
         ) {
-          item.quantity = item.quantity - 1;
+          item.quantity = parseInt(item.quantity) - 1;
         }
       });
       state.data = tempData;

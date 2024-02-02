@@ -22,7 +22,7 @@ function PlaceOrder() {
   const distributor_id = localStorage.getItem("distributor_id");
   const getProfile = async () => {
     let result = await fetch(
-      "https://krushimitr.in/distributor/distributor-profile",
+      "https://krushimitr.in/api/distributor/distributor-profile",
       {
         method: "post",
         body: JSON.stringify({ distributor_id }),
@@ -42,7 +42,7 @@ function PlaceOrder() {
   useEffect(() => {
     getProfile();
     const fetchCategory = async () => {
-      let result = await fetch("https://krushimitr.in/admin/all-category").then(
+      let result = await fetch("https://krushimitr.in/api/admin/all-category").then(
         (result) => result.json()
       );
       setCategories(result.getCate);
@@ -52,12 +52,12 @@ function PlaceOrder() {
 
   const fetchProducts = async (cat) => {
     console.log(cat);
-    let result = await fetch(`https://krushimitr.in/admin/products/${cat}`);
+    let result = await fetch(`https://krushimitr.in/api/admin/products/${cat}`);
     let res = await result.json();
     setProducts(res.product_data);
   };
   const fetchProduct = async (pId) => {
-    let result = await fetch("https://krushimitr.in/admin/get-product/", {
+    let result = await fetch("https://krushimitr.in/api/admin/get-product/", {
       method: "POST",
       body: JSON.stringify({
         id: pId,
@@ -131,7 +131,7 @@ function PlaceOrder() {
     };
 
     let result = await fetch(
-      "https://krushimitr.in/distributor/distributor-place-order",
+      "https://krushimitr.in/api/distributor/distributor-place-order",
       {
         method: "POST",
         body: formData,

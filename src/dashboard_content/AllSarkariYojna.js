@@ -17,7 +17,7 @@ function AllSarkariYojna() {
     formData.append("image", image);
     formData.append("link", link);
     const result = await fetch(
-      "https://krushimitr.in/admin/add-sarkari-yojna",
+      "https://krushimitr.in/api/admin/add-sarkari-yojna",
       {
         method: "POST",
         body: formData,
@@ -33,7 +33,7 @@ function AllSarkariYojna() {
   };
   const DeleteOne = async (id) => {
     let resultDel = await fetch(
-      "https://krushimitr.in/admin/delete-sarkari-yojna",
+      "https://krushimitr.in/api/admin/delete-sarkari-yojna",
       {
         method: "post",
         body: JSON.stringify({ id }),
@@ -53,7 +53,7 @@ function AllSarkariYojna() {
   };
   const getSYojnaData = async () => {
     const result = await fetch(
-      "https://krushimitr.in/admin/get-sarkari-yojna"
+      "https://krushimitr.in/api/admin/get-sarkari-yojna"
     ).then((result) => result.json());
     setAllYojna(result.getSYojna);
   };

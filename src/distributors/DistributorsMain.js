@@ -19,40 +19,79 @@ function DistributorsMain() {
     setIsActive((current) => !current);
   };
   const [distData, setDistData] = useState("");
-  // console.log(isToken);
+
   const distributor_id = localStorage.getItem("distributor_id");
   const distributorName = localStorage.getItem("distributor_name");
-  const getProfile = async () => {
-    let result = await fetch(
-      "https://krushimitr.in/distributor/distributor-profile",
-      {
-        method: "post",
-        body: JSON.stringify({ distributor_id }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+  const [walletData, setWalletData] = useState([]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getTotal = () => {
+    let total = 0;
+    walletData.map((item) => {
+      if (item.type === "Credit") {
+        total += parseInt(item.amount);
+      } else if (item.type === "Debit") {
+        total -= parseInt(item.amount);
       }
-    );
-    let res = await result.json();
-    if (res.status === 201) {
-      let tokens =
-        res.distributor.tokens[res.distributor.tokens.length - 1].token;
-      if (tokens !== "" && isToken !== null && tokens === isToken) {
-        setIsAuth(true);
-        setDistData(res.distributor);
-      } else {
-        setIsAuth(false);
-        navigate("/login");
-      }
-    } else {
-      alert(res.message);
-    }
+    });
+    return total;
   };
-  // console.log(isDToken + " main" + isToken);
+
   useEffect(() => {
+    const getProfile = async () => {
+      let result = await fetch(
+        "https://krushimitr.in/api/distributor/distributor-profile",
+        {
+          method: "post",
+          body: JSON.stringify({ distributor_id }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      let res = await result.json();
+      if (res.status === 201) {
+        let tokens =
+          res.distributor.tokens[res.distributor.tokens.length - 1].token;
+        if (tokens !== "" && isToken !== null && tokens === isToken) {
+          setIsAuth(true);
+          setDistData(res.distributor);
+        } else {
+          setIsAuth(false);
+          navigate("/login");
+        }
+      } else {
+        alert(res.message);
+      }
+    };
     getProfile();
+    const getWalletData = async () => {
+      const response = await fetch(
+        "https://krushimitr.in/api/distributors/get-vendor-distributor-wallet"
+      );
+      const data = await response.json();
+      if (data.status === 201) {
+        let datas = [];
+        data.result.map((item) => {
+          if (item.dvId === distributor_id) {
+            datas.push(item);
+          }
+        });
+
+        setWalletData(datas);
+      } else {
+        setWalletData([]);
+      }
+    };
+    getWalletData();
+
     project(event, "defalut");
-  }, []);
+    if (distributor_id === null) {
+      navigate("/login");
+    }
+  }, [distributor_id]);
+
   const Logout = () => {
     setIsAuth(false);
     localStorage.clear("");
@@ -62,6 +101,7 @@ function DistributorsMain() {
   const [two, setTwo] = useState(false);
   const [three, setThree] = useState(false);
   const [four, setFour] = useState(false);
+  const [five, setFive] = useState(false);
   const project = (event, ids) => {
     // event.preventDefault();
     switch (ids) {
@@ -70,29 +110,40 @@ function DistributorsMain() {
           first ? setFirst(false) : setFirst(true),
           setTwo(false),
           setThree(false),
-          setFour(false)
+          setFour(false),
+          setFive(false)
         );
       case "two":
         return (
           setFirst(false),
           two ? setTwo(false) : setTwo(true),
           setThree(false),
-          setFour(false)
+          setFour(false),
+          setFive(false)
         );
       case "three":
         return (
           setFirst(false),
           setTwo(false),
           three ? setThree(false) : setThree(true),
-          setFour(false)
+          setFour(false),
+          setFive(false)
         );
-
       case "four":
         return (
           setFirst(false),
           setTwo(false),
           setThree(false),
-          four ? setFour(false) : setFour(true)
+          four ? setFour(false) : setFour(true),
+          setFive(false)
+        );
+      case "five":
+        return (
+          setFirst(false),
+          setTwo(false),
+          setThree(false),
+          setFour(false),
+          five ? setFive(false) : setFive(true)
         );
 
       default:
@@ -130,20 +181,18 @@ function DistributorsMain() {
             >
               <ul className="navbar-nav me-auto mb-2 mb-lg-0"></ul>
             </div>
-            <div className="d-flex" role="search">
-              <input
-                className="form-control me-2"
-                type="search"
-                placeholder="Search"
-                aria-label="Search"
-              />
-              {/* <button
-                type="button"
-                className="btn btn-primary"
-                onClick={Logout}
+            <div className="me-3">
+              <Link
+                to={"vd-wallet"}
+                class="btn btn-outline-warning position-relative"
               >
-                Logout
-              </button> */}
+                <i class="fa fa-solid fa-wallet"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {getTotal()}
+                </span>
+              </Link>
+            </div>
+            <div className="d-flex" role="search">
               <div className="dropdown">
                 <button
                   className="btn btn-primary dropdown-toggle"
@@ -159,9 +208,9 @@ function DistributorsMain() {
                   aria-labelledby="dropdownMenuButton1"
                 >
                   <li>
-                    <a className="dropdown-item" href="" onClick={Logout}>
+                    <Link className="dropdown-item" to="" onClick={Logout}>
                       Logout
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -182,7 +231,7 @@ function DistributorsMain() {
           <div className="sidebar-content">
             <div className="sidebar-brand">
               <Link to="#" className="text-white text-center">
-                Distributor{" "}
+                {distData.type}
               </Link>
               <div id="close-sidebar">
                 <i className="fas fa-times" onClick={toogle}></i>
@@ -222,25 +271,29 @@ function DistributorsMain() {
                   </div>
                 </li>
                 {distData.type === "Vendor" ? (
-                  <li className={`sidebar-dropdown ${two ? "active" : ""}`}>
-                    <Link to="#" onClick={(event) => project(event, "two")}>
-                      <i className="fa fa-cog"></i>
-                      <span>Components</span>
-                    </Link>
-                    <div className={`sidebar-submenu ${two ? "active" : ""}`}>
-                      <ul>
-                        <li>
-                          <Link to="allcategories">All Categories</Link>
-                        </li>
-                        <li>
-                          <Link to="allproducts">All Products</Link>
-                        </li>
-                      </ul>
-                    </div>
+                  <li>
+                    {distData && distData.status === "Active" ? (
+                      <Link to="allproducts">
+                        <i className="fa fa-book"></i>
+                        <span>All Products</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        to=""
+                        onClick={() => {
+                          alert("Update shop details and wait for KYC");
+                          navigate("/distributors/shop-details");
+                        }}
+                      >
+                        <i className="fa fa-book"></i>
+                        <span>All Products</span>
+                      </Link>
+                    )}
                   </li>
                 ) : (
                   ""
                 )}
+
                 <li className={`sidebar-dropdown ${three ? "active" : ""}`}>
                   <Link to="#" onClick={(event) => project(event, "three")}>
                     <i className="far fa-gem"></i>
@@ -277,6 +330,29 @@ function DistributorsMain() {
                 ) : (
                   ""
                 )}
+                <li className={`sidebar-dropdown ${five ? "active" : ""}`}>
+                  <Link to="#" onClick={(event) => project(event, "five")}>
+                    <i className="fa fa-chart-line"></i>
+                    <span>Reports</span>
+                  </Link>
+                  <div className={`sidebar-submenu ${five ? "active" : ""}`}>
+                    <ul>
+                      <li>
+                        <Link to="all_orders_reports">All Reports</Link>
+                      </li>
+                      <li>
+                        <Link to="orders_complate_reports">
+                          Completed Orders Reports
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="orders_pending_reports">
+                          Pending Orders Reports
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
 
                 {/* <li className="header-menu">
                                     <span>Extra</span>

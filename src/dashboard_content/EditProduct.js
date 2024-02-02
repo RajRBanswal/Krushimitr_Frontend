@@ -14,20 +14,28 @@ function EditProduct() {
   // const [gst, setGST] = useState("");
   const [productGuarantee, setProductGuarantee] = useState("");
   const [productWarranty, setProductWarranty] = useState("");
+  const [batchNo, setBatchNo] = useState("");
+  const [HSNNo, setHSNNo] = useState("");
+  const [mfd, setMFD] = useState("");
   const [productSize, setProductSize] = useState([]);
 
   const [defaultValue, setDefaultValue] = useState([]);
   const [image, setImage] = useState([]);
+  const [rewardPoints, setRewardPoints] = useState(0);
+  const [commission, setCommission] = useState(0);
 
   const getProductDatas = async () => {
-    let all_products = await fetch("https://krushimitr.in/admin/get-product/", {
-      method: "post",
-      body: JSON.stringify({ id: productId }),
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/get-product/",
+      {
+        method: "post",
+        body: JSON.stringify({ id: productId }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
     const getProd = await all_products.json();
     if (getProd.status === 201) {
       setProducts(getProd.product_data);
@@ -38,7 +46,11 @@ function EditProduct() {
       // setGST(getProd.product_data[0].gst);
       setProductGuarantee(getProd.product_data[0].guarantee);
       setProductWarranty(getProd.product_data[0].warranty);
-      setImage(getProd.product_data[0].image);
+      setBatchNo(getProd.product_data[0].batchNo);
+      setHSNNo(getProd.product_data[0].HSNNo);
+      setMFD(getProd.product_data[0].mfd);
+      setRewardPoints(getProd.product_data[0].rewardPoints);
+      setCommission(getProd.product_data[0].commission);
       let datas = getProd.product_data[0].size.map((item) => {
         let data = JSON.parse(item);
         return {
@@ -48,7 +60,6 @@ function EditProduct() {
           buying_price: data.buying_price,
           gst: data.gst,
           quantity: data.quantity,
-          commission: data.commission,
         };
       });
       setDefaultValue(datas);
@@ -66,7 +77,6 @@ function EditProduct() {
       buying_price: "",
       gst: "",
       quantity: "",
-      commission: "",
     },
   ]);
 
@@ -95,7 +105,6 @@ function EditProduct() {
         buying_price: "",
         gst: "",
         quantity: "",
-        commission: "",
       },
     ]);
   };
@@ -109,7 +118,9 @@ function EditProduct() {
   //Get All Category
   const [cate, setCate] = useState([]);
   const getCategoryData = async () => {
-    let all_category = await fetch("https://krushimitr.in/admin/all-category");
+    let all_category = await fetch(
+      "https://krushimitr.in/api/admin/all-category"
+    );
     const getCat = await all_category.json();
     setCate(getCat.getCate);
   };
@@ -138,6 +149,13 @@ function EditProduct() {
     formData.append("productCompany", productCompany);
     formData.append("productGuarantee", productGuarantee);
     formData.append("productWarranty", productWarranty);
+    formData.append("commission", commission);
+    formData.append("vCommission", "");
+    formData.append("vCommissionPercent", "");
+    formData.append("batchNo", batchNo);
+    formData.append("HSNNo", HSNNo);
+    formData.append("mfd", mfd);
+    formData.append("rewardPoints", rewardPoints);
     Object.values(arr).forEach((item) => {
       if (item.size !== "") {
         formData.append("sizes", JSON.stringify(item));
@@ -147,21 +165,17 @@ function EditProduct() {
       formData.append("image", file);
     });
 
-    let result = await fetch("https://krushimitr.in/admin/update-product", {
+    let result = await fetch("https://krushimitr.in/api/admin/update-product", {
       method: "post",
       body: formData,
     }).then((result) => result.json());
     if (result.status === 201) {
+      navigate("/all-products");
       alert(result.result);
-      navigate("/admin/all-products");
     } else {
       alert(result.result);
     }
   };
-
-  // const deleteImage = async item => {
-  //   alert (item);
-  // };
 
   return (
     <div>
@@ -201,7 +215,7 @@ function EditProduct() {
           </div>
         </div>
         <div className="row">
-          <div className="col-lg-8">
+          <div className="col-lg-6">
             <label htmlFor="">Description</label>
             <textarea
               name="desc"
@@ -220,6 +234,17 @@ function EditProduct() {
               placeholder="Product Company"
               className="form-control"
               value={productCompany}
+            />
+          </div>
+          <div className="col-lg-2">
+            <label htmlFor="">Reward Points</label>
+            <input
+              type="text"
+              name="reward_pointd"
+              onChange={(e) => setRewardPoints(e.target.value)}
+              placeholder="Reward Points "
+              className="form-control"
+              value={rewardPoints}
             />
           </div>
         </div>
@@ -292,7 +317,7 @@ function EditProduct() {
                     onChange={(e) => handleChanges(index, e)}
                   />
                 </div>
-                <div className="col-lg-2">
+                {/* <div className="col-lg-2">
                   <input
                     type="number"
                     name="commission"
@@ -301,7 +326,7 @@ function EditProduct() {
                     defaultValue={item.commission || ""}
                     onChange={(e) => handleChanges(index, e)}
                   />
-                </div>
+                </div> */}
               </div>
             ))}
           </div>
@@ -376,16 +401,7 @@ function EditProduct() {
                     onChange={(e) => handleChange(index, e)}
                   />
                 </div>
-                <div className="col-lg-2">
-                  <input
-                    type="text"
-                    name="commission"
-                    className="form-control"
-                    placeholder="Commission "
-                    value={element.commission || ""}
-                    onChange={(e) => handleChange(index, e)}
-                  />
-                </div>
+
                 {index ? (
                   <div className="col-lg-1 removeDiv">
                     <button
@@ -414,22 +430,18 @@ function EditProduct() {
         </div>
 
         <div className="row">
-          {/* <div className="col-lg-4">
-            <label htmlFor="">GST</label>
-            <select
-              name="gst"
-              onChange={(e) => setGST(e.target.value)}
-              className="form-control form-select"
-            >
-              <option value={gst}>{gst}</option>
-              <option value={"0"}>0%</option>
-              <option value={"5"}>5%</option>
-              <option value={"12"}>12%</option>
-              <option value={"18"}>18%</option>
-              <option value={"28"}>28%</option>
-            </select>
-          </div> */}
-          <div className="col-lg-4">
+          <div className="col-lg-3 mt-2">
+            <label htmlFor="">Commission</label>
+            <input
+              type="text"
+              name="commission"
+              className="form-control"
+              placeholder="Commission "
+              onChange={(e) => setCommission(e.target.value)}
+              value={commission}
+            />
+          </div>
+          <div className="col-lg-3 mt-2">
             <label htmlFor="">Guarantee</label>
             <input
               type="text"
@@ -440,7 +452,7 @@ function EditProduct() {
               value={productGuarantee}
             />
           </div>
-          <div className="col-lg-4">
+          <div className="col-lg-3 mt-2">
             <label htmlFor="">Warranty</label>
             <input
               type="text"
@@ -451,7 +463,37 @@ function EditProduct() {
               value={productWarranty}
             />
           </div>
-          <div className="col-lg-4">
+          <div className="col-md-3 mt-2">
+            <label className="mb-0">Batch No</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Batch No"
+              onChange={(e) => setBatchNo(e.target.value)}
+              value={batchNo}
+            />
+          </div>
+          <div className="col-md-4 mt-2">
+            <label className="mb-0">HSN No.</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="HSN No"
+              onChange={(e) => setHSNNo(e.target.value)}
+              value={HSNNo}
+            />
+          </div>
+          <div className="col-md-4 mt-2">
+            <label className="mb-0">Maf. Date</label>
+            <input
+              type="date"
+              className="form-control"
+              placeholder="Manufacturing Date"
+              onChange={(e) => setMFD(e.target.value)}
+              value={mfd}
+            />
+          </div>
+          <div className="col-lg-4 mt-2">
             <label htmlFor="">Products Image</label>
             <input
               type="file"

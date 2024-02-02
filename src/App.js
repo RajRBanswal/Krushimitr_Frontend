@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Login from "./auth/Login";
@@ -52,9 +52,37 @@ import Categories from "./distributors/Categories";
 import DProducts from "./distributors/Products";
 import ProductEdit from "./distributors/ProductEdit";
 import AllReports from "./dashboard_content/AllReports";
+import OrderCompletedReports from "./dashboard_content/OrderCompletedReports";
+import AdminInvoice from "./common/AdminInvoice";
+import PendingOrdersReports from "./dashboard_content/PendingOrdersReports";
+import DVAllReports from "./distributors/DVAllReports";
+import ComplateOrderReports from "./distributors/ComplateOrderReports";
+import OrdersPendingReports from "./distributors/OrdersPendingReports";
+import DAllUsers from "./distributors/DAllUsers";
+import PaymentStatus from "./website/PaymentStatus";
+import AllTransaction from "./dashboard_content/AllTransaction";
+import WalletManagement from "./dashboard_content/WalletManagement";
+import RewardPointsCalci from "./dashboard_content/RewardPointsCalci";
+import RedeemRequest from "./dashboard_content/RedeemRequest";
+import AllRentPayData from "./dashboard_content/AllRentPayData";
+import AllNotification from "./dashboard_content/AllNotification";
+import AllVendor from "./dashboard_content/AllVendor";
+import RentPayCharges from "./dashboard_content/RentPayCharges";
+import AllPackages from "./dashboard_content/AllPackages";
+import SetCommission from "./dashboard_content/SetCommission";
+import VDWallet from "./distributors/VDWallet";
+import VDPaymentStatus from "./distributors/VDPaymentStatus";
+import ForgotPassword from "./auth/ForgotPassword";
+import AdminWallet from "./dashboard_content/AdminWallet";
+import VDWalletManagement from "./dashboard_content/VDWalletManagement";
+import UsersWalletReports from "./dashboard_content/UsersWalletReports";
+import VendorDistributorWalletReports from "./dashboard_content/VendorDistributorWalletReports";
+import AdminWalletReports from "./dashboard_content/AdminWalletReports";
 
 function App() {
   const ref = React.useRef();
+
+  const myRef = useRef(null);
 
   const handleScroll = () => {
     if (!ref.current) return;
@@ -71,181 +99,239 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Routes>
-        <Route exact path="invoice" name="Invoice" element={<Invoice />} />
-        <Route path="/" element={<Main />}>
-          <Route exact index element={<Home />} />
-          <Route exact path="/about-us" element={<About />} />
-          <Route exact path="/contact" element={<Contact />} />
-          <Route exact path="/service" element={<Services />} />
-          <Route exact path="/product" element={<Products />} />
-          <Route exact path="/blog" element={<Contact />} />
-          <Route
-            exact
-            path="/terms-and-condition"
-            element={<TermsAndCondition />}
-          />
-          <Route exact path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route exact path="/products/:name" element={<Products />} />
-          <Route
-            exact
-            path="/apply-ekrushimitr"
-            element={<ApplyEKrushimitr />}
-          />
-          <Route exact path="/login" element={<UserLogin />} />
+      <Routes ref={myRef}>
+        <Route path="invoice" name="Invoice" Component={Invoice} />
+        <Route
+          path="admin-invoice"
+          name="Admin-Invoice"
+          Component={AdminInvoice}
+        />
+        <Route exact path="/" Component={Main}>
+          <Route index Component={Home} />
+          <Route path="/about-us" Component={About} />
+          <Route path="/contact" Component={Contact} />
+          <Route path="/service" Component={Services} />
+          <Route path="/product" Component={Products} />
+          <Route path="/blog" Component={Contact} />
+          <Route path="/payment-status/:Ids" Component={PaymentStatus} />
+          <Route path="/terms-and-condition" Component={TermsAndCondition} />
+          <Route path="/privacy-policy" Component={PrivacyPolicy} />
+          <Route path="/products/:name" Component={Products} />
+          <Route path="/apply-ekrushimitr" Component={ApplyEKrushimitr} />
+          <Route path="/login" Component={UserLogin} />
 
-          <Route exact path="/shipping-policy" element={<ShipingPolicy />} />
-          <Route exact path="/refund-policy" element={<RefundPolicy />} />
-          <Route exact path="/return-policy" element={<ReturnPolicy />} />
-          <Route exact path="/user-register" element={<UserRegister />} />
-          <Route exact path="/product-details" element={<ProductDetials />} />
-          <Route exact path="/cart-details" element={<Cart />} />
-          <Route exact path="/checkout" element={<Checkout />} />
-          <Route exact path="/donation-form" element={<DonationForm />} />
+          <Route path="/shipping-policy" Component={ShipingPolicy} />
+          <Route path="/refund-policy" Component={RefundPolicy} />
+          <Route path="/return-policy" Component={ReturnPolicy} />
+          <Route path="/user-register" Component={UserRegister} />
+          <Route path="/product-details" Component={ProductDetials} />
+          <Route path="/cart-details" Component={Cart} />
+          <Route path="/checkout" Component={Checkout} />
+          <Route path="/donation-form" Component={DonationForm} />
           <Route
-            exact
             path="/product-detail/:id/:user_id"
-            element={<ProductDetail />}
+            Component={ProductDetail}
           />
         </Route>
-        <Route path="/users" element={<UserPanel />}>
-          {/* <Route index element={<UserPanel />} /> */}
-          <Route exact path="user-dashboard" element={<DashboardU />} />
-          <Route exact path="user-orders" element={<UserAllOrders />} />
-          <Route exact path="user-wallet" element={<UserWallet />} />
+        <Route path="/forgot-password/:userType" Component={ForgotPassword} />
+        <Route path="/users" Component={UserPanel}>
+          <Route path="user-dashboard" Component={DashboardU} />
+          <Route path="user-orders" Component={UserAllOrders} />
+          <Route path="user-wallet" Component={UserWallet} />
         </Route>
-        <Route exact path="/admin_login" element={<Login />} />
-        <Route exact path="/admin" element={<MainContent />}>
-          <Route exact index element={<Dashboard />} />
+        <Route path="/admin_login" Component={Login} />
+        <Route path="/admin" Component={MainContent}>
+          <Route index Component={Dashboard} />
           <Route
-            exact
             path="all-services"
             name="All-Services"
-            element={<AllServices />}
+            Component={AllServices}
           />
           <Route
-            exact
             path="all-categories"
             name="All-Categories"
-            element={<AllCategories />}
+            Component={AllCategories}
           />
+          <Route path="all-users" name="All-Users" Component={AllUsers} />
           <Route
-            exact
-            path="all-users"
-            name="All-Users"
-            element={<AllUsers />}
-          />
-          <Route
-            exact
             path="all-products"
             name="All-Products"
-            element={<AllProducts />}
+            Component={AllProducts}
           />
           <Route
-            exact
             path="edit-product/:id"
             name="Edit-Product"
-            element={<EditProduct />}
+            Component={EditProduct}
           />
+          <Route path="all-slider" name="All-Slider" Component={AllSlider} />
+          <Route path="all-news" name="All-News" Component={News} />
           <Route
-            exact
-            path="all-slider"
-            name="All-Slider"
-            element={<AllSlider />}
-          />
-          <Route exact path="all-news" name="All-News" element={<News />} />
-          <Route
-            exact
             path="all-application-form"
             name="All-Application-Form"
-            element={<AllApplicationForm />}
+            Component={AllApplicationForm}
           />
           <Route
-            exact
             path="all-sarkari-yojna"
             name="All-Sarkari-Yojna"
-            element={<AllSarkariYojna />}
+            Component={AllSarkariYojna}
           />
+          <Route path="all-orders" name="All-Orders" Component={AllOrders} />
           <Route
-            exact
-            path="all-orders"
-            name="All-Orders"
-            element={<AllOrders />}
-          />
-          <Route
-            exact
             path="all-distributor"
             name="All-Distributor"
-            element={<AllDistributors />}
+            Component={AllDistributors}
           />
+          <Route path="all-vendor" name="All-Vendor" Component={AllVendor} />
           <Route
-            exact
             path="demo-products"
             name="All-Demo-Products"
-            element={<ProductAll />}
+            Component={ProductAll}
           />
           <Route
-            exact
             path="all-orders-reports"
             name="All-Orders-Reports"
-            element={<AllReports />}
+            Component={AllReports}
           />
-
-
+          <Route
+            path="orders-complated-reports"
+            name="Orders-Complated-Reports"
+            Component={OrderCompletedReports}
+          />
+          <Route
+            path="orders-pending-reports"
+            name="Orders-Pending-Reports"
+            Component={PendingOrdersReports}
+          />
+          <Route
+            path="all-transaction"
+            name="All-Transaction"
+            Component={AllTransaction}
+          />
+          <Route
+            path="wallet-management"
+            name="Wallet-Management"
+            Component={WalletManagement}
+          />
+          <Route
+            path="reward-points-calci"
+            name="Reward-Points-Calci"
+            Component={RewardPointsCalci}
+          />
+          <Route
+            path="redeem-request"
+            name="Redeem Request"
+            Component={RedeemRequest}
+          />
+          <Route
+            path="all-rent-pay-data"
+            name="All Rent Pay Data"
+            Component={AllRentPayData}
+          />
+          <Route
+            path="all-notifications"
+            name="All Notifications"
+            Component={AllNotification}
+          />
+          <Route
+            path="rent-pay-charges"
+            name="Rent Pay Charges"
+            Component={RentPayCharges}
+          />
+          <Route
+            path="manage-packages"
+            name="Manage Packages"
+            Component={AllPackages}
+          />
+          <Route
+            path="set-commission/:packageId"
+            name="Set Commission"
+            Component={SetCommission}
+          />
+          <Route
+            path="admin-wallet"
+            name="Admin Wallet"
+            Component={AdminWallet}
+          />
+          <Route
+            path="vd-wallet-management"
+            name="Vendor/Distributor Wallet"
+            Component={VDWalletManagement}
+          />
+          <Route
+            path="admin-wallet-reports"
+            name="Vendor/Distributor Wallet Reports"
+            Component={AdminWalletReports}
+          />
+          <Route
+            path="users-wallet-reports"
+            name="Users Wallet Reports"
+            Component={UsersWalletReports}
+          />
+          <Route
+            path="vendor-distributor-wallet-reports"
+            name="Vendor Distributor Wallet Reports"
+            Component={VendorDistributorWalletReports}
+          />
 
           {/* all-sarkari-yojna */}
         </Route>
-        <Route path="/distributors" element={<DistributorsMain />}>
-          <Route exact index element={<DistributorDashboard />} />
+        <Route path="/distributors" Component={DistributorsMain}>
+          <Route index Component={DistributorDashboard} />
           <Route
-            exact
             path="allcategories"
             name="AllCategories"
-            element={<Categories />}
+            Component={Categories}
           />
-          <Route exact path="allusers" name="AllUsers" element={<AllUsers />} />
+          <Route path="allusers" name="AllUsers" Component={DAllUsers} />
+          <Route path="allproducts" name="AllProducts" Component={DProducts} />
           <Route
-            exact
-            path="allproducts"
-            name="AllProducts"
-            element={<DProducts />}
-          />
-          <Route
-            exact
             path="product-edit/:id"
             name="ProductEdit"
-            element={<ProductEdit />}
+            Component={ProductEdit}
           />
           <Route
-            exact
             path="customer-orders"
             name="CustomersOrders"
-            element={<CustomerOrders />}
+            Component={CustomerOrders}
           />
+          <Route path="edit-orders" name="EditOrder" Component={EditOrder} />
           <Route
-            exact
-            path="edit-orders"
-            name="EditOrder"
-            element={<EditOrder />}
-          />
-          <Route
-            exact
             path="place-orders"
             name="PlaceOrders"
-            element={<PlaceOrder />}
+            Component={PlaceOrder}
           />
           <Route
-            exact
             path="all-orders"
             name="AllOrders"
-            element={<DistributorOrders />}
+            Component={DistributorOrders}
           />
           <Route
-            exact
             path="shop-details"
             name="ShopDetails"
-            element={<DistributorProfile />}
+            Component={DistributorProfile}
           />
+          <Route
+            path="orders_complate_reports"
+            name="Orders_Complate_Reports"
+            Component={ComplateOrderReports}
+          />
+          <Route
+            path="all_orders_reports"
+            name="All_Orders_Reports"
+            Component={DVAllReports}
+          />
+          <Route
+            path="orders_pending_reports"
+            name="Prders_Pending_Reports"
+            Component={OrdersPendingReports}
+          />
+          <Route path="vd-wallet" name="VD Wallet" Component={VDWallet} />
+          <Route
+            path="payment-status/:status/:txnId"
+            name="Payment Status"
+            Component={VDPaymentStatus}
+          />
+
           {/* all-sarkari-yojna */}
         </Route>
       </Routes>

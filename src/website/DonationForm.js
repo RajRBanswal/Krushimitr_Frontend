@@ -24,7 +24,7 @@ function DonationForm() {
     data.append("subject", subject);
     data.append("pincode", pincode);
     data.append("amount", amount);
-    const response = await fetch("https://krushimitr.in/donation", {
+    const response = await fetch("https://krushimitr.in/api/donation", {
       method: "POST",
       body: data,
     });
@@ -157,3 +157,8 @@ function DonationForm() {
 }
 
 export default DonationForm;
+
+{/* <Link className="text-white mb-0" to="/donation-form">
+  <i className="bi bi-arrow-right text-white me-2"></i>Donation
+  Form
+</Link> */}

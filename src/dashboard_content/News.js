@@ -23,8 +23,8 @@ console.log(newsDate);
         });
         formData.append("newsDate", newsDate);
         formData.append("newsLink", newsLink);
-        // const result = await fetch("https://krushimitr.in/admin/add-news", {
-        const result = await fetch("https://krushimitr.in/admin/add-news", {
+        // const result = await fetch("https://krushimitr.in/api/admin/add-news", {
+        const result = await fetch("https://krushimitr.in/api/admin/add-news", {
             method: "POST",
             body: formData,
         }).then(result => result.json());
@@ -36,7 +36,7 @@ console.log(newsDate);
         }
     }
     const DeleteOne = async (id) => {
-        let resultDel = await fetch("https://krushimitr.in/admin/delete-news", {
+        let resultDel = await fetch("https://krushimitr.in/api/admin/delete-news", {
             method: "post",
             body: JSON.stringify({ id }),
             headers: {
@@ -52,7 +52,7 @@ console.log(newsDate);
         }
     }
     const getNEWSData = async () => {
-        const result = await fetch("https://krushimitr.in/admin/get-news").then(result => result.json());
+        const result = await fetch("https://krushimitr.in/api/admin/get-news").then(result => result.json());
         setAllNews(result.getNEWS);
     }
     useEffect(() => {

@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "../../node_modules/owl.carousel/dist/assets/owl.carousel.min.css";
 import "../../node_modules/owl.carousel/dist/owl.carousel.min";
 import "./../styles.css";
+import { fromLatLng } from "react-geocode";
 
 function Home() {
   const navigate = useNavigate();
@@ -60,9 +61,9 @@ function Home() {
   const [product, setProducts] = useState([]);
 
   const getProductData = async (e) => {
-    let result = await fetch("https://krushimitr.in/admin/all-products").then(
-      (result) => result.json()
-    );
+    let result = await fetch(
+      "https://krushimitr.in/api/admin/all-products"
+    ).then((result) => result.json());
     // const getProd = await all_products.json();
     if (result.status === 201) {
       setProducts(result.product_data);
@@ -72,30 +73,80 @@ function Home() {
   };
   const [cate, setCate] = useState([]);
   const getCategoryData = async (e) => {
-    let result = await fetch("https://krushimitr.in/admin/all-category").then(
-      (result) => result.json()
-    );
-    // const getCat = await all_category.json();
-    console.log(result.getCate);
+    let result = await fetch(
+      "https://krushimitr.in/api/admin/all-category"
+    ).then((result) => result.json());
     setCate(result.getCate);
   };
   const [news, setNews] = useState([]);
   const getNEWSData = async (e) => {
-    let result = await fetch("https://krushimitr.in/admin/get-news").then(
+    let result = await fetch("https://krushimitr.in/api/admin/get-news").then(
       (result) => result.json()
     );
-    // const getCat = await all_category.json();
     setNews(result.getNEWS);
   };
   const [slider, setSlider] = useState([]);
   const getSliderData = async () => {
-    let result = await fetch("https://krushimitr.in/admin/all-slider").then(
+    let result = await fetch("https://krushimitr.in/api/admin/all-slider").then(
       (result) => result.json()
     );
-    // const getSlider = await all_slider.json();
-    // console.log(result);
     setSlider(result.getSlider);
   };
+
+  const [position, setPosition] = useState({ latitude: null, longitude: null });
+  // const location = async () => {
+  // if ("geolocation" in navigator) {
+  //   navigator.geolocation.getCurrentPosition(async function (position) {
+  //     setPosition({
+  //       latitude: position.coords.latitude,
+  //       longitude: position.coords.longitude,
+  //     });
+  //     let demo = await fetch(
+  //       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`
+  //     );
+  //     console.log(demo);
+  //   });
+  // } else {
+  //   console.log("Geolocation is not available in your browser.");
+  // }
+  const Http = new XMLHttpRequest();
+  function getLocation() {
+    var bdcApi = "https://api.bigdatacloud.net/data/reverse-geocode-client";
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log(position.coords.latitude, position.coords.longitude);
+        bdcApi =
+          bdcApi +
+          "?latitude=20°20'07.4" +
+          position.coords.latitude +
+          "&longitude=" +
+          position.coords.longitude +
+          "&localityLanguage=en";
+        getApi(bdcApi);
+      },
+      (err) => {
+        getApi(bdcApi);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
+  }
+  function getApi(bdcApi) {
+    Http.open("GET", bdcApi);
+    Http.send();
+    Http.onreadystatechange = function () {
+      if (this.readyState === 4 && this.status === 200) {
+        // console.log(this.responseText);
+      }
+    };
+  }
+  // };/
+  // console.log(position);
+
   useEffect(() => {
     getSliderData();
     getCategoryData();
@@ -342,46 +393,57 @@ function Home() {
           </div>
 
           <div className="row">
-            {product.map((item) => (
-              <div className="col-lg-3 mt-3">
-                <div className="card h-100">
-                  <div className="card-body p-0 productImage">
-                    <img
-                      src={`https://krushimitr.in/upload/${item.image[0]}`}
-                      style={{ margin: "auto" }}
-                      width={"100%"}
-                      alt={item.image}
-                    />
-                  </div>
-                  <div className="p-3">
-                    <p className="text-dark text-center fw-bold">
-                      {item.productName}
-                    </p>
-                    {/* <p><label className="text-primary fw-bold mb-0"><i className='fa fa-rupee' ></i>{item.price}</label> &nbsp;  {item.oldPrice ? <del className=''><i className='fa fa-rupee' ></i>{item.oldPrice}</del> : ''}</p> */}
-                  </div>
-                  <div className="btn-action d-flex justify-content-center pb-3">
-                    <button
-                      className="btn bg-secondary py-2 px-3 mx-2 btn-sm"
-                      onClick={() =>
-                        navigate("/product-details", { state: { item: item } })
-                      }
-                    >
-                      <i className="bi bi-eye text-white"></i>
-                    </button>
-                  </div>
-                  <div className="productPercentage">
-                    {item.discount ? (
-                      <span>
-                        {item.discount}
-                        {item.percentSbl}
-                      </span>
-                    ) : (
-                      ""
-                    )}
+            {product.map((item) =>
+              item.status === "Active" ? (
+                <div className="col-lg-3 my-3">
+                  <div className="card h-100 shadow">
+                    <div className="card-body p-0 productImage">
+                      <img
+                        src={`https://krushimitr.in/upload/${
+                          Array.isArray(item.image) && item.image[0]
+                        }`}
+                        style={{ margin: "auto" }}
+                        width={"200"}
+                        alt={item.image}
+                      />
+                    </div>
+                    <div className="px-2 py-3">
+                      <p
+                        className="text-dark mb-0 text-center fw-bold"
+                        style={{ fontSize: 14 }}
+                      >
+                        {item.productName}
+                      </p>
+                      {/* <p><label className="text-primary fw-bold mb-0"><i className='fa fa-rupee' ></i>{item.price}</label> &nbsp;  {item.oldPrice ? <del className=''><i className='fa fa-rupee' ></i>{item.oldPrice}</del> : ''}</p> */}
+                    </div>
+                    <div className="btn-action d-flex justify-content-center pb-3">
+                      <button
+                        className="btn bg-primary btn-sm py-0"
+                        onClick={() =>
+                          navigate("/product-details", {
+                            state: { item: item },
+                          })
+                        }
+                      >
+                        <i className="bi bi-eye text-white"></i>
+                      </button>
+                    </div>
+                    <div className="productPercentage">
+                      {item.discount ? (
+                        <span>
+                          {item.discount}
+                          {item.percentSbl}
+                        </span>
+                      ) : (
+                        ""
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ) : (
+                ""
+              )
+            )}
           </div>
         </div>
       </div>
@@ -420,7 +482,9 @@ function Home() {
                 </i>
                 <br />
                 <span className="stat-count highlight">1000+</span>
-                <div className="milestone-details">Farmers connected with us</div>
+                <div className="milestone-details">
+                  Farmers connected with us
+                </div>
               </div>
             </div>
             <div className="col-md-3 mt-3">

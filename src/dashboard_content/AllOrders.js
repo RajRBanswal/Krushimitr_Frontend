@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
@@ -19,13 +19,18 @@ function AllOrders() {
     state: 0,
     pincode: 0,
   };
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [prod, setProd] = useState([]);
   const [compOrders, setCompOrders] = useState([]);
+  const [rejectOrders, setRejectOrders] = useState([]);
+  const [cancelOrders, setCancelOrders] = useState([]);
   const [deleteUserDialog, setDeleteUserDialog] = useState(false);
   const [user, setUser] = useState(emptyProduct);
   const [selectedUsers, setSelectedUsers] = useState(null);
+  const [selectedUsers1, setSelectedUsers1] = useState(null);
   const [globalFilter, setGlobalFilter] = useState(null);
+  const [globalFilters, setGlobalFilters] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const toast = useRef(null);
   const dt = useRef(null);
@@ -33,22 +38,41 @@ function AllOrders() {
   let data = [];
   let datas = [];
   let datass = [];
+  let reject = [];
+  let usercancel = [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getProductData = async () => {
-    let all_products = await fetch("https://krushimitr.in/admin/all-orders");
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/all-orders"
+    );
     const all_orders = await all_products.json();
     if (all_orders.status === 201) {
       all_orders.result.map((item) => {
-        if (item.vendorId === "") {
+        if (item.vendorId === "" && item.status === "Active") {
           data.push(item);
         } else if (item.vendorId !== "" && item.orderStatus === "Done") {
           datass.push(item);
-        } else if (item.orderStatus === "Pending") {
+        } else if (
+          (item.orderStatus === "Pending" && item.reason === "") ||
+          (item.reason === undefined && item.status === "Active")
+        ) {
           datas.push(item);
+        } else if (item.status === "Cancel") {
+          usercancel.push(item);
+        }
+        if (
+          item.vendorId === "" &&
+          item.status === "Active" &&
+          (item.reason !== "" || item.reason !== undefined)
+        ) {
+          reject.push(item);
         }
       });
       setProducts(data);
       setProd(datas);
       setCompOrders(datass);
+      setRejectOrders(reject);
+      setCancelOrders(usercancel);
     } else {
       setProducts(all_orders.result);
     }
@@ -56,28 +80,51 @@ function AllOrders() {
   useEffect(() => {
     getProductData();
     setIsLoading(false);
-  }, [isLoading]);
+  }, [getProductData, isLoading]);
 
   const filterApplyTemplate = (options) => {
     return (
+      <button
+        type="button"
+        className="btn btn-outline-primary w-100 btn-sm"
+        onClick={() => {
+          getOrderData(options._id);
+          setReasonData("");
+          getRejectCause(options._id);
+        }}
+        data-bs-toggle="modal"
+        data-bs-target="#exampleModal"
+      >
+        <i className="pi pi-eye"></i>
+      </button>
+    );
+  };
+  const filterApplyTemplateCompleted = (options) => {
+    return (
       <div className="row">
-        {/* <div className="col-lg-4">
-          <Button
-            type="button"
-            icon="pi pi-pencil"
-            onClick={() => alert(options.productName)}
-            severity="primary"
-          ></Button>
-        </div> */}
         <div className="col-lg-4">
-          <Button
+          <button
             type="button"
-            icon="pi pi-eye"
+            className="btn btn-outline-primary btn-sm"
             onClick={() => getOrderData(options._id)}
-            severity="success"
             data-bs-toggle="modal"
             data-bs-target="#exampleModal"
-          ></Button>
+          >
+            <i className="pi pi-eye"></i>
+          </button>
+        </div>
+        <div className="col-lg-4">
+          <button
+            type="button"
+            onClick={() => {
+              navigate("/admin-invoice", {
+                state: { data: options, goback: "admin" },
+              });
+            }}
+            className="btn btn-outline-info btn-sm"
+          >
+            <i className="pi pi-print"></i>
+          </button>
         </div>
       </div>
     );
@@ -85,15 +132,18 @@ function AllOrders() {
 
   const [singleData, setSingleData] = useState("");
   const getOrderData = async (Id) => {
-    let all_products = await fetch("https://krushimitr.in/admin/get-orders", {
-      method: "post",
-      body: JSON.stringify({
-        orderId: Id,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/get-orders",
+      {
+        method: "post",
+        body: JSON.stringify({
+          orderId: Id,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const get_orders = await all_products.json();
     if (get_orders.status === 201) {
       setSingleData(get_orders.result);
@@ -110,7 +160,7 @@ function AllOrders() {
     let state = add[3].trim();
     let city = add[2].trim();
     let all_products = await fetch(
-      "https://krushimitr.in/admin/get-address-wise-vender",
+      "https://krushimitr.in/api/admin/get-address-wise-vender",
       {
         method: "post",
         body: JSON.stringify({
@@ -151,7 +201,7 @@ function AllOrders() {
     const distName = vendorData.name;
     const distMobile = vendorData.mobile;
     let all_products = await fetch(
-      "https://krushimitr.in/admin/send-to-vendor",
+      "https://krushimitr.in/api/admin/send-to-vendor",
       {
         method: "post",
         body: JSON.stringify({
@@ -186,7 +236,7 @@ function AllOrders() {
 
   const getDistributor = async (id) => {
     let all_products = await fetch(
-      "https://krushimitr.in/distributor/distributor-profile",
+      "https://krushimitr.in/api/distributor/distributor-profile",
       {
         method: "post",
         body: JSON.stringify({ distributor_id: id }),
@@ -234,7 +284,7 @@ function AllOrders() {
   const deleteProduct = async () => {
     let user_id = user._id;
     const delete_users = await fetch(
-      "https://krushimitr.in/admin/delete-user",
+      "https://krushimitr.in/api/admin/delete-user",
       {
         method: "POST",
         body: JSON.stringify({ user_id }),
@@ -298,18 +348,22 @@ function AllOrders() {
   const rightToolbarTemplateCompleted = () => {
     return (
       <>
-        <Button
-          label="Excel"
-          icon="pi pi-upload"
-          className="p-button-help"
+        <button
+          //   label="Excel"
+          //   icon="pi pi-file-excel"
+          className="btn btn-outline-primary btn-sm"
           onClick={exportCSVS}
-        />
-        <Button
-          label="Pdf"
-          icon="pi pi-file-pdf"
-          className="ms-1 p-button-primary"
+        >
+          <i className="pi pi-file-excel"></i>{" "}
+        </button>
+        <button
+          //   label="Pdf"
+          //   icon="pi pi-file-pdf"
+          className="ms-1 btn btn-outline-danger btn-sm"
           onClick={exportPdf}
-        />
+        >
+          <i className="pi pi-file-pdf"></i>{" "}
+        </button>
       </>
     );
   };
@@ -383,7 +437,7 @@ function AllOrders() {
         <i className="pi pi-search" />
         <InputText
           type="search"
-          onInput={(e) => setGlobalFilter(e.target.value)}
+          onInput={(e) => setGlobalFilters(e.target.value)}
           placeholder="Search..."
         />
       </span>
@@ -425,6 +479,28 @@ function AllOrders() {
     // });
   };
 
+  const [reasonData, setReasonData] = useState([]);
+  const getRejectCause = async (id) => {
+    const rejectReason = await fetch(
+      "https://krushimitr.in/api/admin/get-reject-orders-data",
+      {
+        method: "post",
+        body: JSON.stringify({
+          orderId: id,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const result = await rejectReason.json();
+    if (result.status === 201) {
+      result.result === "" ? setReasonData("") : setReasonData(result.result);
+    } else {
+      setReasonData("");
+    }
+  };
+
   return (
     <div className="p-3">
       <Toast ref={toast} />
@@ -454,7 +530,7 @@ function AllOrders() {
             aria-controls="pills-profile"
             aria-selected="false"
           >
-            <h5 className="mb-0">All Sending to Distributor</h5>
+            <h5 className="mb-0">Pending</h5>
           </button>
         </li>
         <li className="nav-item" role="presentation">
@@ -471,6 +547,34 @@ function AllOrders() {
             <h5 className="mb-0">Completed Orders</h5>
           </button>
         </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className="nav-link"
+            id="pills-reject_orders-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-reject_orders"
+            type="button"
+            role="tab"
+            aria-controls="pills-reject_orders"
+            aria-selected="false"
+          >
+            <h5 className="mb-0">Rejected By Distributor</h5>
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className="nav-link"
+            id="pills-cancel_users-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-cancel_users"
+            type="button"
+            role="tab"
+            aria-controls="pills-cancel_users"
+            aria-selected="false"
+          >
+            <h5 className="mb-0">Cancel By Users</h5>
+          </button>
+        </li>
       </ul>
       <div className="tab-content" id="pills-tabContent">
         <div
@@ -483,8 +587,8 @@ function AllOrders() {
             <DataTable
               ref={dt}
               value={products}
-              selection={selectedUsers}
-              onSelectionChange={(e) => setSelectedUsers(e.value)}
+              selection={selectedUsers1}
+              onSelectionChange={(e) => setSelectedUsers1(e.value)}
               dataKey="id"
               paginator
               rows={10}
@@ -497,10 +601,11 @@ function AllOrders() {
               <Column
                 field="orderNumber"
                 header="Order No."
-                bodyStyle={{ color: "green",fontSize:14}}
+                bodyStyle={{ color: "green", fontSize: 14 }}
               ></Column>
               <Column field="userName" header="Name" sortable></Column>
               <Column field="orderDate" header="Date" sortable></Column>
+              <Column field="orderTime" header="Time" sortable></Column>
               <Column
                 field={getItemData}
                 header="Purchase Item / Price / Qty / Total"
@@ -524,12 +629,13 @@ function AllOrders() {
                 field="paymentStatus"
                 header="Pay Status"
                 sortable
-                bodyStyle={{ color: "green", fontWeight: "bold" }}
+                bodyStyle={{ color: "green" }}
               ></Column>
               <Column
                 field="shippingAddress"
                 header="Shipping Address"
                 sortable
+                bodyStyle={{ minWidth: "16rem" }}
               ></Column>
               <Column
                 field="orderStatus"
@@ -585,11 +691,13 @@ function AllOrders() {
           >
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
+            <Column field="orderTime" header="Time" sortable></Column>
             <Column field="paymentStatus" header="Pay Status" sortable></Column>
             <Column
               field="shippingAddress"
               header="Shipping Address"
               sortable
+              bodyStyle={{ minWidth: "16rem" }}
             ></Column>
             <Column
               field={"distName"}
@@ -622,7 +730,7 @@ function AllOrders() {
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
-              globalFilter={globalFilter}
+              globalFilter={globalFilters}
               header={headerComplete}
             >
               <Column
@@ -632,6 +740,7 @@ function AllOrders() {
               ></Column>
               <Column field="userName" header="Name" sortable></Column>
               <Column field="orderDate" header="Date" sortable></Column>
+              <Column field="orderTime" header="Time" sortable></Column>
               <Column
                 field={getItemData}
                 header="Purchase Item / Price / Qty / Total"
@@ -655,24 +764,19 @@ function AllOrders() {
                 field="paymentStatus"
                 header="Pay Status"
                 sortable
-                bodyStyle={{ color: "green", fontWeight: "bold" }}
+                bodyStyle={{ color: "green" }}
               ></Column>
               <Column
                 field="shippingAddress"
                 header="Shipping Address"
                 sortable
+                bodyStyle={{ minWidth: "12rem" }}
               ></Column>
-              <Column
-                field={"distName"}
-                header="Distributor Name"
-                // body={verifiedBodyTemplate}
-                bodyStyle={{ color: "green", fontWeight: "bold" }}
-              ></Column>
+              <Column field={"distName"} header="Vender Name"></Column>
               <Column
                 field="distAddress"
-                header="Distributor Address"
+                header="Vender Address"
                 style={{ display: "none" }}
-                bodyStyle={{ color: "green", fontWeight: "bold" }}
               ></Column>
               <Column
                 field="orderStatus"
@@ -693,8 +797,8 @@ function AllOrders() {
               ></Column>
               <Column
                 header="Action"
-                style={{ minWidth: "4rem" }}
-                body={filterApplyTemplate}
+                style={{ minWidth: "8rem" }}
+                body={filterApplyTemplateCompleted}
                 severity="success"
               ></Column>
             </DataTable>
@@ -722,6 +826,103 @@ function AllOrders() {
             </div>
           </Dialog>
         </div>
+        <div
+          className="tab-pane fade"
+          id="pills-reject_orders"
+          role="tabpanel"
+          aria-labelledby="pills-reject_orders-tab"
+        >
+          <DataTable
+            value={rejectOrders}
+            sortMode="multiple"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
+          >
+            <Column field="userName" header="Name" sortable></Column>
+            <Column field="orderDate" header="Date" sortable></Column>
+            <Column field="orderTime" header="Time" sortable></Column>
+            <Column field="paymentStatus" header="Pay Status" sortable></Column>
+            <Column
+              field="shippingAddress"
+              header="Shipping Address"
+              sortable
+              bodyStyle={{ minWidth: "16rem" }}
+            ></Column>
+            <Column
+              field={"distName"}
+              header="VenderDetails"
+              // body={verifiedBodyTemplate}
+              bodyStyle={{ color: "green" }}
+            ></Column>
+            <Column
+              field="orderStatus"
+              header="Status"
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="reason"
+              header="Reason"
+              bodyStyle={{ color: "red", fontSize: 13 }}
+            ></Column>
+            <Column
+              header="Action"
+              field="_id"
+              style={{ minWidth: "4rem" }}
+              body={filterApplyTemplate}
+              severity="success"
+            ></Column>
+          </DataTable>
+        </div>
+        <div
+          className="tab-pane fade"
+          id="pills-cancel_users"
+          role="tabpanel"
+          aria-labelledby="pills-cancel_users-tab"
+        >
+          <DataTable
+            value={cancelOrders}
+            sortMode="multiple"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
+          >
+            <Column field="userName" header="Name" sortable></Column>
+            <Column field="orderDate" header="Date" sortable></Column>
+            <Column field="orderTime" header="Time" sortable></Column>
+            <Column field="paymentStatus" header="Pay Status" sortable></Column>
+            <Column
+              field="shippingAddress"
+              header="Shipping Address"
+              sortable
+              bodyStyle={{ minWidth: "16rem" }}
+            ></Column>
+            <Column
+              field={"distName"}
+              header="VenderDetails"
+              bodyStyle={{ color: "green" }}
+            ></Column>
+            <Column
+              field="status"
+              header="Status"
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="userCancelNote"
+              header="Cancel Note"
+              bodyStyle={{ color: "red", fontSize: 13 }}
+            ></Column>
+            <Column
+              header="Action"
+              field="_id"
+              style={{ minWidth: "4rem" }}
+              body={filterApplyTemplate}
+              severity="success"
+            ></Column>
+          </DataTable>
+        </div>
       </div>
 
       <div
@@ -748,127 +949,205 @@ function AllOrders() {
               {singleData &&
                 singleData.map((item) => {
                   let orderSize = JSON.parse(item.itemsData);
+                  let orderUser = JSON.parse(item.userData);
                   return (
-                    <table className="table table-stripped table-bordered">
-                      <tbody>
-                        <tr>
-                          <td className="fw-bold">Name : </td>
-                          <td>{item.userName}</td>
-                          <td className="fw-bold text-nowrap">
-                            Total Amount :{" "}
-                          </td>
-                          <td>{item.orderDate}</td>
-                        </tr>
-                        <tr>
-                          <td className="fw-bold text-nowrap">
-                            Payment Status :
-                          </td>
-                          <td>{item.paymentStatus}</td>
-                          <td className="fw-bold text-nowrap">
-                            Shipping Address :
-                          </td>
-                          <td>{item.shippingAddress}</td>
-                        </tr>
-                        <tr>
-                          <td colSpan={4}>
-                            <h5>Products Details</h5>
-                          </td>
-                        </tr>
-
-                        {orderSize &&
-                          orderSize.map((item, index) => {
-                            return (
-                              <>
+                    <>
+                      <table className="table table-stripped table-bordered">
+                        <tbody>
+                          <tr>
+                            <td className="fw-bold">Order No. : </td>
+                            <td colSpan={2} className="fw-bold text-success">
+                              {item.orderNumber}
+                            </td>
+                            <td className="fw-bold text-danger">
+                              Time : {item.orderTime}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="fw-bold">Name : </td>
+                            <td colSpan={2}>{item.userName}</td>
+                            <td className="fw-bold text-danger text-nowrap">
+                              Order Date : {item.orderDate}
+                            </td>
+                          </tr>
+                          {orderUser && (
+                            <tr>
+                              <td className="fw-bold">Mobile No. : </td>
+                              <td>{orderUser.mobile}</td>
+                              <td className="fw-bold text-nowrap">Email :</td>
+                              <td>{orderUser.email}</td>
+                            </tr>
+                          )}
+                          <tr>
+                            <td className="fw-bold text-nowrap">
+                              Payment Status :
+                            </td>
+                            <td className="fw-bold text-warning">
+                              {item.paymentStatus === "Paid" ? (
+                                <p className="text-success">
+                                  {item.paymentStatus}
+                                </p>
+                              ) : (
+                                <p className="text-warning">
+                                  {item.paymentStatus}
+                                </p>
+                              )}
+                            </td>
+                            <td className="fw-bold text-nowrap">
+                              Shipping Address :
+                            </td>
+                            <td>{item.shippingAddress}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <table className="table table-stripped table-bordered">
+                        <thead>
+                          <tr>
+                            <th colSpan={6}>
+                              <h5>Products Details</h5>
+                            </th>
+                          </tr>
+                          <tr>
+                            <th style={{ fontSize: 14 }}>Sr.No.</th>
+                            <th style={{ fontSize: 14 }}>Product</th>
+                            <th style={{ fontSize: 14 }}>Size</th>
+                            <th style={{ fontSize: 14 }}>Price</th>
+                            <th style={{ fontSize: 14 }}>Quantity</th>
+                            <th style={{ fontSize: 14 }}>Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {orderSize &&
+                            orderSize.map((elem, index) => {
+                              return (
                                 <tr>
-                                  <td className="fw-bold text-nowrap">
-                                    Product{" "}
-                                    <span className="text-primary">
-                                      {index + 1}
-                                    </span>{" "}
-                                    :
+                                  <td style={{ fontSize: 14 }}>{index + 1}</td>
+                                  <td style={{ fontSize: 14 }}>
+                                    {elem.productName}
                                   </td>
-                                  <td colSpan={2}>{item.productName}</td>
-                                  <td className="fw-bold text-nowrap">
-                                    {" "}
-                                    Quantity : {item.quantity}
+                                  <td style={{ fontSize: 14 }}>
+                                    {elem.size} {elem.unit ? elem.unit : ""}
+                                  </td>
+                                  <td style={{ fontSize: 14 }}>{elem.price}</td>
+                                  <td style={{ fontSize: 14 }}>
+                                    {elem.quantity}
+                                  </td>
+                                  <td style={{ fontSize: 14 }}>
+                                    {elem.price * elem.quantity}
                                   </td>
                                 </tr>
-                                <tr>
-                                  <td className="fw-bold text-nowrap">Price</td>
-                                  <td>{item.price * item.quantity}</td>
-                                  <td className="fw-bold text-nowrap">Size</td>
-                                  <td>
-                                    {item.size} {item.unit ? item.unit : ""}
-                                  </td>
-                                </tr>
-                              </>
-                            );
-                          })}
-                        <tr>
-                          <td className="text-danger fw-bold">Total Amount</td>
-                          <td className="text-danger fw-bold">
-                            {item.finalAmount}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td></td>
-                          <td>
-                            <div className="btn-group">
-                              <button
-                                type="button"
-                                className="btn btn-warning dropdown-toggle btn-sm"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                                onClick={() => {
-                                  getAddressWiseVender(item.shippingAddress);
-                                }}
-                              >
-                                Shipped to Distributor
-                              </button>
-                              <ul className="dropdown-menu">
-                                {distributor &&
-                                  distributor.map((ele) => {
-                                    return (
-                                      <li>
-                                        <Link
-                                          className="dropdown-item"
-                                          to=""
-                                          style={{
-                                            borderBottom: "0.5px solid #b8b8b8",
-                                          }}
-                                          onClick={() => {
-                                            sendToVendor(ele, item, item._id);
-                                          }}
-                                          data-bs-dismiss="modal"
-                                        >
-                                          {ele.name} ( {ele.address}, {ele.city}
-                                          , {ele.pincode} )
-                                        </Link>
-                                      </li>
-                                    );
-                                  })}
-                              </ul>
-                            </div>
-                            {selected ? (
-                              <label className="text-success">
-                                {selected.name} ( {selected.address},
-                                {selected.city}, {selected.pincode} )
-                              </label>
-                            ) : (
-                              ""
-                            )}
-                          </td>
-                          <td>
-                            <button
+                              );
+                            })}
+                          <tr>
+                            <td></td>
+                            <td className="text-danger fw-bold">
+                              Total Amount
+                            </td>
+                            <td colSpan={4} className="text-danger fw-bold">
+                              ₹ {item.finalAmount}
+                              {item.withWallet !== undefined ||
+                              item.withWallet > 0
+                                ? " ( Wallet Use : ₹ " + item.withWallet + ")"
+                                : ""}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td></td>
+                            <td>
+                              {item.orderStatus === "Done" ||
+                              item.status === "Cancel" ? (
+                                ""
+                              ) : (
+                                <div className="btn-group">
+                                  <button
+                                    type="button"
+                                    className="btn btn-warning dropdown-toggle btn-sm"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    onClick={() => {
+                                      getAddressWiseVender(
+                                        item.shippingAddress
+                                      );
+                                    }}
+                                  >
+                                    Shipped to Distributor
+                                  </button>
+                                  <ul className="dropdown-menu">
+                                    {distributor &&
+                                      distributor.map((ele) => {
+                                        return (
+                                          <li>
+                                            <Link
+                                              className="dropdown-item"
+                                              to=""
+                                              style={{
+                                                borderBottom:
+                                                  "0.5px solid #b8b8b8",
+                                              }}
+                                              onClick={() => {
+                                                sendToVendor(
+                                                  ele,
+                                                  item,
+                                                  item._id
+                                                );
+                                              }}
+                                              data-bs-dismiss="modal"
+                                            >
+                                              {ele.name} ( {ele.address},{" "}
+                                              {ele.city}, {ele.pincode} )
+                                            </Link>
+                                          </li>
+                                        );
+                                      })}
+                                  </ul>
+                                </div>
+                              )}
+                              {selected ? (
+                                <label className="text-success">
+                                  {selected.name} ( {selected.address},
+                                  {selected.city}, {selected.pincode} )
+                                </label>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+                            <td>
+                              {/* <button
                               type="button"
                               className="btn btn-danger btn-sm"
                             >
                               Dispatch
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                            </button> */}
+                            </td>
+                          </tr>
+                          {reasonData &&
+                            reasonData.map((ele) => (
+                              <>
+                                <tr>
+                                  <td colSpan={4}>
+                                    <h5>Reject Order Details</h5>
+                                  </td>
+                                </tr>
+
+                                <tr>
+                                  <td
+                                    className="text-danger fw-bold"
+                                    colSpan={2}
+                                  >
+                                    Distributor / Vendor : {ele.distrName}
+                                  </td>
+                                  <td
+                                    className="text-danger fw-bold"
+                                    colSpan={2}
+                                  >
+                                    Reason : {ele.reason}
+                                  </td>
+                                </tr>
+                              </>
+                            ))}
+                        </tbody>
+                      </table>
+                    </>
                   );
                 })}
             </div>
