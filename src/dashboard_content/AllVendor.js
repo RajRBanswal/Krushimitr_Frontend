@@ -167,6 +167,15 @@ function AllVendor() {
       alert(result.message);
     }
   };
+  const [passwordShow, setPasswordShow] = useState(false);
+
+  const showPassword = (id) => {
+    if (passwordShow === false) {
+      setPasswordShow(true);
+    } else {
+      setPasswordShow(false);
+    }
+  };
 
   return (
     <>
@@ -386,6 +395,29 @@ function AllVendor() {
                 <p className="mb-1">
                   <b>Email : </b>
                   {userData && userData.email}
+                </p>
+                <p className="mb-1">
+                  <b>Password : </b>
+                  {passwordShow === true ? (
+                    userData === undefined ||
+                    userData === "" ||
+                    userData === null ? (
+                      <span>No Password Found</span>
+                    ) : (
+                      userData.stringPassword
+                    )
+                  ) : (
+                    "**********"
+                  )}{" "}
+                  {"   "}
+                  {passwordShow === true ? (
+                    <i className="fa fa-eye" onClick={() => showPassword()}></i>
+                  ) : (
+                    <i
+                      className="fa fa-eye-slash"
+                      onClick={() => showPassword()}
+                    ></i>
+                  )}
                 </p>
               </div>
               <div className="col-lg-4">

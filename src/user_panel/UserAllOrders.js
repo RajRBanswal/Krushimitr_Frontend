@@ -18,6 +18,7 @@ function UserAllOrders() {
 
   const [reason, setReason] = useState("");
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getProductData = async () => {
     let data = [];
     let datas = [];
@@ -56,9 +57,9 @@ function UserAllOrders() {
   };
 
   useEffect(() => {
-    getProductData();
+    setInterval(() => getProductData(), 5000);
     dispatch(emptyCart());
-  }, [getProductData]);
+  }, [dispatch, getProductData]);
 
   const cancelFilterTemplate = (options) => {
     return (
@@ -180,6 +181,8 @@ function UserAllOrders() {
     return abc.filter((value, index) => abc.indexOf(value) === index);
   }
 
+  const refresh = () => window.location.reload(true);
+  // console.log(orderData.paymentMethod);
   const orderCancelNow = async () => {
     let userMobile = "";
     let forvcommId = [];
@@ -194,16 +197,33 @@ function UserAllOrders() {
 
     let itemID = removeDuplicates(forvcommId);
     let vCommi = 0;
+    let ttlCommission = 0;
     for (let aaaa = 0; aaaa < itemID.length; aaaa++) {
       for (let sr = 0; sr < dd.length; sr++) {
         if (itemID[aaaa] === dd[sr]._id) {
-          vCommi = vCommi + dd[sr].vCommissionPercent;
+          // vCommi = vCommi + dd[sr].vCommissionPercent;
+          vCommi = vCommi + parseInt(dd[sr].vCommissionPercent);
+          ttlCommission = ttlCommission + parseInt(dd[sr].commission);
           break;
         }
       }
     }
-    let adminCom = (parseInt(orderData.finalAmount) / 100) * vCommi;
-    let vendorCom = parseInt(orderData.finalAmount) - adminCom;
+    let adminCom = 0;
+    let vendorCom = 0;
+    let distCom = 0;
+    if (vCommi > 0) {
+      let adminComs = (parseInt(orderData.finalAmount) / 100) * vCommi;
+      let abc = (adminComs / 100) * (ttlCommission * 10);
+      adminCom = adminComs - abc;
+      distCom = abc;
+      vendorCom = parseInt(orderData.finalAmount) - adminComs;
+    } else {
+      adminCom = 0;
+      vendorCom = parseInt(orderData.finalAmount);
+    }
+
+    // let adminCom = (parseInt(orderData.finalAmount) / 100) * vCommi;
+    // let vendorCom = parseInt(orderData.finalAmount) - adminCom;
     const response = await fetch(
       "https://krushimitr.in/api/users/cancel-order",
       {
@@ -216,6 +236,7 @@ function UserAllOrders() {
           finalAmount: orderData.finalAmount,
           adminCom: adminCom,
           vendorCom: vendorCom,
+          distCom: distCom,
           orderNumber: orderData.orderNumber,
           userId: orderData.userId,
           userName: orderData.userName,
@@ -233,10 +254,12 @@ function UserAllOrders() {
       alert(result.result);
       setOrderId("");
       setReason("");
+      refresh();
     } else {
       alert(result.result);
       setOrderId("");
       setReason("");
+      refresh();
     }
   };
   return (
@@ -314,6 +337,12 @@ function UserAllOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%" }}
           >
+            <Column
+              field="orderNumber"
+              header="OrderId"
+              bodyStyle={{ color: "green", fontSize: 13, fontWeight: "bold" }}
+              sortable
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column
@@ -326,10 +355,17 @@ function UserAllOrders() {
               field="shippingAddress"
               header="Shipping Address"
               sortable
+              bodyStyle={{ width: "30%" }}
             ></Column>
             <Column
               field="deliveryStatus"
               header="Deli. Status"
+              sortable
+              bodyStyle={{ color: "green", fontWeight: "bold" }}
+            ></Column>
+             <Column
+              field="orderStatus"
+              header="Status"
               sortable
               bodyStyle={{ color: "green", fontWeight: "bold" }}
             ></Column>
@@ -356,6 +392,12 @@ function UserAllOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
           >
+            <Column
+              field="orderNumber"
+              header="OrderId"
+              bodyStyle={{ color: "green", fontSize: 13, fontWeight: "bold" }}
+              sortable
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column
@@ -368,6 +410,7 @@ function UserAllOrders() {
               field="shippingAddress"
               header="Shipping Address"
               sortable
+              bodyStyle={{ width: "30%" }}
             ></Column>
             <Column
               field="deliveryStatus"
@@ -398,6 +441,12 @@ function UserAllOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
           >
+            <Column
+              field="orderNumber"
+              header="OrderId"
+              bodyStyle={{ color: "green", fontSize: 13, fontWeight: "bold" }}
+              sortable
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column
@@ -410,6 +459,7 @@ function UserAllOrders() {
               field="shippingAddress"
               header="Shipping Address"
               sortable
+              bodyStyle={{ width: "30%" }}
             ></Column>
             <Column
               field="deliveryStatus"
@@ -440,6 +490,12 @@ function UserAllOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
           >
+            <Column
+              field="orderNumber"
+              header="OrderId"
+              bodyStyle={{ color: "green", fontSize: 13, fontWeight: "bold" }}
+              sortable
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column
@@ -452,12 +508,19 @@ function UserAllOrders() {
               field="shippingAddress"
               header="Shipping Address"
               sortable
+              bodyStyle={{ width: "30%" }}
             ></Column>
             <Column
-              field="deliveryStatus"
-              header="Deli. Status"
+              field="status"
+              header="Status"
               sortable
-              bodyStyle={{ color: "green", fontWeight: "bold" }}
+              bodyStyle={{ color: "red" }}
+            ></Column>
+            <Column
+              field="reason"
+              header="Reason"
+              sortable
+              bodyStyle={{ color: "red" }}
             ></Column>
             <Column
               header="Action"
@@ -546,104 +609,350 @@ function UserAllOrders() {
               ></button>
             </div>
             <div className="modal-body orderData">
-              {singleData &&
-                singleData.map((item) => {
-                  let orderSize = JSON.parse(item.itemsData);
-                  return (
-                    <table className="table table-stripped table-bordered">
-                      <tbody>
-                        <tr>
-                          <td className="fw-bold">Name : </td>
-                          <td>{item.userName}</td>
-                          <td className="fw-bold text-nowrap">
-                            Total Amount :{" "}
-                          </td>
-                          <td>{item.orderDate}</td>
-                        </tr>
-                        <tr>
-                          <td className="fw-bold text-nowrap">
-                            Payment Status :
-                          </td>
-                          <td>{item.paymentStatus}</td>
-                          <td className="fw-bold text-nowrap">
-                            Shipping Address :
-                          </td>
-                          <td>{item.shippingAddress}</td>
-                        </tr>
-                        <tr>
-                          <td colSpan={4}>
-                            <h5>Products Details</h5>
-                          </td>
-                        </tr>
+              <div className="row">
+                <div className="col-lg-12 orderData">
+                  {singleData &&
+                    singleData.map((item) => {
+                      let orderSize = JSON.parse(item.itemsData);
+                      let orderUser = JSON.parse(item.userData);
+                      let deliveryOption = "";
+                      if (
+                        item.deliveryMode !== undefined &&
+                        item.deliveryMode !== ""
+                      ) {
+                        deliveryOption = JSON.parse(item.deliveryOption);
+                      } else {
+                        deliveryOption = "";
+                      }
 
-                        {orderSize &&
-                          orderSize.map((item, index) => {
-                            return (
+                      return (
+                        <table className="table table-stripped table-bordered">
+                          <tbody>
+                            <tr>
+                              <td className="fw-bold">Order No. : </td>
+                              <td colSpan={2} className="text-success">
+                                {item.orderNumber}
+                              </td>
+                              <td className="fw-bold text-danger">
+                                Time : {item.orderTime}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="fw-bold">TransactionId : </td>
+                              <td colSpan={2} className="text-success">
+                                {item.transactionId}
+                              </td>
+                              <td className="fw-bold text-danger"></td>
+                            </tr>
+                            <tr>
+                              <td className="fw-bold">Name : </td>
+                              <td colSpan={2}>{item.userName}</td>
+                              <td className="fw-bold text-danger text-nowrap">
+                                Order Date : {item.orderDate}
+                              </td>
+                            </tr>
+
+                            {orderUser && (
+                              <tr>
+                                <td className="fw-bold">Mobile No. : </td>
+                                <td>{orderUser.mobile}</td>
+                                <td className="fw-bold text-nowrap">Email :</td>
+                                <td>{orderUser.email}</td>
+                              </tr>
+                            )}
+                            <tr>
+                              <td className="fw-bold text-nowrap">
+                                Payment Status :
+                              </td>
+                              <td className="fw-bold text-warning">
+                                {item.paymentStatus}
+                              </td>
+                              <td className="fw-bold text-nowrap">
+                                Shipping Address :
+                              </td>
+                              <td style={{ width: "35%" }}>
+                                {item.shippingAddress}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="fw-bold text-nowrap">
+                                Payment Method :
+                              </td>
+                              <td className="fw-bold text-warning">
+                                {item.paymentMethod}
+                              </td>
+                              <td className="fw-bold text-nowrap">
+                                Payment Type :
+                              </td>
+                              <td>{item.paymentType}</td>
+                            </tr>
+                            <tr>
+                              <td colSpan={4}>
+                                <h5>Products Details</h5>
+                              </td>
+                            </tr>
+
+                            {orderSize &&
+                              orderSize.map((item, index) => {
+                                return (
+                                  <>
+                                    <tr>
+                                      <td className="fw-bold text-nowrap">
+                                        Product{" "}
+                                        <span className="text-primary">
+                                          {index + 1}
+                                        </span>{" "}
+                                        :
+                                      </td>
+                                      <td colSpan={2}>{item.productName}</td>
+                                      <td className="text-nowrap">
+                                        Company : {item.company}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td className="fw-bold text-nowrap">
+                                        Price
+                                      </td>
+                                      <td>{item.price * item.quantity}</td>
+                                      <td className="fw-bold text-nowrap">
+                                        Size
+                                      </td>
+                                      <td>
+                                        {item.size} {item.unit ? item.unit : ""}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td className="fw-bold text-nowrap">
+                                        Quantity
+                                      </td>
+                                      <td colSpan={2}>{item.quantity}</td>
+                                      <td className="fw-bold text-nowrap">
+                                        GST : {item.gst}
+                                      </td>
+                                    </tr>
+                                  </>
+                                );
+                              })}
+
+                            <tr>
+                              <td className="text-danger fw-bold">
+                                Total Amount
+                              </td>
+                              <td className="text-danger fw-bold">
+                                {item.finalAmount}
+                              </td>
+                              <td></td>
+                              <td className="text-center"></td>
+                            </tr>
+                            <tr>
+                              <td colSpan={4}>
+                                <h5>Delivery Details</h5>
+                              </td>
+                            </tr>
+                            {item.deliveryStatus === "Delivered" ? (
+                              <tr>
+                                <th>Delivery Status</th>
+                                <th className="text-success">
+                                  {item.deliveryStatus}
+                                </th>
+                                <td className="fw-bold text-nowrap">
+                                  Distributor Name :
+                                </td>
+                                <td>{item.shippingDistName}</td>
+                              </tr>
+                            ) : (
+                              <tr>
+                                <th>Shipping Status</th>
+                                <th className="text-success">
+                                  {item.shippingStatus}
+                                </th>
+                                <td className="fw-bold text-nowrap">
+                                  Distributor Name :
+                                </td>
+                                <td>{item.shippingDistName}</td>
+                              </tr>
+                            )}
+
+                            {/* {item.shippingStatus === undefined ||
+                            item.shippingStatus === "" ? (
                               <>
                                 <tr>
                                   <td className="fw-bold text-nowrap">
-                                    Product{" "}
-                                    <span className="text-primary">
-                                      {index + 1}
-                                    </span>{" "}
-                                    :
+                                    Delivery Date/Time :
                                   </td>
-                                  <td colSpan={2}>{item.productName}</td>
+                                  <td>
+                                    {item.deliveryDate === "" ||
+                                    item.deliveryDate === undefined
+                                      ? ""
+                                      : item.deliveryDate +
+                                        " / " +
+                                        item.shippingTime}
+                                  </td>
                                   <td className="fw-bold text-nowrap">
-                                    {"  "}
-                                    Quantity : {item.quantity}
+                                    Delivery Status:
+                                  </td>
+                                  <td>{item.deliveryStatus}</td>
+                                </tr>
+                              </>
+                            ) : (
+                              <>
+                                <tr>
+                                  <td className="fw-bold text-nowrap">
+                                    Distributor Name :
+                                  </td>
+                                  <td>{item.shippingDistName}</td>
+                                  <td className="fw-bold text-nowrap">
+                                    Shipping Date/Time :
+                                  </td>
+                                  <td>
+                                    {item.shippingDate +
+                                      " / " +
+                                      item.shippingTime}
                                   </td>
                                 </tr>
                                 <tr>
                                   <td className="fw-bold text-nowrap">
-                                    MRP : {item.price}
+                                    Shipping Status :
                                   </td>
-                                  <td
-                                    colSpan={2}
-                                    className="fw-bold text-nowrap"
-                                  >
-                                    {"  "}
-                                    Total Price : {item.price * item.quantity}
+                                  <td className="fw-bold text-warning">
+                                    {item.shippingStatus}
                                   </td>
-                                  <td className="fw-bold text-nowrap">
-                                    Size : {item.size}{" "}
-                                    {item.unit ? item.unit : ""}
-                                  </td>
+                                  <td className="fw-bold text-nowrap"></td>
+                                  <td></td>
                                 </tr>
                               </>
-                            );
-                          })}
-                        <tr>
-                          <td className="text-danger fw-bold">Total Amount</td>
-                          <td className="text-danger fw-bold">
-                            {item.finalAmount}
-                          </td>
-                          <td colSpan={2} className="text-success">
-                            {item.deliveryStatus === "Delivered" ? (
-                              <p className="mb-0 text-success fw-bold ">
-                                Status : Delivered
-                              </p>
-                            ) : item.status === "Cancel" ? (
-                              <p className="mb-0 text-danger">
-                                Status :
-                                {item.status + " : " + item.userCancelNote}
-                              </p>
-                            ) : (
-                              <p className="mb-0 text-warning fw-bold ">
-                                Status : Pending
-                              </p>
-                            )}
-                          </td>
-                          {/* <td className="text-success fw-bold">
-                            {item.deliveryStatus === "Delivered"
-                              ? "Delivered"
-                              : "Pending"}
-                          </td> */}
-                        </tr>
-                      </tbody>
-                    </table>
-                  );
-                })}
+                            )} */}
+
+                            <tr>
+                              <td colSpan={4} className=" text-nowrap">
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <span>Order Status</span>
+                                  {item.shippingStatus === undefined ||
+                                  item.shippingStatus === "" ? (
+                                    <span style={{ color: "grey" }}>
+                                      Shipping Status
+                                    </span>
+                                  ) : (
+                                    <span>Shipping Status</span>
+                                  )}
+                                  {item.shippingStatus === undefined ||
+                                  item.shippingStatus === "" ? (
+                                    <span style={{ color: "grey" }}>
+                                      Delivery Status
+                                    </span>
+                                  ) : (
+                                    <span>Delivery Status</span>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={4} className=" text-nowrap ">
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <span className="">
+                                    {item.orderStatus === "Pending" ? (
+                                      <span className="text-secondary">
+                                        {item.orderStatus}
+                                      </span>
+                                    ) : (
+                                      <span className="text-success">
+                                        {item.orderStatus}
+                                      </span>
+                                    )}
+                                  </span>
+                                  <div className="d-flex justify-content-between align-items-center ">
+                                    {" "}
+                                    <i
+                                      class="fa fa-arrow-left"
+                                      aria-hidden="true"
+                                    ></i>
+                                    <div className="lineBottom"></div>
+                                    <i
+                                      class="fa fa-arrow-right"
+                                      aria-hidden="true"
+                                    ></i>
+                                  </div>
+                                  <span className="text-center ">
+                                    {item.shippingStatus}
+                                    <br />
+                                    <small>
+                                      {item.deliveryDate === "" ||
+                                      item.deliveryDate === undefined
+                                        ? ""
+                                        : item.deliveryDate +
+                                            " / " +
+                                            item.shippingTime ===
+                                          undefined
+                                        ? ""
+                                        : item.shippingTime}
+                                    </small>
+                                    <br />
+                                    <small>
+                                      {item.shippingDistName
+                                        ? item.shippingDistName
+                                        : ""}
+                                    </small>
+                                    <br />
+                                    <small>
+                                      {item.deliveryMode
+                                        ? item.deliveryMode
+                                        : ""}
+                                    </small>
+                                  </span>
+                                  <div className="d-flex justify-content-between align-items-center ">
+                                    {" "}
+                                    <i
+                                      class="fa fa-thin fa-arrow-left"
+                                      aria-hidden="true"
+                                    ></i>
+                                    <div className="lineBottom"></div>
+                                    <i
+                                      class="fa fa-thin fa-arrow-right"
+                                      aria-hidden="true"
+                                    ></i>
+                                  </div>
+                                  <span className="text-center ">
+                                    {item.deliveryStatus === "Delivered" ? (
+                                      <span className="text-success text-center">
+                                        Delivered <br />
+                                        <small>
+                                          {item.deliveryDate === "" ||
+                                          item.deliveryDate === undefined
+                                            ? ""
+                                            : item.deliveryDate +
+                                                " / " +
+                                                item.shippingTime ===
+                                              undefined
+                                            ? ""
+                                            : item.shippingTime}
+                                        </small>
+                                      </span>
+                                    ) : (
+                                      <span style={{ color: "grey" }}>
+                                        Pending
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                            {/* <tr>
+                        <td colSpan={4} className="text-center py-3">
+                          <button
+                            type="button"
+                            className="btn btn-success"
+                            onClick={() => setModal(true)}
+                          >
+                            Confirm
+                          </button>
+                        </td>
+                      </tr> */}
+                          </tbody>
+                        </table>
+                      );
+                    })}
+                </div>
+              </div>
             </div>
           </div>
         </div>

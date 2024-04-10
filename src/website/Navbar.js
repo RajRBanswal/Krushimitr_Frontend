@@ -154,7 +154,7 @@ function Navbar() {
               >
                 <i className="fa fa-solid fa-shopping-cart"></i>
                 <span className="badge rounded-pill bg-success text-light">
-                  {cart && cart.data.length}
+                  {cart && cart.data === undefined ? "" : cart.data.length}
                 </span>
               </Link>
               <div

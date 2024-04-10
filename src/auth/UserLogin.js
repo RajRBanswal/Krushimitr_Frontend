@@ -47,7 +47,7 @@ function UserLogin() {
           headers: { "Content-Type": "application/json" },
         }
       ).then((resp) => resp.json());
-      console.log(result);
+      // console.log(result);
       if (result.status === 201) {
         setLoadings(false);
         localStorage.setItem("distributor_id", result.distributor._id);

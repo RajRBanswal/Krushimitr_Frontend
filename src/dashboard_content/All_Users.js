@@ -7,10 +7,35 @@ import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import moment from "moment";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 
 function All_Users() {
   const [users, setUsers] = useState([]);
   const [deletedUsers, setDeletedUsers] = useState([]);
+
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    email: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    mobile: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getAllUsers = async () => {
     const all_users = await fetch("https://krushimitr.in/api/admin/all-users");
@@ -204,20 +229,27 @@ function All_Users() {
       </React.Fragment>
     );
   };
+
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
   const header = (
     <div className="">
       <div className="row">
         <div className="col-lg-8">
           <h4 className="m-0">All Users</h4>
         </div>
-        <div className="col-lg-2">
+        <div className="col-lg-4">
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
             <InputText
-              type="search"
-              className="form-control ps-4"
-              onInput={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search..."
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
             />
           </span>
         </div>
@@ -263,6 +295,14 @@ function All_Users() {
     );
   };
 
+  // const password = (rowData) => {
+  //   if (rowData.stringPassword.length > 0) {
+  //     return <span>{rowData.stringPassword}</span>;
+  //   }else{
+  //     return <span>**********</span>;
+  //   }
+  // };
+
   return (
     <div>
       <Toast ref={toast} />
@@ -274,7 +314,7 @@ function All_Users() {
 
       <div class="tab-content" id="pills-tabContent">
         <div
-          class="tab-pane fade show active"
+          class="tab-pane fade show active px-1"
           id="pills-home"
           role="tabpanel"
           aria-labelledby="pills-home-tab"
@@ -292,6 +332,9 @@ function All_Users() {
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
             globalFilter={globalFilter}
             header={header}
+            filters={filters}
+            filterDisplay="menu"
+            globalFilterFields={["name", "email", "mobile", "status"]}
           >
             <Column
               field="createdAt"
@@ -325,6 +368,12 @@ function All_Users() {
               sortable
               style={{ minWidth: "16rem" }}
             ></Column>
+            {/* <Column
+              field={password}
+              header="Password"
+              body={password}
+              sortable
+            ></Column> */}
             <Column
               field="image"
               header="Image"
@@ -390,6 +439,7 @@ function All_Users() {
               sortable
               style={{ minWidth: "16rem" }}
             ></Column>
+            <Column field="stringPassword" header="Password" sortable></Column>
             <Column
               field="image"
               header="Image"

@@ -8,7 +8,7 @@ import { Calendar } from "primereact/calendar";
 import moment from "moment";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-
+import { Helmet } from "react-helmet";
 function RedeemRequest() {
   const [addDialog, setAddDialog] = useState(false);
   const [transId, setTransId] = useState("");
@@ -51,7 +51,7 @@ function RedeemRequest() {
 
   useEffect(() => {
     getRedeemRequestData();
-  }, [getRedeemRequestData]);
+  }, []);
 
   const filterApplyTemplate = (options) => {
     if (options.status === "Success") {
@@ -187,19 +187,23 @@ function RedeemRequest() {
     </div>
   );
   const showDateWiseData = (date2) => {
-    let newDate1 = new Date(date1);
-    let newDate2 = new Date(date2);
-    let Datas = [];
-    // console.log(newDate1);
-    successData.map((item) => {
-      let newDate3 = moment(item.orderDate, "DD-MM-YYYY");
-      let newDate4 = new Date(newDate3._d);
+    if (date2 !== "" && date1 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(date2).toISOString();
+      let Datas = [];
+      successData.map((item) => {
+        let newDate3 = moment(item.date, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3).toISOString();
 
-      if (newDate4 >= newDate1 && newDate4 <= newDate2) {
-        Datas.push(item);
-      }
-    });
-    setFilterData(Datas);
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          Datas.push(item);
+        }
+      });
+      setFilterData(Datas);
+    } else {
+      setDate1("");
+      return;
+    }
   };
 
   const hideDialog = () => {
@@ -357,6 +361,11 @@ function RedeemRequest() {
 
   return (
     <div>
+      {/* <Helmet>
+        <meta charSet="utf-8" />
+        <title>Redeem Request</title>
+        <link rel="canonical" href="http://mysite.com/example" />
+      </Helmet> */}
       <Toast ref={toast} />
 
       <div className="card px-3 UserCardReports">
@@ -372,6 +381,11 @@ function RedeemRequest() {
           globalFilter={globalFilter}
           header={headerComplete}
         >
+           <Column
+            field="date"
+            header="Date"
+            sortable
+          ></Column>
           <Column
             field="name"
             header="Name"

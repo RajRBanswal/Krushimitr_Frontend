@@ -6,7 +6,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { City, State } from "country-state-city";
 import { Dialog } from "primereact/dialog";
-
+import CryptoJS from "crypto-js";
+import { InputText } from "primereact/inputtext";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 function AllDistributors() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
@@ -24,6 +26,30 @@ function AllDistributors() {
   const [userType, setUserType] = useState("");
   const [loadings, setLoadings] = useState(false);
   const [visible, setVisible] = useState(false);
+
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    email: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    mobile: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
 
   const StoreData = async (e) => {
     e.preventDefault();
@@ -80,6 +106,7 @@ function AllDistributors() {
   const [activeDistributor, setActiveDistributor] = useState([]);
   const [deactiveDistributor, setDeactiveDistributor] = useState([]);
   const [pendingDistributor, setPendingVendor] = useState([]);
+  const [globalFilter, setGlobalFilter] = useState(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getAllDistributor = async () => {
@@ -87,7 +114,7 @@ function AllDistributors() {
     let dDistributor = [];
     let pendingDist = [];
     const all_users = await fetch(
-      "https://krushimitr.in/api/admin/distributor"
+      "https://krushimitr.in/api/admin/distributor-vendor"
     );
     const result = await all_users.json();
     if (result.status === 201) {
@@ -172,19 +199,26 @@ function AllDistributors() {
     </React.Fragment>
   );
 
+  const [passwordShow, setPasswordShow] = useState(false);
+
+  const showPassword = (id) => {
+    if (passwordShow === false) {
+      setPasswordShow(true);
+    } else {
+      setPasswordShow(false);
+    }
+  };
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
   return (
     <>
       <div className="card p-3 adminPanelCode">
-        <button
-          type="button"
-          className="btn btn-primary float-end btn-sm position-absolute"
-          style={{ right: 20, top: 10 }}
-          data-bs-toggle="modal"
-          data-bs-target="#exampleModal"
-        >
-          Add Distributor
-        </button>
-
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
           <li class="nav-item" role="presentation">
             <button
@@ -229,6 +263,30 @@ function AllDistributors() {
             </button>
           </li>
         </ul>
+        <div className="row">
+          <div className="col-lg-6"></div>
+          <div className="col-lg-4">
+            <span className="p-input-icon-left">
+              <i className="pi pi-search" />
+              <InputText
+                value={globalFilterValue}
+                onChange={onGlobalFilterChange}
+                placeholder="Keyword Search"
+              />
+            </span>
+          </div>
+          <div className="col-lg-2">
+            <button
+              type="button"
+              className="btn btn-primary float-end btn-sm position-absolute"
+              style={{ right: 20, top: 10 }}
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+            >
+              Add Distributor
+            </button>
+          </div>
+        </div>
         <div class="tab-content" id="pills-tabContent">
           <div
             class="tab-pane fade show active"
@@ -244,6 +302,10 @@ function AllDistributors() {
                 rows={10}
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 tableStyle={{ minWidth: "100%" }}
+                globalFilter={globalFilter}
+                filters={filters}
+                filterDisplay="menu"
+                globalFilterFields={["name", "email", "mobile", "status"]}
               >
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
@@ -283,6 +345,10 @@ function AllDistributors() {
                 rows={10}
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 tableStyle={{ minWidth: "100%" }}
+                globalFilter={globalFilter}
+                filters={filters}
+                filterDisplay="menu"
+                globalFilterFields={["name", "email", "mobile", "status"]}
               >
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
@@ -322,6 +388,10 @@ function AllDistributors() {
                 rows={10}
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 tableStyle={{ minWidth: "100%" }}
+                globalFilter={globalFilter}
+                filters={filters}
+                filterDisplay="menu"
+                globalFilterFields={["name", "email", "mobile", "status"]}
               >
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
@@ -558,6 +628,29 @@ function AllDistributors() {
                 <p className="mb-1">
                   <b>Email : </b>
                   {userData && userData.email}
+                </p>
+                <p className="mb-1">
+                  <b>Password : </b>
+                  {passwordShow === true ? (
+                    userData === undefined ||
+                    userData === "" ||
+                    userData === null ? (
+                      <span>No Password Found</span>
+                    ) : (
+                      userData.stringPassword
+                    )
+                  ) : (
+                    "**********"
+                  )}{" "}
+                  {"   "}
+                  {passwordShow === true ? (
+                    <i className="fa fa-eye" onClick={() => showPassword()}></i>
+                  ) : (
+                    <i
+                      className="fa fa-eye-slash"
+                      onClick={() => showPassword()}
+                    ></i>
+                  )}
                 </p>
               </div>
               <div className="col-lg-3">

@@ -7,10 +7,31 @@ import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import moment from "moment";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 function DAllUsers() {
   let distr = localStorage.getItem("distributor_id");
   const [distributor, setDistributor] = useState(distr);
   const [usersId, setUsersId] = useState([]);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    email: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    mobile: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getProductData = async () => {
@@ -147,20 +168,28 @@ function DAllUsers() {
       </button>
     );
   };
+
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
   const header = (
     <div className="">
       <div className="row">
         <div className="col-lg-8">
           <h4 className="m-0">All Users</h4>
         </div>
-        <div className="col-lg-2">
+        <div className="col-lg-4">
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
             <InputText
-              type="search"
-              className="form-control ps-4"
-              onInput={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search..."
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
             />
           </span>
         </div>
@@ -210,6 +239,9 @@ function DAllUsers() {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
           globalFilter={globalFilter}
           header={header}
+          filters={filters}
+          filterDisplay="menu"
+          globalFilterFields={["name", "email", "mobile", "status"]}
         >
           <Column
             field="createdAt"

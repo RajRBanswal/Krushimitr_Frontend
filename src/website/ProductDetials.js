@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/slice/CartSlice";
 import OwlCarousel from "react-owl-carousel";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import "../../node_modules/owl.carousel/dist/assets/owl.carousel.min.css";
 import "../../node_modules/owl.carousel/dist/owl.carousel.min";
 import "./../styles.css";
 
 function ProductDetials() {
+  const { pid, name } = useParams();
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -37,26 +38,55 @@ function ProductDetials() {
       },
     },
   };
+  const [product, setProduct] = useState([]);
+  const [data, setData] = useState([]);
+  const [sizeData, setSizeData] = useState([]);
 
-  const [product, setProduct] = useState(location.state.item);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("");
+  const [selectedPrice, setSelectedPrice] = useState("");
+  const [selectedGST, setSelectedGST] = useState("");
+  const [selectedDiscount, setSelectedDiscount] = useState("");
+  // const [product, setProduct] = useState(location.state.item);
+  const getProductDatas = async () => {
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/get-product/",
+      {
+        method: "post",
+        body: JSON.stringify({ id: pid }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const getProd = await all_products.json();
+    if (getProd.status === 201) {
+      setProduct(getProd.product_data[0]);
+      let main = getProd.product_data[0].size.map((item) => {
+        return JSON.parse(item);
+      });
+      setSizeData(main);
+      setSelectedSize(main[0].size);
+      setSelectedUnit(main[0].unit);
+      setSelectedPrice(main[0].selling_price);
+      setSelectedGST(main[0].gst);
+      setSelectedDiscount(
+        main[0].discount === undefined ? 0 : main[0].discount
+      );
+    } else {
+      alert(getProd.result);
+    }
+  };
+  // console.log(sizeData);
   const [productSize, setProductSize] = useState("");
-  let data = product.size;
-  const [sizeData, setSizeData] = useState(
-    data === undefined ? [] : data.map((item) => JSON.parse(item))
-  );
 
-  const [selectedSize, setSelectedSize] = useState(
-    sizeData !== "" ? sizeData[0].size : ""
-  );
-  const [selectedUnit, setSelectedUnit] = useState(
-    sizeData !== "" ? sizeData[0].unit : ""
-  );
-  const [selectedPrice, setSelectedPrice] = useState(
-    sizeData !== "" ? sizeData[0].selling_price : ""
-  );
-  const [selectedGST, setSelectedGST] = useState(
-    sizeData !== "" ? sizeData[0].gst : ""
-  );
+  // const [sizeData, setSizeData] = useState(
+  //   product.size === undefined || product.size.length === 0
+  //     ? []
+  //     : product.size.map((item) => {
+  //         JSON.parse(item);
+  //       })
+  // );
 
   const [cate, setCate] = useState([]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,20 +103,22 @@ function ProductDetials() {
   };
 
   useEffect(() => {
+    getProductDatas();
     getProductData();
-    data.map((item, index) => {
+    sizeData.map((item, index) => {
       let datas = JSON.parse(item);
       if (index === 0) {
         setProductSize(datas);
       }
     });
-  }, [data, getProductData]);
+  }, [location]);
 
   const changePrice = (item) => {
     setSelectedSize(item.size);
     setSelectedUnit(item.unit);
     setSelectedPrice(item.selling_price);
     setSelectedGST(item.gst);
+    setSelectedDiscount(item.discount === undefined ? 0 : item.discount);
   };
 
   const [quantity, setQuantity] = useState(1);
@@ -173,11 +205,11 @@ function ProductDetials() {
                         <h4>{product && product.productName}</h4>
                       </div>
                       <div className="col-md-4">
-                        <p>
-                          {product && product.company !== undefined
+                        <h4 className="text-success">
+                          {product && product.company === undefined
                             ? ""
-                            : product.company}
-                        </p>
+                            : "(" + product.company + ")"}
+                        </h4>
                       </div>
                     </div>
                     <div className="row">
@@ -195,11 +227,11 @@ function ProductDetials() {
                       <div className="row">
                         <div className="col-md-8 ">
                           <p className="fw-bold mb-0 text-center">
-                            Size & Price
+                            Size & Price & Discount
                           </p>
                           <hr className="my-1" />
                           <div className="row px-3">
-                            <div className="col-md-6 col-6">
+                            <div className="col-md-4 col-4">
                               <p className="mb-0">
                                 <span className="text-success fw-bold">
                                   Size
@@ -211,7 +243,7 @@ function ProductDetials() {
                                 </span>
                               </p>
                             </div>
-                            <div className="col-md-6 col-6">
+                            <div className="col-md-4 col-4">
                               <p className="mb-0">
                                 <span className="text-success fw-bold">
                                   Price
@@ -219,6 +251,17 @@ function ProductDetials() {
                                 :{" "}
                                 <span className="text-success">
                                   {selectedPrice}
+                                </span>
+                              </p>
+                            </div>
+                            <div className="col-md-4 col-4">
+                              <p>
+                                <span className="text-success fw-bold">
+                                  Discount
+                                </span>{" "}
+                                :{" "}
+                                <span className="text-success">
+                                  {selectedDiscount}%
                                 </span>
                               </p>
                             </div>
@@ -268,18 +311,18 @@ function ProductDetials() {
                           <p className="fw-bold mb-0 ps-2">Other Sizes</p>
                           <hr className="my-1" />
                           <div className="row px-3">
-                            {data &&
-                              data.map((item, index) => {
-                                let datas = JSON.parse(item);
+                            {sizeData &&
+                              sizeData.map((item, index) => {
+                                // let datas = JSON.parse(item);
                                 return (
                                   <div className="col-md-2 col-2">
                                     <button
                                       className="btn btn-success w-100 btn-sm"
                                       type="button"
-                                      onClick={() => changePrice(datas)}
+                                      onClick={() => changePrice(item)}
                                     >
-                                      {datas.size}
-                                      {datas.unit}
+                                      {item.size}
+                                      {item.unit}
                                     </button>
                                   </div>
                                 );
@@ -291,8 +334,9 @@ function ProductDetials() {
                             Notes :{" "}
                             <span className="text-danger">
                               "The customer was notified that delivery charges
-                              not applied to their order. Delivery charges will
-                              be charged at the time of delivery"
+                              not applied to their order.{" "}
+                              <b>₹{product.hamali}</b> Delivery charges will be
+                              charged at the time of delivery"
                             </span>
                           </p>
                         </div>
@@ -336,6 +380,7 @@ function ProductDetials() {
                                     : "",
                                   HSNNo: product.HSNNo ? product.HSNNo : "",
                                   mfd: product.mfd ? product.mfd : "",
+                                  cod: product.cod ? product.cod : "",
                                   referenceId: "",
                                   referenceProductId: "",
                                 })
@@ -378,6 +423,7 @@ function ProductDetials() {
                                     : "",
                                   HSNNo: product.HSNNo ? product.HSNNo : "",
                                   mfd: product.mfd ? product.mfd : "",
+                                  cod: product.cod ? product.cod : "",
                                   referenceId: "",
                                   referenceProductId: "",
                                 })
@@ -423,8 +469,17 @@ function ProductDetials() {
                     <button
                       className="btn btn-primary btn-sm w-50 m-auto"
                       onClick={() =>
-                        navigate("/product-details", { state: { item: item } })
+                        navigate(
+                          `/product-details/${
+                            item._id
+                          }/${item.productName.replace(/\//g, "")}`
+                        )
                       }
+                      // onClick={() =>
+                      //   navigate("/product-details", {
+                      //     state: { item: item },
+                      //   })
+                      // }
                     >
                       <i className="fa fa-eye"></i>
                     </button>

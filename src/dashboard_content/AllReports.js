@@ -8,6 +8,8 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import moment from "moment";
+import { ColumnGroup } from "primereact/columngroup";
+import { Row } from "primereact/row";
 function AllReports() {
   let emptyProduct = {
     _id: null,
@@ -29,6 +31,7 @@ function AllReports() {
   const orderCmplt = useRef(null);
   let datas = [];
   const [filterData, setFilterData] = useState([]);
+  
   const getProductData = async () => {
     let all_products = await fetch(
       "https://krushimitr.in/api/admin/all-orders"
@@ -233,7 +236,7 @@ function AllReports() {
             <div className="col-lg-6">
               <Calendar
                 onChange={(e) => {
-                  showDateWiseData(e.value);
+                  showDateWiseData(e.target.value);
                 }}
                 dateFormat="dd-mm-yy"
                 placeholder="To Date"
@@ -252,19 +255,23 @@ function AllReports() {
   );
 
   const showDateWiseData = (date2) => {
-    let newDate1 = new Date(date1);
-    let newDate2 = new Date(date2);
-    let Datas = [];
-    // console.log(newDate1);
-    compOrders.map((item) => {
-      let newDate3 = moment(item.orderDate, "DD-MM-YYYY");
-      let newDate4 = new Date(newDate3._d);
+    if (date2 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(date2).toISOString();
+      let Datas = [];
+      // alert(newDate1, newDate2);
+      compOrders.map((item) => {
+        let newDate3 = moment(item.orderDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3._d).toISOString();
 
-      if (newDate4 >= newDate1 && newDate4 <= newDate2) {
-        Datas.push(item);
-      }
-    });
-    setFilterData(Datas);
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          Datas.push(item);
+        }
+      });
+      setFilterData(Datas);
+    } else {
+      return;
+    }
   };
 
   const getItemData = (rowData) => {
@@ -327,6 +334,41 @@ function AllReports() {
     });
     return gstamt;
   };
+  const [sales, setSales] = useState("");
+  const lastYearTotal = () => {
+    let total = 0;
+    filterData.map((item) => {
+      let itemData = JSON.parse(item.itemsData);
+      itemData.map((ele) => {
+        let qtyprice = ele.price * ele.quantity;
+        total += qtyprice;
+      });
+    });
+
+    return "₹" + total;
+  };
+
+  const footerGroup = (
+    <ColumnGroup>
+      <Row>
+        <Column
+          footer="Totals:"
+          colSpan={8}
+          footerStyle={{ textAlign: "right" }}
+        />
+        <Column footer={lastYearTotal} />
+      </Row>
+    </ColumnGroup>
+  );
+  const getDateTime = (rowData) => {
+    return (
+      <p className="mb-0 fw-bold" style={{ fontSize: 12 }}>
+        {rowData.orderDate}
+        <br />
+        {rowData.orderTime}
+      </p>
+    );
+  };
 
   return (
     <div className="">
@@ -346,6 +388,7 @@ function AllReports() {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
           globalFilter={globalFilter}
           header={headerComplete}
+          footerColumnGroup={footerGroup}
         >
           <Column
             field="orderNumber"
@@ -353,8 +396,13 @@ function AllReports() {
             bodyStyle={{ color: "green", fontSize: 12, fontWeight: "bold" }}
           ></Column>
           <Column field="userName" header="Name" sortable></Column>
-          <Column field="orderDate" header="Date" sortable></Column>
-          <Column field="orderTime" header="Time" sortable></Column>
+          <Column
+            field={getDateTime}
+            header="Date/Time"
+            body={getDateTime}
+            sortable
+          ></Column>
+          {/* <Column field="orderTime" header="Time" sortable></Column> */}
           <Column
             field={getItemData}
             header="Purchase Item"
@@ -411,6 +459,16 @@ function AllReports() {
             header="Deli Date"
             style={{ display: "none" }}
             bodyStyle={{ color: "green", fontWeight: "bold" }}
+          ></Column>
+          <Column
+            field="paymentType"
+            header="PayMethod"
+            bodyStyle={{ fontSize: 13 }}
+          ></Column>
+          <Column
+            field="utrNo"
+            header="UtrNo."
+            bodyStyle={{ fontSize: 13 }}
           ></Column>
           <Column
             header="Action"

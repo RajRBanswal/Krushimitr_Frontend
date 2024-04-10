@@ -10,28 +10,36 @@ const ForgotPassword = () => {
   const [loadings, setLoadings] = useState(false);
   const verifyPassword = async () => {
     setLoadings(true);
-    const resetPass = await fetch(
-      "https:krushimitr.in/api/users/forgot-password",
-      {
-        method: "post",
-        body: JSON.stringify({
-          userType: userType,
-          mobile: mobile,
-          password: newPassword,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+    if (mobile.length === 10) {
+      const resetPass = await fetch(
+        "https:krushimitr.in/api/users/forgot-password",
+        {
+          method: "post",
+          body: JSON.stringify({
+            userType: userType,
+            mobile: mobile,
+            password: newPassword,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const ress = await resetPass.json();
+      if (ress.status === 201) {
+        setLoadings(false);
+        alert(ress.result);
+        navigate("/login");
+      } else {
+        setLoadings(false);
+        alert(ress.result);
       }
-    );
-    const ress = await resetPass.json();
-    if (ress.status === 201) {
-      setLoadings(false);
-      alert(ress.result);
-      navigate("/login");
     } else {
+      alert("Enter 10 digit mobile number");
       setLoadings(false);
-      alert(ress.result);
+      setNewPassword("");
+      setConfirmPassword("");
+      return;
     }
   };
   return (

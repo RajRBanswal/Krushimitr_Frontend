@@ -2072,9 +2072,9 @@ hr:not([size]) {
 .iphone {
     background-color: #F7F7F7;
     /* margin: 10px; */
-    height: 500px;
+    max-height: 500px;
     width: 100%;
-    padding-bottom: 50px;
+    padding-bottom: 20px;
     box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
     overflow: hidden;
     position: relative;
@@ -2308,4 +2308,9 @@ hr:not([size]) {
         font-size: 13px !important;
         padding: 0px 5px;
     }
+}
+
+.lineBottom {
+    border-bottom: 1px solid gray;
+    width: 25%;
 }

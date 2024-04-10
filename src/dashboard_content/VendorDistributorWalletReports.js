@@ -8,6 +8,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import moment from "moment";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 
 const VendorDistributorWalletReports = () => {
   const [compOrders, setCompOrders] = useState([]);
@@ -18,6 +19,31 @@ const VendorDistributorWalletReports = () => {
   const [filterData, setFilterData] = useState([]);
   const [creditData, setCredtiData] = useState([]);
   const [debitData, setDebitData] = useState([]);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    transactionDate: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    transactionId: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    dvName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    type: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getVDWalletData = async () => {
     let allData = [];
@@ -49,7 +75,7 @@ const VendorDistributorWalletReports = () => {
 
   useEffect(() => {
     getVDWalletData();
-  }, [getVDWalletData]);
+  }, []);
 
   const filterApplyTemplate = (options) => {
     return (
@@ -138,6 +164,16 @@ const VendorDistributorWalletReports = () => {
       });
     });
   };
+  const onGlobalFilterChange = (e) => {
+    setDate1("")
+    const value = e.target.value;
+    let _filters = { ...filters };
+
+    _filters["global"].value = value;
+
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
 
   const [date1, setDate1] = useState(null);
   const headerComplete = (
@@ -147,10 +183,9 @@ const VendorDistributorWalletReports = () => {
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
             <InputText
-              type="search"
-              onInput={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search..."
-              className="form-control ps-5"
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
             />
           </span>
         </div>
@@ -186,19 +221,25 @@ const VendorDistributorWalletReports = () => {
   );
 
   const showDateWiseData = (date2) => {
-    let newDate1 = new Date(date1);
-    let newDate2 = new Date(date2);
-    let Datas = [];
-    // console.log(newDate1);
-    compOrders.map((item) => {
-      let newDate3 = moment(item.orderDate, "DD-MM-YYYY");
-      let newDate4 = new Date(newDate3._d);
+    if (date2 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(date2).toISOString();
+      let Datas = [];
+      // console.log(newDate1);
+      compOrders.map((item) => {
+        let newDate3 = moment(item.transactionDate, "DD-MM-YYYY");
+        let newDate4 = new Date(newDate3).toISOString();
 
-      if (newDate4 >= newDate1 && newDate4 <= newDate2) {
-        Datas.push(item);
-      }
-    });
-    setFilterData(Datas);
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          Datas.push(item);
+        }
+      });
+      setCredtiData(Datas);
+      setDebitData(Datas);
+      setFilterData(Datas);
+    } else {
+      return;
+    }
   };
 
   const getItemData = (rowData) => {
@@ -224,6 +265,15 @@ const VendorDistributorWalletReports = () => {
     } else {
       return "";
     }
+  };
+  const getDateTime = (rowData) => {
+    return (
+      <p className="mb-0 fw-bold" style={{ fontSize: 12 }}>
+        {rowData.transactionDate}
+        <br />
+        {rowData.transactionTime}
+      </p>
+    );
   };
 
   return (
@@ -295,9 +345,29 @@ const VendorDistributorWalletReports = () => {
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
               globalFilter={globalFilter}
               header={headerComplete}
+              filters={filters}
+              filterDisplay="menu"
+              globalFilterFields={[
+                "transactionDate",
+                "transactionId",
+                "type",
+                "dvName",
+                "status",
+              ]}
             >
-              <Column field="transactionDate" header="Date" sortable></Column>
-              <Column field="transactionTime" header="Time"></Column>
+              {/* <Column field="transactionDate" header="Date" sortable></Column>
+              <Column field="transactionTime" header="Time"></Column> */}
+              <Column
+                field={getDateTime}
+                header="Date/Time"
+                body={getDateTime}
+                sortable
+              ></Column>
+              <Column
+                field={getTransId}
+                header="TransactionId"
+                body={getTransId}
+              ></Column>
               <Column field="dvName" header="Name" sortable></Column>
               <Column field="dvMobile" header="Mobile" sortable></Column>
 
@@ -315,11 +385,6 @@ const VendorDistributorWalletReports = () => {
                 field="reason"
                 header="Reason"
                 bodyStyle={{ color: "green", fontWeight: "bold" }}
-              ></Column>
-              <Column
-                field={getTransId}
-                header="TransactionId"
-                body={getTransId}
               ></Column>
 
               {/* <Column
@@ -349,9 +414,30 @@ const VendorDistributorWalletReports = () => {
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
               globalFilter={globalFilter}
               header={headerComplete}
+              filters={filters}
+              filterDisplay="menu"
+              globalFilterFields={[
+                "transactionDate",
+                "transactionId",
+                "type",
+                "dvName",
+                "status",
+              ]}
             >
-              <Column field="transactionDate" header="Date" sortable></Column>
-              <Column field="transactionTime" header="Time"></Column>
+              <Column
+                field={getDateTime}
+                header="Date/Time"
+                body={getDateTime}
+                sortable
+              ></Column>
+              {/* <Column field="transactionDate" header="Date" sortable></Column>
+              <Column field="transactionTime" header="Time"></Column> */}
+              <Column
+                field={getTransId}
+                header="TransactionId"
+                body={getTransId}
+                sortable
+              ></Column>
               <Column field="dvName" header="Name" sortable></Column>
               <Column field="dvMobile" header="Mobile" sortable></Column>
               <Column
@@ -368,11 +454,6 @@ const VendorDistributorWalletReports = () => {
                 field="reason"
                 header="Reason"
                 bodyStyle={{ color: "green", fontWeight: "bold" }}
-              ></Column>
-              <Column
-                field={getTransId}
-                header="TransactionId"
-                body={getTransId}
               ></Column>
               {/* <Column
               header="Action"
@@ -401,9 +482,30 @@ const VendorDistributorWalletReports = () => {
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
               globalFilter={globalFilter}
               header={headerComplete}
+              filters={filters}
+              filterDisplay="menu"
+              globalFilterFields={[
+                "transactionDate",
+                "transactionId",
+                "type",
+                "dvName",
+                "status",
+              ]}
             >
-              <Column field="transactionDate" header="Date" sortable></Column>
-              <Column field="transactionTime" header="Time"></Column>
+              {/* <Column field="transactionDate" header="Date" sortable></Column>
+              <Column field="transactionTime" header="Time"></Column> */}
+              <Column
+                field={getDateTime}
+                header="Date/Time"
+                body={getDateTime}
+                sortable
+              ></Column>
+              <Column
+                field={getTransId}
+                header="TransactionId"
+                body={getTransId}
+                sortable
+              ></Column>
               <Column field="dvName" header="Name" sortable></Column>
               <Column field="dvMobile" header="Mobile" sortable></Column>
               <Column field="amount" header="Amount"></Column>
@@ -416,11 +518,6 @@ const VendorDistributorWalletReports = () => {
                 field="reason"
                 header="Reason"
                 bodyStyle={{ color: "green", fontWeight: "bold" }}
-              ></Column>
-              <Column
-                field={getTransId}
-                header="TransactionId"
-                body={getTransId}
               ></Column>
               {/* <Column
               header="Action"

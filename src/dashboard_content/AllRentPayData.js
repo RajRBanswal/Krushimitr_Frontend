@@ -48,7 +48,8 @@ function AllRentPayData() {
 
   useEffect(() => {
     getRentPayData();
-  }, [getRentPayData]);
+  }, []);
+
   const ChangeStatus = async (status, rowData) => {
     const rentPayStatus = await fetch(
       "https://krushimitr.in/api/admin/rent_pay-status",
@@ -181,19 +182,44 @@ function AllRentPayData() {
     </div>
   );
   const showDateWiseData = (date2) => {
-    let newDate1 = new Date(date1);
-    let newDate2 = new Date(date2);
-    let Datas = [];
-    // console.log(newDate1);
-    successData.map((item) => {
-      let newDate3 = moment(item.orderDate, "DD-MM-YYYY");
-      let newDate4 = new Date(newDate3._d);
+    if (date2 !== "" && date1 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(date2).toISOString();
+      let pDatas = [];
+      let aDatas = [];
+      let rDatas = [];
+      pendingData.map((item) => {
+        let newDate3 = moment(item.transactionDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3).toISOString();
 
-      if (newDate4 >= newDate1 && newDate4 <= newDate2) {
-        Datas.push(item);
-      }
-    });
-    setFilterData(Datas);
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          pDatas.push(item);
+        }
+      });
+      acceptedData.map((item) => {
+        let newDate3 = moment(item.transactionDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3).toISOString();
+
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          aDatas.push(item);
+        }
+      });
+      rejectedData.map((item) => {
+        let newDate3 = moment(item.transactionDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3).toISOString();
+
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          rDatas.push(item);
+        }
+      });
+
+      setPendingData(pDatas);
+      setAcceptedData(aDatas);
+      setRejectedData(rDatas);
+    } else {
+      setDate1("");
+      return;
+    }
   };
 
   return (

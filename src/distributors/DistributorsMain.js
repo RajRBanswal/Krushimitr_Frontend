@@ -29,9 +29,9 @@ function DistributorsMain() {
   const getTotal = () => {
     let total = 0;
     walletData.map((item) => {
-      if (item.type === "Credit") {
+      if (item.type === "Credit" && item.amountStatus === "Done") {
         total += parseInt(item.amount);
-      } else if (item.type === "Debit") {
+      } else if (item.type === "Debit" && item.amountStatus === "Done") {
         total -= parseInt(item.amount);
       }
     });
@@ -181,7 +181,7 @@ function DistributorsMain() {
             >
               <ul className="navbar-nav me-auto mb-2 mb-lg-0"></ul>
             </div>
-            <div className="me-3">
+            <div className="me-5">
               <Link
                 to={"vd-wallet"}
                 class="btn btn-outline-warning position-relative"
@@ -264,36 +264,44 @@ function DistributorsMain() {
                   </Link>
                   <div className={`sidebar-submenu ${first ? "active" : ""}`}>
                     <ul>
-                      <li>
-                        <Link to="allusers">All Customers</Link>
-                      </li>
+                      {distData.type === "Vendor" ? (
+                        <li>
+                          <Link to="allusers">All Customers</Link>
+                        </li>
+                      ) : (
+                        <li>
+                          <Link to="all-customers">All Customers</Link>
+                        </li>
+                      )}
                     </ul>
                   </div>
                 </li>
+
                 {distData.type === "Vendor" ? (
-                  <li>
-                    {distData && distData.status === "Active" ? (
-                      <Link to="allproducts">
-                        <i className="fa fa-book"></i>
-                        <span>All Products</span>
-                      </Link>
-                    ) : (
-                      <Link
-                        to=""
-                        onClick={() => {
-                          alert("Update shop details and wait for KYC");
-                          navigate("/distributors/shop-details");
-                        }}
-                      >
-                        <i className="fa fa-book"></i>
-                        <span>All Products</span>
-                      </Link>
-                    )}
-                  </li>
+                  <>
+                    <li>
+                      {distData && distData.status === "Active" ? (
+                        <Link to="allproducts">
+                          <i className="fa fa-book"></i>
+                          <span>All Products</span>
+                        </Link>
+                      ) : (
+                        <Link
+                          to=""
+                          onClick={() => {
+                            alert("Update shop details and wait for KYC");
+                            navigate("/distributors/shop-details");
+                          }}
+                        >
+                          <i className="fa fa-book"></i>
+                          <span>All Products</span>
+                        </Link>
+                      )}
+                    </li>
+                  </>
                 ) : (
                   ""
                 )}
-
                 <li className={`sidebar-dropdown ${three ? "active" : ""}`}>
                   <Link to="#" onClick={(event) => project(event, "three")}>
                     <i className="far fa-gem"></i>
@@ -301,68 +309,125 @@ function DistributorsMain() {
                   </Link>
                   <div className={`sidebar-submenu ${three ? "active" : ""}`}>
                     <ul>
+                      {distData.type === "Vendor" ? (
+                        <li>
+                          <Link to="customer-orders">
+                            <i className="fa fa-solid fa-shopping-cart"></i>
+                            <span>All Orders </span>
+                          </Link>
+                        </li>
+                      ) : (
+                        <li>
+                          <Link to="all-customer-orders">
+                            <i className="fa fa-solid fa-shopping-cart"></i>
+                            <span>All Orders </span>
+                          </Link>
+                        </li>
+                      )}
                       <li>
-                        <Link to="customer-orders">
-                          <i className="fa-solid fa-shop"></i>
-                          <span>All Orders </span>
+                        <Link to="place-order-for-customer">
+                          <i className="fa fa-book"></i>
+                          <span>Place Order For Customer</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="all-order-for-customer">
+                          <i className="fa fa-book"></i>
+                          <span>All Order For Customer</span>
                         </Link>
                       </li>
                     </ul>
                   </div>
                 </li>
-                {distData.type !== "Vendor" ? (
-                  <li className={`sidebar-dropdown ${four ? "active" : ""}`}>
-                    <Link to="#" onClick={(event) => project(event, "four")}>
-                      <i className="fa fa-chart-line"></i>
-                      <span>Orders</span>
-                    </Link>
-                    <div className={`sidebar-submenu ${four ? "active" : ""}`}>
-                      <ul>
-                        <li>
-                          <Link to="all-orders">All Orders</Link>
-                        </li>
-                        <li>
-                          <Link to="place-orders">Place Order</Link>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+                {distData.type === "Vendor" ? (
+                  <>
+                    {/* <li className={`sidebar-dropdown ${four ? "active" : ""}`}>
+                      <Link to="#" onClick={(event) => project(event, "four")}>
+                        <i className="fa fa-chart-line"></i>
+                        <span>Orders</span>
+                      </Link>
+                      <div
+                        className={`sidebar-submenu ${four ? "active" : ""}`}
+                      >
+                        <ul>
+                          <li>
+                            <Link to="all-orders">All Orders</Link>
+                          </li>
+                          <li>
+                            <Link to="place-orders">Place Order</Link>
+                          </li>
+                        </ul>
+                      </div>
+                    </li> */}
+                    <li>
+                      <Link to="stock-management">
+                        <i className="fa fa-book"></i>
+                        <span>Stock Management</span>
+                      </Link>
+                    </li>
+                  </>
                 ) : (
                   ""
                 )}
+
                 <li className={`sidebar-dropdown ${five ? "active" : ""}`}>
                   <Link to="#" onClick={(event) => project(event, "five")}>
                     <i className="fa fa-chart-line"></i>
                     <span>Reports</span>
                   </Link>
                   <div className={`sidebar-submenu ${five ? "active" : ""}`}>
-                    <ul>
-                      <li>
-                        <Link to="all_orders_reports">All Reports</Link>
-                      </li>
-                      <li>
-                        <Link to="orders_complate_reports">
-                          Completed Orders Reports
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="orders_pending_reports">
-                          Pending Orders Reports
-                        </Link>
-                      </li>
-                    </ul>
+                    {distData.type === "Vendor" ? (
+                      <ul>
+                        <li>
+                          <Link to="all_orders_reports">All Reports</Link>
+                        </li>
+                        <li>
+                          <Link to="orders_complate_reports">
+                            Completed Orders Reports
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="orders_pending_reports">
+                            Pending Orders Reports
+                          </Link>
+                        </li>
+                      </ul>
+                    ) : (
+                      <ul>
+                        <li>
+                          <Link to="distributors-orders-reports">
+                            All Reports
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="distributors-complete-orders-reports">
+                            Completed Orders Reports
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="distributors-pending-orders-reports">
+                            Pending Orders Reports
+                          </Link>
+                        </li>
+                      </ul>
+                    )}
                   </div>
                 </li>
-
                 {/* <li className="header-menu">
                                     <span>Extra</span>
                                 </li> */}
-                {/* <li>
-                  <Link to="all-application-form">
+                <li>
+                  <Link to="vd-wallet-reports">
                     <i className="fa fa-book"></i>
-                    <span>All Applications</span>
+                    <span>Wallet Reports</span>
                   </Link>
-                </li> */}
+                </li>
+                <li>
+                  <Link to="enquiry-form">
+                    <i className="fa fa-book"></i>
+                    <span>All Enquiries</span>
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

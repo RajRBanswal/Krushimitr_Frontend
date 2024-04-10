@@ -1,6 +1,6 @@
 import { Image } from "primereact/image";
 import React, { useEffect, useState } from "react";
-
+import { City, State } from "country-state-city";
 function DistributorProfile() {
   const distIds = localStorage.getItem("distributor_id");
   const [distId, setDistId] = useState(distIds);
@@ -11,6 +11,16 @@ function DistributorProfile() {
   const [shopLicense, setShopLicense] = useState("");
   const [gstNo, setGSTNo] = useState("");
   const [shopLogo, setShopLogo] = useState("");
+  const [state, setState] = useState("");
+  const [city, setCity] = useState("");
+  const [address, setAddress] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [cityCode, setCityCode] = useState([]);
+  const [taluka, setTaluka] = useState("");
+
+  const [PAN, setPAN] = useState("");
+  const [PANName, setPANName] = useState("");
+  const [modal, setModal] = useState(false);
 
   useEffect(() => {
     getDistributor();
@@ -30,21 +40,27 @@ function DistributorProfile() {
     const data = await response.json();
     if (data.status === 201) {
       setShopDetails(data.distributor);
-      console.log(data.distributor);
+      // console.log(data.distributor);
     } else {
       setShopDetails("");
     }
   };
 
   const updateShopData = async () => {
+    let talukas = taluka.charAt(0).toUpperCase() + taluka.slice(1);
     let formData = new FormData();
     formData.append("distId", distId);
-    formData.append("shopName", shopName);
-    formData.append("shopMobile", shopMobile);
-    formData.append("shopEmail", shopEmail);
-    formData.append("shopLicense", shopLicense);
-    formData.append("gstNo", gstNo);
-    formData.append("shopLogo", shopLogo);
+    formData.append("shopName", shopName ? shopName : "");
+    formData.append("shopMobile", shopMobile ? shopMobile : "");
+    formData.append("shopEmail", shopEmail ? shopEmail : "");
+    formData.append("shopLicense", shopLicense ? shopLicense : "");
+    formData.append("gstNo", gstNo ? gstNo : "");
+    formData.append("shopLogo", shopLogo ? shopLogo : "");
+    formData.append("state", state ? state : "");
+    formData.append("city", city ? city : "");
+    formData.append("taluka", talukas ? talukas : "");
+    formData.append("address", address ? address : "");
+    formData.append("pincode", pincode ? pincode : "");
 
     let response = await fetch(
       "https://krushimitr.in/api/distributor/update-shopdetails",
@@ -58,6 +74,42 @@ function DistributorProfile() {
       alert(res.result);
     } else {
       alert(res.result);
+    }
+  };
+
+  const onChangeHandler = (e) => {
+    setCityCode("");
+    setState("");
+    const index = e.target.selectedIndex;
+    const el = e.target.childNodes[index];
+    const cityCode = el.getAttribute("id");
+    setCityCode(cityCode);
+    setState(el.getAttribute("value"));
+  };
+
+  const [KYCStatus, setKYCStatus] = useState("Pending");
+  const [panVerifyStatus, setPANVerifyStatus] = useState(false);
+  const panVerify = async () => {
+    const res = await fetch(
+      "https://krushimitr.in/api/users/users-pan-verification",
+      {
+        method: "post",
+        body: JSON.stringify({
+          name: PANName,
+          pan: PAN,
+        }),
+        headers: {
+          "Content-Type": "applicaton/json",
+        },
+      }
+    );
+    const result = await res.json();
+    console.log(result);
+    if (result.status === 201) {
+      setKYCStatus("Done");
+      console.log(result.data);
+    } else {
+      alert("Something went wrong");
     }
   };
   return (
@@ -98,8 +150,38 @@ function DistributorProfile() {
                       <b>Email :</b> {shopDetails.email}
                     </td>
                     <td>
-                      <b>Address :</b> {shopDetails.address}, {shopDetails.city}
-                      , {shopDetails.state}, {shopDetails.pincode}.
+                      <b>Address :</b> {shopDetails.address},{" "}
+                      {shopDetails.taluka}, {shopDetails.city},{" "}
+                      {shopDetails.state}, {shopDetails.pincode}.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>KYC Status :</b>{" "}
+                      {shopDetails.kycstatus === undefined ||
+                      shopDetails.kycstatus === "" ||
+                      shopDetails.kycstatus === null ? (
+                        <>
+                          <span className="text-danger">Pending</span>
+                          <button
+                            className="btn btn-success btn-sm ms-3"
+                            data-bs-toggle="modal"
+                            data-bs-target="#kycModal"
+                          >
+                            KYC Now
+                          </button>
+                        </>
+                      ) : (
+                        shopDetails.kycstatus
+                      )}
+                    </td>
+                    <td>
+                      <b>PAN No. :</b>{" "}
+                      {shopDetails.pan === undefined ||
+                      shopDetails.pan === "" ||
+                      shopDetails.pan === null
+                        ? ""
+                        : shopDetails.kycstatus}
                     </td>
                   </tr>
                   <tr></tr>
@@ -160,8 +242,9 @@ function DistributorProfile() {
                       {shopDetails.shopLicense && shopDetails.shopLicense}
                     </td>
                     <td>
-                      <b>Address :</b> {shopDetails.address}, {shopDetails.city}
-                      , {shopDetails.state}, {shopDetails.pincode}.
+                      <b>Address :</b> {shopDetails.address},{" "}
+                      {shopDetails.taluka}, {shopDetails.city},{" "}
+                      {shopDetails.state}, {shopDetails.pincode}.
                     </td>
                   </tr>
                   <tr></tr>
@@ -245,6 +328,83 @@ function DistributorProfile() {
                           />
                         </div>
                       </div>
+                      <div className="row py-0">
+                        <div className="col-lg-4 col-6">
+                          <label htmlFor="name" className="form-label mb-0">
+                            State<span className="text-danger">*</span>
+                          </label>
+                          <select
+                            className="form-select form-control"
+                            onChange={onChangeHandler}
+                          >
+                            <option value={shopDetails.state}>
+                              {shopDetails.state}
+                            </option>
+                            {State.getStatesOfCountry("IN").map((state) => (
+                              <option id={state.isoCode} value={state.name}>
+                                {state.name}{" "}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="col-lg-4 col-6">
+                          <label htmlFor="name" className="form-label mb-0">
+                            City<span className="text-danger">*</span>
+                          </label>
+                          <select
+                            className="form-select form-control"
+                            onChange={(e) => setCity(e.target.value)}
+                          >
+                            <option value={shopDetails.city}>
+                              {shopDetails.city}
+                            </option>
+                            {City.getCitiesOfState("IN", cityCode).map(
+                              (city) => (
+                                <option value={city.name}> {city.name} </option>
+                              )
+                            )}
+                          </select>
+                        </div>
+                        <div className="col-lg-4 col-12">
+                          <label>
+                            Taluka<span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="taluka"
+                            placeholder="Taluka"
+                            defaultValue={shopDetails.taluka}
+                            onChange={(e) => setTaluka(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="row py-0">
+                        <div className="col-lg-6 col-6">
+                          <label>
+                            Address<span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="address"
+                            placeholder="Address"
+                            defaultValue={shopDetails.address}
+                            onChange={(e) => setAddress(e.target.value)}
+                          />
+                        </div>
+                        <div className="col-lg-6 col-6">
+                          <label>Pin Code</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="pincode"
+                            placeholder="Pincode"
+                            defaultValue={shopDetails.pincode}
+                            onChange={(e) => setPincode(e.target.value)}
+                          />
+                        </div>
+                      </div>
                       <div className="row mt-2">
                         <div className="col-lg-4">
                           <label>GST No.</label>
@@ -294,9 +454,82 @@ function DistributorProfile() {
                         onClick={() => {
                           updateShopData();
                         }}
+                        data-bs-dismiss="modal"
                       >
                         Submit
                       </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="modal fade"
+                id="kycModal"
+                tabindex="-1"
+                aria-labelledby="kycModalLabel"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="kycModalLabel">
+                        KYC Form
+                      </h5>
+                      <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div class="modal-body">
+                      {panVerifyStatus === false ? (
+                        <div className="row">
+                          <div className="col-lg-12 col-12">
+                            <label>
+                              PAN Number<span className="text-danger">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              name="PAN"
+                              onChange={(e) => setPAN(e.target.value)}
+                              required
+                              placeholder="PAN"
+                            />
+                          </div>
+                          <div className="col-lg-12 col-12">
+                            <label>PAN Name</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              name="panName"
+                              placeholder="PAN Name"
+                              onChange={(e) => setPANName(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="col-lg-12 col-12 text-center mt-3">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal"
+                            >
+                              Close
+                            </button>
+                            <button
+                              className="btn btn-primary ms-2"
+                              onClick={() => panVerify()}
+                              data-bs-dismiss="modal"
+                            >
+                              Verify
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        ""
+                      )}
                     </div>
                   </div>
                 </div>

@@ -8,11 +8,45 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import moment from "moment";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { ColumnGroup } from "primereact/columngroup";
+import { Row } from "jspdf-autotable";
 const AdminWalletReports = () => {
   const [price, setPrice] = useState(0);
-
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    transactionDate: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    transactionId: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    orderId: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    userName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    distName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    type: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [addDialog, setAddDialog] = useState(false);
-  const [successData, setSuccessData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const orderCmplt = useRef(null);
@@ -31,7 +65,6 @@ const AdminWalletReports = () => {
         success.push(item);
       });
       setFilterData(allCharge.result);
-      setSuccessData(allCharge.result);
     } else {
       alert(allCharge.result);
     }
@@ -39,7 +72,7 @@ const AdminWalletReports = () => {
 
   useEffect(() => {
     getAdminWalletData();
-  }, [getAdminWalletData]);
+  }, []);
 
   const openNew = () => {
     setAddDialog(true);
@@ -60,23 +93,72 @@ const AdminWalletReports = () => {
       </>
     );
   };
+  const [date1, setDate1] = useState(null);
+  const onGlobalFilterChange = (e) => {
+    setDate1("");
+    const value = e.target.value;
+    let _filters = { ...filters };
+
+    _filters["global"].value = value;
+
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+  const showDateWiseData = (date2) => {
+    if (date2 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(date2).toISOString();
+      let Datas = [];
+      filterData.map((item) => {
+        let newDate3 = moment(item.transactionDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3).toISOString();
+
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          Datas.push(item);
+        }
+      });
+      setFilterData(Datas);
+    } else {
+      return;
+    }
+  };
 
   const headerComplete = (
     <div className="py-2">
       <div className="row">
-        <div className="col-lg-6 d-flex">
+        <div className="col-lg-4 d-flex">
           <h4 className="m-0">Admin Wallet Reports</h4>
         </div>
-        <div className="col-lg-4">
+        <div className="col-lg-3">
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
             <InputText
-              type="search"
-              onInput={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search..."
-              className="form-control ps-5"
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
             />
           </span>
+        </div>
+        <div className="col-lg-3 ">
+          <div className="row">
+            <div className="col-lg-6">
+              <Calendar
+                value={date1}
+                onChange={(e) => setDate1(e.value)}
+                dateFormat="dd-mm-yy"
+                placeholder="From Date"
+              />
+            </div>
+            <div className="col-lg-6">
+              <Calendar
+                onChange={(e) => {
+                  showDateWiseData(e.target.value);
+                }}
+                dateFormat="dd-mm-yy"
+                placeholder="To Date"
+              />
+            </div>
+          </div>
         </div>
         <div className="col-lg-2">
           <button
@@ -112,22 +194,39 @@ const AdminWalletReports = () => {
       alert(result.result);
     }
   };
-  const AddPriceDialogFooter = (
-    <React.Fragment>
-      <Button
-        label="Cancel"
-        icon="pi pi-times"
-        className="me-1"
-        outlined
-        onClick={hideDialog}
-      />
-      <Button
-        label="Save"
-        icon="pi pi-check"
-        className="ms-1"
-        onClick={SaveData}
-      />
-    </React.Fragment>
+  const getDateTime = (rowData) => {
+    return (
+      <p className="mb-0 fw-bold" style={{ fontSize: 12 }}>
+        {rowData.transactionDate}
+        <br />
+        {rowData.transactionTime}
+      </p>
+    );
+  };
+
+  const lastYearTotal = () => {
+    let element = 0;
+    filterData.map((item) => {
+      if (item.type === "Credit") {
+        element = element + parseInt(item.amount);
+      } else if (item.type === "Debit") {
+        element = element - item.amount;
+      }
+    });
+
+    return "₹" + element;
+  };
+  const footerGroup = (
+    <ColumnGroup>
+      <Row>
+        <Column
+          footer="Totals:"
+          colSpan={2}
+          footerStyle={{ textAlign: "right" }}
+        />
+        <Column footer={lastYearTotal} />
+      </Row>
+    </ColumnGroup>
   );
   return (
     <div>
@@ -145,9 +244,28 @@ const AdminWalletReports = () => {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
           globalFilter={globalFilter}
           header={headerComplete}
+          filters={filters}
+          filterDisplay="menu"
+          globalFilterFields={[
+            "orderId",
+            "transactionDate",
+            "transactionId",
+            "userName",
+            "distName",
+            "type",
+            "status",
+          ]}
+          footerColumnGroup={footerGroup}
         >
-          <Column field="transactionDate" header="Date" sortable></Column>
-          <Column field="transactionTime" header="Time" sortable></Column>
+          <Column
+            field={getDateTime}
+            header="Date/Time"
+            body={getDateTime}
+            sortable
+          ></Column>
+          <Column field="orderId" header="Order No." sortable></Column>
+          <Column field="transactionId" header="TxnId" sortable></Column>
+          <Column field="openingBalance" header="Ope.Amt" sortable></Column>
           <Column field="amount" header="Amount" sortable></Column>
           <Column
             field="type"

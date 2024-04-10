@@ -73,6 +73,7 @@ function MainContent() {
   const [five, setFive] = useState(false);
   const [six, setSix] = useState(false);
   const [seven, setSeven] = useState(false);
+  const [eight, setEight] = useState(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const project = (event, ids) => {
     // event.preventDefault();
@@ -85,7 +86,8 @@ function MainContent() {
           setFour(false),
           setFive(false),
           setSix(false),
-          setSeven(false)
+          setSeven(false),
+          setEight(false)
         );
       case "two":
         return (
@@ -95,7 +97,8 @@ function MainContent() {
           setFour(false),
           setFive(false),
           setSix(false),
-          setSeven(false)
+          setSeven(false),
+          setEight(false)
         );
       case "three":
         return (
@@ -105,7 +108,8 @@ function MainContent() {
           setFour(false),
           setFive(false),
           setSix(false),
-          setSeven(false)
+          setSeven(false),
+          setEight(false)
         );
       case "four":
         return (
@@ -115,7 +119,8 @@ function MainContent() {
           four ? setFour(false) : setFour(true),
           setFive(false),
           setSix(false),
-          setSeven(false)
+          setSeven(false),
+          setEight(false)
         );
       case "five":
         return (
@@ -125,7 +130,8 @@ function MainContent() {
           setFour(false),
           five ? setFive(false) : setFive(true),
           setSix(false),
-          setSeven(false)
+          setSeven(false),
+          setEight(false)
         );
       case "six":
         return (
@@ -135,7 +141,8 @@ function MainContent() {
           setFour(false),
           setFive(false),
           six ? setSix(false) : setSix(true),
-          setSeven(false)
+          setSeven(false),
+          setEight(false)
         );
       case "seven":
         return (
@@ -145,7 +152,19 @@ function MainContent() {
           setFour(false),
           setFive(false),
           setSix(false),
-          seven ? setSeven(false) : setSeven(true)
+          seven ? setSeven(false) : setSeven(true),
+          setEight(false)
+        );
+      case "eight":
+        return (
+          setFirst(false),
+          setTwo(false),
+          setThree(false),
+          setFour(false),
+          setFive(false),
+          setSix(false),
+          setSeven(false),
+          eight ? setEight(false) : setEight(true)
         );
 
       default:
@@ -288,10 +307,19 @@ function MainContent() {
                         <Link to="all-users">All Users</Link>
                       </li>
                       <li>
+                        <Link to="all-prime_member">All Prime Users</Link>
+                      </li>
+                      <li>
                         <Link to="all-distributor">All Distributor</Link>
                       </li>
                       <li>
+                        <Link to="all-prime_distributor">All Prime Distributor</Link>
+                      </li>
+                      <li>
                         <Link to="all-vendor">All Vendor</Link>
+                      </li>
+                      <li>
+                        <Link to="all-prime_vendor">All Prime Vendor</Link>
                       </li>
                     </ul>
                   </div>
@@ -326,6 +354,12 @@ function MainContent() {
                         </Link>
                       </li>
                       <li>
+                        <Link to="all-slider-two">
+                          <i className="fa fa-book"></i>
+                          <span>Second App Slider</span>
+                        </Link>
+                      </li>
+                      <li>
                         <Link to="all-news">
                           <i className="fa fa-newspaper"></i>
                           <span>All NEWS</span>
@@ -353,6 +387,12 @@ function MainContent() {
                         <Link to="all-notifications">
                           <i className="fa fa-coins"></i>
                           <span>All Notifications</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="other-settings">
+                          <i className="fa fa-coins"></i>
+                          <span>Other Settings</span>
                         </Link>
                       </li>
                     </ul>
@@ -423,18 +463,34 @@ function MainContent() {
                 {/* <li className="header-menu">
                                     <span>Extra</span>
                                 </li> */}
-                <li>
-                  <Link to="manage-packages">
-                    <i class="fa fa-solid fa-box-open"></i>
-                    <span>Manage Packages</span>
+
+                <li className={`sidebar-dropdown ${eight ? "active" : ""}`}>
+                  <Link to="#" onClick={(event) => project(event, "eight")}>
+                    <i className="fa fa-chart-line"></i>
+                    <span>Package Management</span>
                   </Link>
+                  <div className={`sidebar-submenu ${eight ? "active" : ""}`}>
+                    <ul>
+                      <li>
+                        <Link to="manage-packages">Vendor Packages</Link>
+                      </li>
+                      <li>
+                        <Link to="users-packages">Users Packages</Link>
+                      </li>
+                      <li>
+                        <Link to="distributors-packages">
+                          Distributor Packages
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
                 </li>
-                <li>
+                {/* <li>
                   <Link to="all-transaction">
                     <i className="fa fa-book"></i>
                     <span>All Transaction</span>
                   </Link>
-                </li>
+                </li> */}
                 <li className={`sidebar-dropdown ${six ? "active" : ""}`}>
                   <Link to="#" onClick={(event) => project(event, "six")}>
                     <i className="fa fa-chart-line"></i>
@@ -461,12 +517,12 @@ function MainContent() {
                     <span></span>
                   </Link>
                 </li> */}
-                <li>
+                {/* <li>
                   <Link to="redeem-request">
                     <i class="fa fa-coins"></i>
                     <span>Commission Management</span>
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link to="redeem-request">
                     <i class="fa fa-coins"></i>
@@ -477,6 +533,12 @@ function MainContent() {
                   <Link to="all-rent-pay-data">
                     <i className="fa fa-book"></i>
                     <span>All Rent Pay Data</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="all-enquiries">
+                    <i className="fa fa-book"></i>
+                    <span>All Enquiries</span>
                   </Link>
                 </li>
                 <li>

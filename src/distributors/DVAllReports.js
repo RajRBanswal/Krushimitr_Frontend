@@ -8,6 +8,8 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import moment from "moment";
+import { ColumnGroup } from "primereact/columngroup";
+import { Row } from "primereact/row";
 function DVAllReports() {
   let emptyProduct = {
     _id: null,
@@ -33,7 +35,9 @@ function DVAllReports() {
   const [distributor, setDistributor] = useState(distr);
   const getProductData = async () => {
     let data = [];
-    let all_products = await fetch("https://krushimitr.in/api/admin/all-orders");
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/all-orders"
+    );
     const all_orders = await all_products.json();
     if (all_orders.status === 201) {
       all_orders.result.map((item) => {
@@ -74,15 +78,18 @@ function DVAllReports() {
 
   const [singleData, setSingleData] = useState("");
   const getOrderData = async (Id) => {
-    let all_products = await fetch("https://krushimitr.in/api/admin/get-orders", {
-      method: "post",
-      body: JSON.stringify({
-        orderId: Id,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/get-orders",
+      {
+        method: "post",
+        body: JSON.stringify({
+          orderId: Id,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const get_orders = await all_products.json();
     setSingleData(get_orders.result);
   };
@@ -265,18 +272,7 @@ function DVAllReports() {
     let xyz = JSON.parse(rowData.itemsData);
     let arr = [];
     for (let index = 0; index < xyz.length; index++) {
-      let rr =
-        index +
-        1 +
-        "). Product: " +
-        xyz[index].productName +
-        ", Price: " +
-        xyz[index].price +
-        ", Qty: " +
-        xyz[index].quantity +
-        ", Total: " +
-        xyz[index].price * xyz[index].quantity +
-        "    ";
+      let rr = index + 1 + "). Product: " + xyz[index].productName + ",   ";
       arr.push(rr);
     }
     return arr;
@@ -291,6 +287,95 @@ function DVAllReports() {
       </p>
     ) : (
       ""
+    );
+  };
+
+  const gstCalculation = (rowData) => {
+    let gstamt = 0;
+    let itemData = JSON.parse(rowData.itemsData);
+    itemData.map((item) => {
+      let qtyprice = item.price * item.quantity;
+      let res = (qtyprice * item.gst) / 100;
+      gstamt += res;
+    });
+    return gstamt / 2;
+  };
+
+  const IGST = (rowData) => {
+    let gstamt = 0;
+    let itemData = JSON.parse(rowData.itemsData);
+    itemData.map((item) => {
+      let qtyprice = item.price * item.quantity;
+      let res = (qtyprice * item.gst) / 100;
+      gstamt += res;
+    });
+    return gstamt;
+  };
+  const gstPercent = (rowData) => {
+    let gstamt = 0;
+    let itemData = JSON.parse(rowData.itemsData);
+    itemData.map((item) => {
+      gstamt = item.gst + "%";
+    });
+    return gstamt;
+  };
+  const Amount = (rowData) => {
+    let gstamt = 0;
+    let itemData = JSON.parse(rowData.itemsData);
+    itemData.map((item) => {
+      let qtyprice = item.price * item.quantity;
+      gstamt += qtyprice;
+    });
+    return gstamt;
+  };
+
+  const [sales, setSales] = useState("");
+  const lastYearTotal = () => {
+    let total = 0;
+    filterData.map((item) => {
+      let itemData = JSON.parse(item.itemsData);
+      itemData.map((ele) => {
+        let qtyprice = ele.price * ele.quantity;
+        total += qtyprice;
+      });
+    });
+
+    return "₹" + total;
+  };
+
+  const thisYearTotal = () => {
+    let total = 0;
+    filterData.map((item) => {
+      let itemData = JSON.parse(item.itemsData);
+      itemData.map((ele) => {
+        let qtyprice = ele.price * ele.quantity;
+        let res = (qtyprice * ele.gst) / 100;
+        total += res;
+      });
+    });
+
+    return "₹" + total;
+  };
+  const footerGroup = (
+    <ColumnGroup>
+      <Row>
+        <Column
+          footer="Totals:"
+          colSpan={6}
+          footerStyle={{ textAlign: "right" }}
+        />
+        <Column footer={thisYearTotal} />
+        <Column footer={lastYearTotal} />
+      </Row>
+    </ColumnGroup>
+  );
+  const getDateTime = (rowData) => {
+    return (
+      <p className="mb-0 fw-bold" style={{ fontSize: 12 }}>
+        {rowData.orderDate}
+        <br />
+        {rowData.orderTime}
+      </p>
     );
   };
 
@@ -312,28 +397,41 @@ function DVAllReports() {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
           globalFilter={globalFilter}
           header={headerComplete}
+          footerColumnGroup={footerGroup}
         >
           <Column
             field="orderNumber"
             header="Order No."
-            bodyStyle={{ color: "green", fontSize: 12, fontWeight: "bold" }}
+            bodyStyle={{ color: "green", fontSize: 12 }}
           ></Column>
           <Column field="userName" header="Name" sortable></Column>
-          <Column field="orderDate" header="Date" sortable></Column>
-          <Column field="orderTime" header="Time" sortable></Column>
+          <Column
+            field="orderDate"
+            header="Date/Time"
+            body={getDateTime}
+            sortable
+          ></Column>
+          {/* <Column field="orderTime" header="Time" sortable></Column> */}
           <Column
             field={getItemData}
-            header="Purchase Item / Price / Qty / Total"
-            body={getItemData}
+            header="Purchase Item"
             style={{ display: "none" }}
+            body={getItemData}
           ></Column>
 
+          <Column field={gstPercent} header="GST" body={gstPercent}></Column>
           <Column
-            field="finalAmount"
-            header="Amount"
-            style={{ display: "none" }}
-            bodyStyle={{ color: "green", fontWeight: "bold" }}
+            field={gstCalculation}
+            header="SGST"
+            body={gstCalculation}
           ></Column>
+          <Column
+            field={gstCalculation}
+            header="CGST"
+            body={gstCalculation}
+          ></Column>
+          <Column field={IGST} header="IGST" body={IGST}></Column>
+          <Column field={Amount} header="Amount" body={Amount}></Column>
           <Column
             field="paymentMethod"
             header="Pay Status"
@@ -346,24 +444,21 @@ function DVAllReports() {
             sortable
             bodyStyle={{ color: "green" }}
           ></Column>
-          {/* <Column
-            field="shippingAddress"
-            header="Shipping Address"
-            style={{ minWidth: "16rem" }}
-            sortable
-          ></Column>
-          <Column
-            field={distrBodyTemplate}
-            header="Distributor Name"
-            body={distrBodyTemplate}
-            style={{ minWidth: "16rem" }}
-            bodyStyle={{ color: "red", fontWeight: "bold" }}
-          ></Column> */}
           <Column
             field="orderStatus"
             header="Order Status"
             style={{ display: "none" }}
             bodyStyle={{ color: "green", fontWeight: "bold" }}
+          ></Column>
+          <Column
+            field="paymentType"
+            header="PayMethod"
+            bodyStyle={{ fontSize: 13 }}
+          ></Column>
+          <Column
+            field="utrNo"
+            header="UtrNo."
+            bodyStyle={{ fontSize: 13 }}
           ></Column>
           <Column
             field="deliveryStatus"

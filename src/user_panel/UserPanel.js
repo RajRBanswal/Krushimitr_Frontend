@@ -123,7 +123,7 @@ function UserPanel() {
                     <i className="bi bi-bar-chart"></i> All Orders
                   </Link>
                 </li>
-                <li className="nav-item">
+                {/* <li className="nav-item">
                   <Link className="nav-link" to="#">
                     <i className="bi bi-chat"></i> Messages
                   </Link>
@@ -155,7 +155,7 @@ function UserPanel() {
                       </Link>
                     </li>
                   </ul>
-                </li>
+                </li> */}
               </ul>
               {/* <!-- User (md) --> */}
               <ul className="navbar-nav">
@@ -165,7 +165,7 @@ function UserPanel() {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="user-profile">
+                  <Link className="nav-link" to="users-profile">
                     <i className="bi bi-person-square"></i> User Profile
                   </Link>
                 </li>
@@ -181,7 +181,7 @@ function UserPanel() {
         {/* <!-- Main content --> */}
         <div className="h-screen flex-grow-1 overflow-y-lg-auto ">
           {/* <!-- Header --> */}
-          <header className="bg-surface-primary border-bottom d-lg-block d-none ">
+          <header className="bg-surface-primary border-bottom d-lg-block d-none py-2 ">
             <div className="container-fluid">
               <div className="mb-npx">
                 <div className="row align-items-center">
@@ -224,7 +224,7 @@ function UserPanel() {
                           </li>
                           <hr className="my-0" />
                           <li>
-                            <Link className="dropdown-item" to="">
+                            <Link className="dropdown-item" to="users-profile">
                               Profile
                             </Link>
                           </li>

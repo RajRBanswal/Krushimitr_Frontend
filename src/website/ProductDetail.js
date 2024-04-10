@@ -14,6 +14,7 @@ function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
   const [selectedPrice, setSelectedPrice] = useState("");
+  const [selectedDiscount, setSelectedDiscount] = useState("");
   const [selectedGST, setSelectedGST] = useState("");
   const [selectedCommission, setSelectedCommission] = useState("");
   let datas = [];
@@ -39,6 +40,9 @@ function ProductDetail() {
           setSelectedPrice(itmess.selling_price);
           setSelectedGST(itmess.gst);
           setSelectedCommission(itmess.commission);
+          setSelectedDiscount(
+            itmess.discount === undefined ? 0 : itmess.discount
+          );
           setProductSize(item);
           datas.push(JSON.parse(item));
         } else {
@@ -51,10 +55,11 @@ function ProductDetail() {
     }
   };
   useEffect(() => {
-    getProducts();
+    setInterval(() => getProducts(), 5000);
+
     localStorage.setItem("PRODUCT_ID", id);
     localStorage.setItem("USERID", user_id);
-  }, [getProducts, id, user_id]);
+  }, [id]);
 
   const changePrice = (item) => {
     setSelectedSize(item.size);
@@ -62,6 +67,9 @@ function ProductDetail() {
     setSelectedPrice(item.selling_price);
     setSelectedGST(item.gst);
     setSelectedCommission(item.commission);
+    setSelectedDiscount(
+      item.discount === undefined ? 0 : item.discount
+    );
   };
 
   const [quantity, setQuantity] = useState(1);
@@ -167,10 +175,12 @@ function ProductDetail() {
                           <hr className="my-2" />
                           <div className="row">
                             <div className="col-md-8 ">
-                              <p className="fw-bold mb-0 ps-2">Size & Price</p>
+                              <p className="fw-bold mb-0 ps-2">
+                                Size & Price & Discount
+                              </p>
                               <hr className="my-1" />
                               <div className="row px-3">
-                                <div className="col-md-6 col-6">
+                                <div className="col-md-4 col-4">
                                   <p>
                                     <span className="text-success fw-bold">
                                       Size
@@ -182,7 +192,7 @@ function ProductDetail() {
                                     </span>
                                   </p>
                                 </div>
-                                <div className="col-md-6 col-6">
+                                <div className="col-md-4 col-4">
                                   <p>
                                     <span className="text-success fw-bold">
                                       Price
@@ -190,6 +200,17 @@ function ProductDetail() {
                                     :{" "}
                                     <span className="text-success">
                                       {selectedPrice}
+                                    </span>
+                                  </p>
+                                </div>
+                                <div className="col-md-4 col-4">
+                                  <p>
+                                    <span className="text-success fw-bold">
+                                      Discount
+                                    </span>{" "}
+                                    :{" "}
+                                    <span className="text-success">
+                                      {selectedDiscount}%
                                     </span>
                                   </p>
                                 </div>
@@ -259,9 +280,9 @@ function ProductDetail() {
                                 Notes :{" "}
                                 <span className="text-danger">
                                   "The customer was notified that delivery
-                                  charges not applied to their order. Delivery
-                                  charges will be charged at the time of
-                                  delivery"
+                                  charges not applied to their order.{" "}
+                                  <b>₹{product.hamali}</b> Delivery charges will
+                                  be charged at the time of delivery"
                                 </span>
                               </p>
                             </div>
@@ -305,6 +326,7 @@ function ProductDetail() {
                                         : "",
                                       HSNNo: product.HSNNo ? product.HSNNo : "",
                                       mfd: product.mfd ? product.mfd : "",
+                                      cod: product.cod ? product.cod : "",
                                       referenceId: user_id,
                                       referenceProductId: id,
                                     })
@@ -347,6 +369,7 @@ function ProductDetail() {
                                         : "",
                                       HSNNo: product.HSNNo ? product.HSNNo : "",
                                       mfd: product.mfd ? product.mfd : "",
+                                      cod: product.cod ? product.cod : "",
                                       referenceId: user_id,
                                       referenceProductId: id,
                                     })

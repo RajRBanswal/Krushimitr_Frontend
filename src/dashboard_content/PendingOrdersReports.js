@@ -324,7 +324,15 @@ function PendingOrdersReports() {
     });
     return gstamt;
   };
-
+  const getDateTime = (rowData) => {
+    return (
+      <p className="mb-0 fw-bold" style={{ fontSize: 12 }}>
+        {rowData.orderDate}
+        <br />
+        {rowData.orderTime}
+      </p>
+    );
+  };
   return (
     <div className="">
       <Toast ref={toast} />
@@ -350,8 +358,14 @@ function PendingOrdersReports() {
             bodyStyle={{ color: "green", fontSize: 12, fontWeight: "bold" }}
           ></Column>
           <Column field="userName" header="Name" sortable></Column>
-          <Column field="orderDate" header="Date" sortable></Column>
-          <Column field="orderTime" header="Time" sortable></Column>
+          {/* <Column field="orderDate" header="Date" sortable></Column>
+          <Column field="orderTime" header="Time" sortable></Column> */}
+          <Column
+            field={getDateTime}
+            header="Date/Time"
+            body={getDateTime}
+            sortable
+          ></Column>
           <Column
             field={getItemData}
             header="Purchase Item"

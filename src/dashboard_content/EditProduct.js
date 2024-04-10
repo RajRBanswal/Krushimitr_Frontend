@@ -6,7 +6,7 @@ function EditProduct() {
   const productId = useParams().id;
   const [time, setTime] = useState(false);
   const [product, setProducts] = useState([]);
-
+  const [adminCommission, setAdminCommission] = useState(10);
   const [category, setCategory] = useState("");
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
@@ -21,8 +21,15 @@ function EditProduct() {
 
   const [defaultValue, setDefaultValue] = useState([]);
   const [image, setImage] = useState([]);
+  const [image1, setImage1] = useState([]);
   const [rewardPoints, setRewardPoints] = useState(0);
   const [commission, setCommission] = useState(0);
+  const [cod, setCOD] = useState("Yes");
+  const [link, setLink] = useState("");
+  const [hamali, setHamali] = useState("");
+  const [imageURLS, setImageURLs] = useState([]);
+  const [keyword, setKeyword] = useState("");
+  const [productCode, setProductCode] = useState("");
 
   const getProductDatas = async () => {
     let all_products = await fetch(
@@ -51,6 +58,12 @@ function EditProduct() {
       setMFD(getProd.product_data[0].mfd);
       setRewardPoints(getProd.product_data[0].rewardPoints);
       setCommission(getProd.product_data[0].commission);
+      setCOD(getProd.product_data[0].cod);
+      setLink(getProd.product_data[0].link);
+      setImage1(getProd.product_data[0].image.map((item) => item));
+      setKeyword(getProd.product_data[0].keyword);
+      setProductCode(getProd.product_data[0].productCode);
+      setAdminCommission(getProd.product_data[0].vCommissionPercent);
       let datas = getProd.product_data[0].size.map((item) => {
         let data = JSON.parse(item);
         return {
@@ -58,8 +71,10 @@ function EditProduct() {
           unit: data.unit,
           selling_price: data.selling_price,
           buying_price: data.buying_price,
+          discount: data.discount,
           gst: data.gst,
           quantity: data.quantity,
+          remQuantity: data.remQuantity,
         };
       });
       setDefaultValue(datas);
@@ -77,6 +92,7 @@ function EditProduct() {
       buying_price: "",
       gst: "",
       quantity: "",
+      remQuantity: "0",
     },
   ]);
 
@@ -105,6 +121,7 @@ function EditProduct() {
         buying_price: "",
         gst: "",
         quantity: "",
+        remQuantity: "0",
       },
     ]);
   };
@@ -125,11 +142,21 @@ function EditProduct() {
     setCate(getCat.getCate);
   };
 
+  const onImageChange = (event) => {
+    if (event.target.files) {
+      setImage([...image, ...event.target.files]);
+    }
+  };
+
   useEffect(() => {
     getCategoryData();
     getProductDatas();
     setTime(false);
-  }, []);
+    if (image.length < 1) return;
+    const newImageUrls = [];
+    image.forEach((items) => newImageUrls.push(URL.createObjectURL(items)));
+    setImageURLs(newImageUrls);
+  }, [image]);
   //Get All Products
 
   //Add Products
@@ -151,11 +178,17 @@ function EditProduct() {
     formData.append("productWarranty", productWarranty);
     formData.append("commission", commission);
     formData.append("vCommission", "");
-    formData.append("vCommissionPercent", "");
-    formData.append("batchNo", batchNo);
-    formData.append("HSNNo", HSNNo);
-    formData.append("mfd", mfd);
-    formData.append("rewardPoints", rewardPoints);
+    formData.append("vCommissionPercent", adminCommission);
+    formData.append("batchNo", batchNo ? batchNo : "");
+    formData.append("HSNNo", HSNNo ? HSNNo : "");
+    formData.append("mfd", mfd ? mfd : "");
+    formData.append("rewardPoints", rewardPoints ? rewardPoints : "");
+    formData.append("cod", cod ? cod : "");
+    formData.append("link", link ? link : "");
+    formData.append("slug", "");
+    formData.append("hamali", hamali ? hamali : "");
+    formData.append("keyword", keyword ? keyword : "");
+    formData.append("productCode", productCode ? productCode : "");
     Object.values(arr).forEach((item) => {
       if (item.size !== "") {
         formData.append("sizes", JSON.stringify(item));
@@ -170,10 +203,61 @@ function EditProduct() {
       body: formData,
     }).then((result) => result.json());
     if (result.status === 201) {
-      navigate("/all-products");
+      navigate("/admin/all-products");
       alert(result.result);
     } else {
       alert(result.result);
+    }
+  };
+  const updateSelingPrice = (index, e) => {
+    const newArray = formValues.map((item, i) => {
+      if (index === i) {
+        let ff = item.buying_price - (item.buying_price * item.discount) / 100;
+        return {
+          ...item,
+          selling_price: ff.toFixed(0),
+          [e.target.name]: e.target.value,
+        };
+      } else {
+        return item;
+      }
+    });
+    setFormValues(newArray);
+  };
+
+  const updateDyanamicSelingPrice = (index, e) => {
+    const newArray = defaultValue.map((item, i) => {
+      if (index === i) {
+        let ff = item.buying_price - (item.buying_price * item.discount) / 100;
+        return {
+          ...item,
+          selling_price: ff.toFixed(0),
+          [e.target.name]: e.target.value,
+        };
+      } else {
+        return item;
+      }
+    });
+    setDefaultValue(newArray);
+  };
+
+  const deleteImage = (index) => {
+    setImage(image.filter((x, i) => i !== index));
+    setImageURLs(imageURLS.filter((x, i) => i !== index));
+  };
+  const deleteImage1 = (index) => {
+    setImage1(image.filter((x, i) => i !== index));
+    // setImageURLs(imageURLS.filter((x, i) => i !== index));
+  };
+
+  const mekeCode = (value) => {
+    setProductName(value);
+    let code = value.slice(0, 4);
+    if (code.length === 4) {
+      let name = code.toUpperCase();
+      let val = Math.floor(1000 + Math.random() * 9000);
+      let finalCode = name + "-" + val;
+      setProductCode(finalCode);
     }
   };
 
@@ -186,7 +270,7 @@ function EditProduct() {
           </div>
         </div>
         <div className="row">
-          <div className="col-lg-6">
+          <div className="col-lg-4">
             <label htmlFor="">Category</label>
             <select
               name="category"
@@ -202,20 +286,37 @@ function EditProduct() {
               ))}
             </select>
           </div>
-          <div className="col-lg-6">
+          <div className="col-lg-5">
             <label htmlFor="">Products Name </label>
             <input
               type="text"
               name="productName"
-              onChange={(e) => setProductName(e.target.value)}
+              onChange={(e) => mekeCode(e.target.value)}
               placeholder="Products Name"
               className="form-control"
               value={productName}
             />
           </div>
+          <div className="col-lg-3">
+            <label htmlFor="">Keywords</label>
+            <input
+              type="text"
+              name="keyword"
+              defaultValue={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              className="form-control"
+              placeholder="Keyword"
+            />
+          </div>
         </div>
-        <div className="row">
-          <div className="col-lg-6">
+        <div className="row mt-2">
+          <div className="col-lg-2 text-center">
+            <label htmlFor="">Product Code</label>
+            <p>
+              <strong>{productCode}</strong>
+            </p>
+          </div>
+          <div className="col-lg-4">
             <label htmlFor="">Description</label>
             <textarea
               name="desc"
@@ -250,7 +351,7 @@ function EditProduct() {
         </div>
         <div className="row mt-2">
           <div className="col-lg-11">
-            {productSize.map((item, index) => (
+            {defaultValue.map((item, index) => (
               <div className="row mt-1" key={index}>
                 <div className="col-lg-2">
                   <input
@@ -278,8 +379,9 @@ function EditProduct() {
                     name="selling_price"
                     placeholder="Selling Price"
                     className="form-control"
-                    defaultValue={item.selling_price}
+                    value={item.selling_price}
                     onChange={(e) => handleChanges(index, e)}
+                    readOnly
                   />
                 </div>
                 <div className="col-lg-2">
@@ -290,6 +392,19 @@ function EditProduct() {
                     className="form-control"
                     defaultValue={item.buying_price}
                     onChange={(e) => handleChanges(index, e)}
+                  />
+                </div>
+                <div className="col-lg-1">
+                  <input
+                    type="text"
+                    name="discount"
+                    placeholder="Discount in %"
+                    className="form-control"
+                    defaultValue={item.discount || ""}
+                    onChange={(e) => {
+                      handleChanges(index, e);
+                      updateDyanamicSelingPrice(index, e);
+                    }}
                   />
                 </div>
                 <div className="col-lg-2">
@@ -364,6 +479,7 @@ function EditProduct() {
                     className="form-control"
                     value={element.selling_price || ""}
                     onChange={(e) => handleChange(index, e)}
+                    readOnly
                   />
                 </div>
                 <div className="col-lg-2">
@@ -374,6 +490,19 @@ function EditProduct() {
                     className="form-control"
                     value={element.buying_price || ""}
                     onChange={(e) => handleChange(index, e)}
+                  />
+                </div>
+                <div className="col-lg-1">
+                  <input
+                    type="text"
+                    name="discount"
+                    placeholder="Discount in %"
+                    className="form-control"
+                    value={element.discount || ""}
+                    onChange={(e) => {
+                      handleChange(index, e);
+                      updateSelingPrice(index, e);
+                    }}
                   />
                 </div>
                 <div className="col-lg-2">
@@ -391,6 +520,7 @@ function EditProduct() {
                     <option value={"28"}>28%</option>
                   </select>
                 </div>
+
                 <div className="col-lg-1">
                   <input
                     type="text"
@@ -430,8 +560,8 @@ function EditProduct() {
         </div>
 
         <div className="row">
-          <div className="col-lg-3 mt-2">
-            <label htmlFor="">Commission</label>
+          <div className="col-lg-2 mt-2">
+            <label htmlFor="">Dist. Commission</label>
             <input
               type="text"
               name="commission"
@@ -441,10 +571,21 @@ function EditProduct() {
               value={commission}
             />
           </div>
-          <div className="col-lg-3 mt-2">
-            <label htmlFor="">Guarantee</label>
+          <div className="col-lg-2 mt-2">
+            <label htmlFor="">Admin Commission</label>
             <input
-              type="text"
+              type="number"
+              name="Admin_Commission"
+              defaultValue={adminCommission}
+              onChange={(e) => setAdminCommission(e.target.value)}
+              placeholder="Admin Commission"
+              className="form-control"
+            />
+          </div>
+          <div className="col-lg-3 mt-2">
+            <label htmlFor="">Guarantee (No. of Months)</label>
+            <input
+              type="number"
               name="Guarantee"
               onChange={(e) => setProductGuarantee(e.target.value)}
               placeholder="Guarantee"
@@ -453,9 +594,9 @@ function EditProduct() {
             />
           </div>
           <div className="col-lg-3 mt-2">
-            <label htmlFor="">Warranty</label>
+            <label htmlFor="">Warranty (No. of Months)</label>
             <input
-              type="text"
+              type="number"
               name="warranty"
               onChange={(e) => setProductWarranty(e.target.value)}
               placeholder="Warranty"
@@ -463,7 +604,7 @@ function EditProduct() {
               value={productWarranty}
             />
           </div>
-          <div className="col-md-3 mt-2">
+          <div className="col-md-2 mt-2">
             <label className="mb-0">Batch No</label>
             <input
               type="text"
@@ -500,10 +641,85 @@ function EditProduct() {
               name="product_img"
               multiple
               accept="image/*"
-              onChange={(e) => setImage(e.target.files)}
+              // onChange={(e) => setImage(e.target.files)}
+              defaultValue={image}
+              onChange={onImageChange}
               placeholder="Product Image"
               className="form-control"
             />
+            <div className="row">
+              {image1.map((item, index) => (
+                <div className="col-3 position-relative">
+                  <img
+                    src={`https://krushimitr.in/upload/${item}`}
+                    alt="not found"
+                    className="m-1 p-1"
+                    width={"80"}
+                  />
+                  <i
+                    className="fa fa-trash text-danger deleteButton"
+                    onClick={() => deleteImage1(index)}
+                  ></i>
+                </div>
+              ))}
+              {imageURLS.map((imageSrc, index) => (
+                <div className="col-3 position-relative">
+                  <img
+                    src={imageSrc}
+                    alt="not found"
+                    className="m-1 p-1"
+                    width={"80"}
+                  />
+                  <i
+                    className="fa fa-trash text-danger deleteButton"
+                    onClick={() => deleteImage(index)}
+                  ></i>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="col-lg-6 mt-2">
+            <label htmlFor="">Video Link</label>
+            <input
+              type="text"
+              name="link"
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="Video Link"
+              className="form-control"
+            />
+          </div>
+          <div className="col-lg-6 mt-2">
+            <p className="mb-1">Cash On Delivery</p>
+            <div className="d-flex text-center">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="flexRadioDefault"
+                  id="flexRadioDefault1"
+                  value={"Yes"}
+                  checked={cod === "Yes"}
+                  onChange={(e) => setCOD(e.currentTarget.value)}
+                />
+                <label class="form-check-label" for="flexRadioDefault1">
+                  Yes
+                </label>
+              </div>
+              <div class="form-check ms-5">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="flexRadioDefault"
+                  id="flexRadioDefault2"
+                  value={"No"}
+                  checked={cod === "No"}
+                  onChange={(e) => setCOD(e.currentTarget.value)}
+                />
+                <label class="form-check-label" for="flexRadioDefault2">
+                  No
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 

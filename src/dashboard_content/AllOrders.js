@@ -8,6 +8,8 @@ import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import moment from "moment";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { Calendar } from "primereact/calendar";
 function AllOrders() {
   let emptyProduct = {
     _id: null,
@@ -32,6 +34,40 @@ function AllOrders() {
   const [globalFilter, setGlobalFilter] = useState(null);
   const [globalFilters, setGlobalFilters] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    orderNumber: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    orderDate: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    transactionId: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    userName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    paymentStatus: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    orderStatus: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const toast = useRef(null);
   const dt = useRef(null);
   const orderCmplt = useRef(null);
@@ -48,23 +84,28 @@ function AllOrders() {
     const all_orders = await all_products.json();
     if (all_orders.status === 201) {
       all_orders.result.map((item) => {
-        if (item.vendorId === "" && item.status === "Active") {
+        if (item.status === "Active" && item.orderStatus !== "Done") {
           data.push(item);
-        } else if (item.vendorId !== "" && item.orderStatus === "Done") {
+        }
+        if (item.orderStatus === "Done" && item.status !== "Cancel") {
           datass.push(item);
-        } else if (
+        }
+        if (
           (item.orderStatus === "Pending" && item.reason === "") ||
           (item.reason === undefined && item.status === "Active")
         ) {
           datas.push(item);
-        } else if (item.status === "Cancel") {
+        }
+
+        if (item.status === "Cancel") {
           usercancel.push(item);
         }
         if (
-          item.vendorId === "" &&
-          item.status === "Active" &&
-          (item.reason !== "" || item.reason !== undefined)
+          item.reason === "" ||
+          item.reason === null ||
+          item.reason === undefined
         ) {
+        } else {
           reject.push(item);
         }
       });
@@ -80,7 +121,7 @@ function AllOrders() {
   useEffect(() => {
     getProductData();
     setIsLoading(false);
-  }, [getProductData, isLoading]);
+  }, [getProductData]);
 
   const filterApplyTemplate = (options) => {
     return (
@@ -147,7 +188,7 @@ function AllOrders() {
     const get_orders = await all_products.json();
     if (get_orders.status === 201) {
       setSingleData(get_orders.result);
-      console.log(get_orders.result);
+      // console.log(get_orders.result);
     } else {
       alert(get_orders.result);
     }
@@ -156,9 +197,10 @@ function AllOrders() {
   const [distributor, setDistributor] = useState([]);
   const getAddressWiseVender = async (address) => {
     let add = address.split(",");
-    console.log(add);
-    let state = add[3].trim();
-    let city = add[2].trim();
+    let city = add[add.length - 3].trim();
+    let state = add[add.length - 2].trim();
+    let pincode = add[add.length - 1].trim();
+    let abc = [];
     let all_products = await fetch(
       "https://krushimitr.in/api/admin/get-address-wise-vender",
       {
@@ -166,7 +208,7 @@ function AllOrders() {
         body: JSON.stringify({
           state: state,
           city: city,
-          pincode: add[4],
+          pincode: pincode,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -175,8 +217,12 @@ function AllOrders() {
     );
     const get_orders = await all_products.json();
     if (get_orders.status === 201) {
-      setDistributor(get_orders.result);
-      console.log(get_orders.result);
+      get_orders.result.map((item) => {
+        if (item.type === "Vendor") {
+          abc.push(item);
+        }
+      });
+      setDistributor(abc);
     } else {
       alert(get_orders.result);
     }
@@ -294,7 +340,7 @@ function AllOrders() {
       }
     );
     const response = await delete_users.json();
-    console.log(response);
+    // console.log(response);
     if (response.status === 201) {
       setDeleteUserDialog(false);
       setUser(emptyProduct);
@@ -415,6 +461,24 @@ function AllOrders() {
       />
     </React.Fragment>
   );
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+
+    _filters["global"].value = value;
+
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+  const onGlobalFilterChangeDate = (e) => {
+    const value = moment(e.target.value).format("DD-M-YYYY");
+    let _filters = { ...filters };
+
+    _filters["global"].value = value;
+
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
 
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
@@ -422,12 +486,38 @@ function AllOrders() {
       <span className="p-input-icon-left">
         <i className="pi pi-search" />
         <InputText
-          type="search"
-          onInput={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Search..."
+          value={globalFilterValue}
+          onChange={onGlobalFilterChange}
+          placeholder="Keyword Search"
+        />
+        <Calendar
+          showButtonBar
+          value={globalFilterValue}
+          onChange={onGlobalFilterChangeDate}
+          dateFormat="dd-m-yy"
+          placeholder="Select Date"
         />
       </span>
       <Toolbar className="p-0" right={rightToolbarTemplate}></Toolbar>
+    </div>
+  );
+  const pending_header = (
+    <div className="flex flex-wrap gap-2 align-items-left justify-content-between">
+      <span className="p-input-icon-left position-relative">
+        <i className="pi pi-search" />
+        <InputText
+          value={globalFilterValue}
+          onChange={onGlobalFilterChange}
+          placeholder="Keyword Search"
+        />
+        <Calendar
+          showButtonBar
+          value={globalFilterValue}
+          onChange={onGlobalFilterChangeDate}
+          dateFormat="dd-m-yy"
+          placeholder="Select Date"
+        />
+      </span>
     </div>
   );
   const headerComplete = (
@@ -436,9 +526,16 @@ function AllOrders() {
       <span className="p-input-icon-left">
         <i className="pi pi-search" />
         <InputText
-          type="search"
-          onInput={(e) => setGlobalFilters(e.target.value)}
-          placeholder="Search..."
+          value={globalFilterValue}
+          onChange={onGlobalFilterChange}
+          placeholder="Keyword Search"
+        />
+        <Calendar
+          showButtonBar
+          value={globalFilterValue}
+          onChange={onGlobalFilterChangeDate}
+          dateFormat="dd-m-yy"
+          placeholder="Select Date"
         />
       </span>
       <Toolbar className="p-0 " right={rightToolbarTemplateCompleted}></Toolbar>
@@ -594,9 +691,21 @@ function AllOrders() {
               rows={10}
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Orders"
               globalFilter={globalFilter}
               header={header}
+              filters={filters}
+              filterDisplay="menu"
+              globalFilterFields={[
+                "orderNumber",
+                "orderDate",
+                "transactionId",
+                "type",
+                "userName",
+                "paymentStatus",
+                "orderStatus",
+                "status",
+              ]}
             >
               <Column
                 field="orderNumber"
@@ -640,9 +749,9 @@ function AllOrders() {
               <Column
                 field="orderStatus"
                 header="Order Status"
-                style={{ display: "none" }}
                 bodyStyle={{ color: "green", fontWeight: "bold" }}
               ></Column>
+              <Column field="transactionId" header="Txn Id" sortable></Column>
               <Column
                 header="Action"
                 field="_id"
@@ -688,6 +797,20 @@ function AllOrders() {
             rows={10}
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
+            header={pending_header}
+            filters={filters}
+            filterDisplay="menu"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Orders"
+            globalFilterFields={[
+              "orderNumber",
+              "orderDate",
+              "transactionId",
+              "type",
+              "userName",
+              "paymentStatus",
+              "orderStatus",
+              "status",
+            ]}
           >
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
@@ -710,6 +833,7 @@ function AllOrders() {
               header="Status"
               bodyStyle={{ color: "green", fontWeight: "bold" }}
             ></Column>
+            <Column field="transactionId" header="Txn Id" sortable></Column>
           </DataTable>
         </div>
         <div
@@ -720,18 +844,26 @@ function AllOrders() {
         >
           <div className="card px-3 UserCard">
             <DataTable
-              ref={orderCmplt}
               value={compOrders}
-              selection={selectedUsers}
-              onSelectionChange={(e) => setSelectedUsers(e.value)}
               dataKey="id"
               paginator
               rows={10}
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
-              globalFilter={globalFilters}
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Orders"
               header={headerComplete}
+              filters={filters}
+              filterDisplay="menu"
+              globalFilterFields={[
+                "orderNumber",
+                "orderDate",
+                "transactionId",
+                "type",
+                "userName",
+                "paymentStatus",
+                "orderStatus",
+                "status",
+              ]}
             >
               <Column
                 field="orderNumber"
@@ -795,6 +927,7 @@ function AllOrders() {
                 style={{ display: "none" }}
                 bodyStyle={{ color: "green", fontWeight: "bold" }}
               ></Column>
+              <Column field="transactionId" header="Txn Id" sortable></Column>
               <Column
                 header="Action"
                 style={{ minWidth: "8rem" }}
@@ -839,6 +972,7 @@ function AllOrders() {
             rows={10}
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Orders"
           >
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
@@ -866,6 +1000,7 @@ function AllOrders() {
               header="Reason"
               bodyStyle={{ color: "red", fontSize: 13 }}
             ></Column>
+            <Column field="transactionId" header="Txn Id" sortable></Column>
             <Column
               header="Action"
               field="_id"
@@ -888,6 +1023,18 @@ function AllOrders() {
             rows={10}
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
+            filters={filters}
+            filterDisplay="menu"
+            globalFilterFields={[
+              "orderNumber",
+              "orderDate",
+              "transactionId",
+              "type",
+              "userName",
+              "paymentStatus",
+              "orderStatus",
+              "status",
+            ]}
           >
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
@@ -914,6 +1061,7 @@ function AllOrders() {
               header="Cancel Note"
               bodyStyle={{ color: "red", fontSize: 13 }}
             ></Column>
+            <Column field="transactionId" header="Txn Id" sortable></Column>
             <Column
               header="Action"
               field="_id"
@@ -950,6 +1098,15 @@ function AllOrders() {
                 singleData.map((item) => {
                   let orderSize = JSON.parse(item.itemsData);
                   let orderUser = JSON.parse(item.userData);
+                  let deliveryOption = "";
+                  if (
+                    item.deliveryMode !== undefined &&
+                    item.deliveryMode !== ""
+                  ) {
+                    deliveryOption = JSON.parse(item.deliveryOption);
+                  } else {
+                    deliveryOption = "";
+                  }
                   return (
                     <>
                       <table className="table table-stripped table-bordered">
@@ -962,6 +1119,13 @@ function AllOrders() {
                             <td className="fw-bold text-danger">
                               Time : {item.orderTime}
                             </td>
+                          </tr>
+                          <tr>
+                            <td className="fw-bold">TransactionId : </td>
+                            <td colSpan={2} className="text-success">
+                              {item.transactionId}
+                            </td>
+                            <td className="fw-bold text-danger"></td>
                           </tr>
                           <tr>
                             <td className="fw-bold">Name : </td>
@@ -998,13 +1162,27 @@ function AllOrders() {
                             </td>
                             <td>{item.shippingAddress}</td>
                           </tr>
+                          <tr>
+                            <td className="fw-bold text-nowrap">
+                              Payment Method :
+                            </td>
+                            <td className="fw-bold text-warning">
+                              {item.paymentMethod}
+                            </td>
+                            <td className="fw-bold text-nowrap">
+                              Payment Type :
+                            </td>
+                            <td>{item.paymentType}</td>
+                          </tr>
                         </tbody>
                       </table>
                       <table className="table table-stripped table-bordered">
                         <thead>
                           <tr>
                             <th colSpan={6}>
-                              <h5>Products Details</h5>
+                              <h5 className="fw-bold text-secondary">
+                                Products Details
+                              </h5>
                             </th>
                           </tr>
                           <tr>
@@ -1055,7 +1233,8 @@ function AllOrders() {
                             <td></td>
                             <td>
                               {item.orderStatus === "Done" ||
-                              item.status === "Cancel" ? (
+                              item.status === "Cancel" ||
+                              item.vendorId !== "" ? (
                                 ""
                               ) : (
                                 <div className="btn-group">
@@ -1145,6 +1324,132 @@ function AllOrders() {
                                 </tr>
                               </>
                             ))}
+                          <tr>
+                            <th colSpan={6}>
+                              <h5 className="fw-bold text-secondary">
+                                Vendor Details
+                              </h5>
+                            </th>
+                          </tr>
+                          <tr>
+                            <th>Vendor Name</th>
+                            <td className="" colSpan={2}>
+                              {item.distName}
+                            </td>
+                            <th>Vendor Mobile</th>
+                            <td className="" colSpan={2}>
+                              {item.distMobile}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th>Vendor Address</th>
+                            <td className="" colSpan={5}>
+                              {item.distAddress}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th colSpan={6}>
+                              <h5 className="fw-bold text-secondary">
+                                Delivery Details
+                              </h5>
+                            </th>
+                          </tr>
+                          <tr>
+                            <th>Delivery Status</th>
+                            <th colSpan={2} className="text-success">
+                              {item.deliveryStatus}
+                            </th>
+                            <th>Shipping Mode</th>
+                            <th className="text-success">
+                              {item.deliveryMode}
+                            </th>
+                          </tr>
+                          {item.shippingStatus === undefined ||
+                          item.shippingStatus === "" ? (
+                            <>
+                              <tr>
+                                <td className="fw-bold text-nowrap">
+                                  Delivery Date/Time :
+                                </td>
+                                <td colSpan={2}>
+                                  {item.deliveryDate === undefined
+                                    ? ""
+                                    : item.deliveryDate +
+                                      " / " +
+                                      item.shippingTime}
+                                </td>
+                                <td className="fw-bold text-nowrap">
+                                  Delivery Status:
+                                </td>
+                                <td colSpan={2}>{item.deliveryStatus}</td>
+                              </tr>
+                            </>
+                          ) : (
+                            <>
+                              <tr>
+                                <td className="fw-bold text-nowrap">
+                                  Distributor Name :
+                                </td>
+                                <td colSpan={2}>{item.shippingDistName}</td>
+                                <td className="fw-bold text-nowrap">
+                                  Shipping Date/Time :
+                                </td>
+                                <td
+                                  colSpan={2}
+                                  className="fw-bold"
+                                  style={{ fontSize: 14 }}
+                                >
+                                  {item.shippingDate +
+                                    " / " +
+                                    item.shippingTime}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="fw-bold text-nowrap">
+                                  Shipping Status :
+                                </td>
+                                <td colSpan={2} className="fw-bold">
+                                  {item.shippingStatus}
+                                </td>
+                                <td className="fw-bold text-nowrap">
+                                  Shipping Mode :
+                                </td>
+                                <td colSpan={2}>{item.deliveryMode}</td>
+                              </tr>
+                            </>
+                          )}
+                          {item.deliveryMode !== undefined &&
+                          item.deliveryMode === "Vehical" ? (
+                            <tr>
+                              <td className="fw-bold text-nowrap">
+                                Vehical No :
+                              </td>
+                              <td colSpan={2} className="fw-bold">
+                                {deliveryOption.vehicalNo}
+                              </td>
+                              <td className="fw-bold text-nowrap">
+                                Driver Mobile :
+                              </td>
+                              <td colSpan={2}>
+                                {deliveryOption.driverMobileNo}
+                              </td>
+                            </tr>
+                          ) : item.deliveryMode === "Courier" ? (
+                            <tr>
+                              <td className="fw-bold text-nowrap">
+                                Tracking Link :
+                              </td>
+                              <td colSpan={2} className="fw-bold">
+                                {deliveryOption.trackingLink}
+                              </td>
+                              <td className="fw-bold text-nowrap">
+                                Token No :
+                              </td>
+                              <td colSpan={2}>{deliveryOption.tokenNo}</td>
+                            </tr>
+                          ) : (
+                            ""
+                          )}
                         </tbody>
                       </table>
                     </>

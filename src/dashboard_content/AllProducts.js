@@ -1,12 +1,56 @@
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { InputText } from "primereact/inputtext";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 function AllProducts() {
   const navigate = useNavigate();
+  const proSize = useRef(null);
   const [time, setTime] = useState(false);
   const [isSet, setIsSet] = useState(false);
   const [products, setProducts] = useState([]);
+  const [filterData, setFilterData] = useState([]);
+  const [filterPendingVendorProduct, setFilterPendingVendorProduct] = useState(
+    []
+  );
+  const [filterActiveVendorProduct, setFilterActiveVendorProduct] = useState(
+    []
+  );
+
+  const [adminCommission, setAdminCommission] = useState(10);
+  const [globalFilter, setGlobalFilter] = useState(null);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    productCode: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    keyword: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    productName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    category: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    showVendorDetails: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [category, setCategory] = useState("");
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
@@ -22,6 +66,9 @@ function AllProducts() {
   const [commission, setCommission] = useState(0);
   const [cod, setCOD] = useState("Yes");
   const [link, setLink] = useState("");
+  const [hamali, setHamali] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const [productCode, setProductCode] = useState("");
 
   const [formValues, setFormValues] = useState([
     {
@@ -29,57 +76,72 @@ function AllProducts() {
       unit: "",
       selling_price: "",
       buying_price: "",
+      discount: "",
       gst: "",
       quantity: "",
+      remQuantity: "0",
     },
   ]);
   const [productData, setProductData] = useState([]);
   //Add Products
   const storeProducts = async () => {
-    const formData = new FormData();
-    formData.append("category", category);
-    formData.append("productName", productName);
-    formData.append("productDescription", productDescription);
-    formData.append("productCompany", productCompany);
-    formData.append("rewardPoints", rewardPoints);
-    formData.append("productGuarantee", productGuarantee);
-    formData.append("productWarranty", productWarranty);
-    formData.append("commission", commission);
-    formData.append("vCommission", "");
-    formData.append("vCommissionPercent", "");
-    formData.append("batchNo", batchNo);
-    formData.append("HSNNo", HSNNo);
-    formData.append("mfd", mfd);
-    formData.append("vendor_id", "");
-    formData.append("cod", cod);
-    formData.append("link", link);
-
+    let saved = "Yes";
     Object.values(formValues).forEach((item) => {
-      formData.append("sizes", JSON.stringify(item));
+      if (item.size === "" && item.selling_price === "" && item.gst === "") {
+        saved = "No";
+        return;
+      }
     });
-    // formData.append ('sizes', JSON.stringify(formValues));
-    Object.values(image).forEach((file) => {
-      formData.append("image", file);
-    });
+    if (saved === "Yes") {
+      const formData = new FormData();
+      formData.append("category", category);
+      formData.append("productName", productName);
+      formData.append("productDescription", productDescription);
+      formData.append("productCompany", productCompany);
+      formData.append("rewardPoints", rewardPoints);
+      formData.append("productGuarantee", productGuarantee);
+      formData.append("productWarranty", productWarranty);
+      formData.append("commission", commission);
+      formData.append("vCommission", "");
+      formData.append("vCommissionPercent", adminCommission);
+      formData.append("batchNo", batchNo);
+      formData.append("HSNNo", HSNNo);
+      formData.append("mfd", mfd);
+      formData.append("vendor_id", "");
+      formData.append("cod", cod);
+      formData.append("link", link);
+      formData.append("slug", "");
+      formData.append("hamali", hamali);
+      formData.append("keyword", keyword);
+      formData.append("productCode", productCode);
+      Object.values(formValues).forEach((item) => {
+        formData.append("sizes", JSON.stringify(item));
+      });
+      Object.values(image).forEach((file) => {
+        formData.append("image", file);
+      });
 
-    let result = await fetch("https://krushimitr.in/api/admin/add-product", {
-      method: "POST",
-      body: formData,
-    }).then((result) => result.json());
-    // console.log(result);
+      let result = await fetch("https://krushimitr.in/api/admin/add-product", {
+        method: "POST",
+        body: formData,
+      }).then((result) => result.json());
 
-    if (result.status === 201) {
-      setProductName("");
-      setProductDescription("");
-      setProductCompany("");
-      setProductGuarantee("");
-      setProductWarranty("");
-      setImage("");
-      alert(result.result);
-      setTime(true);
-      setIsSet(false);
+      if (result.status === 201) {
+        setProductName("");
+        setProductDescription("");
+        setProductCompany("");
+        setProductGuarantee("");
+        setProductWarranty("");
+        setImage("");
+        alert(result.result);
+        setTime(true);
+        setIsSet(false);
+      } else {
+        alert(result.result);
+      }
     } else {
-      alert(result.result);
+      alert("Fill the size data proper");
+      return;
     }
   };
 
@@ -112,6 +174,26 @@ function AllProducts() {
     );
     const getProd = await all_products.json();
     if (getProd.status === 201) {
+      let vendorActive = [];
+      let vendorPending = [];
+      let adminActive = [];
+      getProd.product_data.map((item) => {
+        if (item.vendor_id !== "" && item.status === "Active") {
+          vendorActive.push(item);
+        }
+        if (item.vendor_id !== "" && item.status === "Pending") {
+          vendorPending.push(item);
+        }
+        if (
+          (item.vendor_id === "" || item.vendor_id === undefined) &&
+          item.status === "Active"
+        ) {
+          adminActive.push(item);
+        }
+      });
+      setFilterActiveVendorProduct(vendorActive);
+      setFilterPendingVendorProduct(vendorPending);
+      setFilterData(adminActive);
       setProducts(getProd.product_data);
     } else {
       setProducts(getProd.result);
@@ -128,11 +210,42 @@ function AllProducts() {
     setCate(getCat.getCate);
   };
 
+  const [imageURLS, setImageURLs] = useState([]);
+
+  const onImageChange = (event) => {
+    if (event.target.files) {
+      setImage([...image, ...event.target.files]);
+    }
+  };
+  const [activeVendor, setActiveVendor] = useState([]);
+  const getVendorData = async () => {
+    let aVendor = [];
+    const all_users = await fetch(
+      "https://krushimitr.in/api/admin/distributor"
+    );
+    const result = await all_users.json();
+    if (result.status === 201) {
+      result.distributor.map((item) => {
+        if (item.type === "Vendor" && item.status === "Active") {
+          aVendor.push(item);
+        }
+      });
+      setActiveVendor(aVendor);
+    } else {
+      alert(result.message);
+    }
+  };
+
   useEffect(() => {
     getCategoryData();
     getProductData();
+    getVendorData();
     setTime(false);
-  }, [time]);
+    if (image.length < 1) return;
+    const newImageUrls = [];
+    image.forEach((items) => newImageUrls.push(URL.createObjectURL(items)));
+    setImageURLs(newImageUrls);
+  }, [products]);
 
   //Add More Fields
   let handleChange = (i, e) => {
@@ -151,6 +264,7 @@ function AllProducts() {
         buying_price: "",
         gst: "",
         quantity: "",
+        remQuantity: "0",
       },
     ]);
   };
@@ -179,12 +293,58 @@ function AllProducts() {
       alert(result.message);
     }
   };
+  const updateSelingPrice = (index, e) => {
+    const newArray = formValues.map((item, i) => {
+      if (index === i) {
+        let ff = item.buying_price - (item.buying_price * item.discount) / 100;
+        return { ...item, selling_price: ff, [e.target.name]: e.target.value };
+      } else {
+        return item;
+      }
+    });
+    setFormValues(newArray);
+  };
 
-  return (
-    <div className="card p-3">
+  const deleteImage = (index) => {
+    setImage(image.filter((x, i) => i !== index));
+
+    setImageURLs(imageURLS.filter((x, i) => i !== index));
+  };
+
+  const mekeCode = (value) => {
+    setProductName(value);
+    let code = value.slice(0, 4);
+    if (code.length === 4) {
+      let name = code.toUpperCase();
+      let val = Math.floor(1000 + Math.random() * 9000);
+      let finalCode = name + "-" + val;
+      setProductCode(finalCode);
+    }
+  };
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
+  const headerComplete = (
+    <div className="py-2">
       <div className="row">
-        <div className="col-lg-8">
+        <div className="col-lg-4">
           <h2 className="text-uppercase">All Products</h2>
+        </div>
+        <div className="col-lg-4">
+          <span className="p-input-icon-left">
+            <i className="pi pi-search" />
+            <InputText
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
+              className="form-control ps-5"
+            />
+          </span>
         </div>
         <div className="col-lg-4">
           <button
@@ -198,8 +358,94 @@ function AllProducts() {
           </button>
         </div>
       </div>
-      <hr />
+    </div>
+  );
 
+  const getItemData = (rowData) => (
+    <ul className="list-group list-group-numbered">
+      {rowData.size !== "" ||
+      rowData.size !== null ||
+      rowData.size !== undefined
+        ? rowData.size.map((item) => {
+            let items = JSON.parse(item);
+            return (
+              <li className="my-0  py-0 list-group-item list-group-item-primary">
+                {items.size}
+                {items.unit} - {items.selling_price}rs
+              </li>
+            );
+          })
+        : ""}
+    </ul>
+  );
+  const showImage = (rowData) => (
+    <img
+      src={`https://krushimitr.in/upload/${rowData.image[0]}`}
+      style={{ maxWidth: "100px", maxHeight: "100px" }}
+      alt={rowData.category_image}
+    />
+  );
+
+  const filterApplyTemplate = (options) => {
+    return options.status === "Pending" ? (
+      <>
+        <button
+          type="button"
+          className="btn btn-success btn-sm me-1"
+          onClick={() => {}}
+        >
+          <i className="fas fa-eye" /> Accept
+        </button>
+        <button
+          type="button"
+          className="btn btn-danger btn-sm me-1"
+          onClick={() => {}}
+        >
+          <i className="fas fa-close" /> Reject
+        </button>
+      </>
+    ) : (
+      <div className="row">
+        <div className="col-lg-6">
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => navigate("/admin/edit-product/" + options._id)}
+          >
+            <i className="fas fa-edit" />
+          </button>
+        </div>
+        <div className="col-lg-6">
+          <button
+            type="button"
+            className="btn btn-danger btn-sm"
+            onClick={() => DeleteOne(options._id)}
+          >
+            <i className="fa fa-trash" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+  const showVendorDetails = (rowData) => {
+    return activeVendor.map((item) => {
+      if (rowData.vendor_id === item._id) {
+        return (
+          <>
+            <p className="mb-0">
+              <span>{item.name}</span> <span>{item.mobile}</span>{" "}
+              <small className="text-secondary">
+                ({item.shopName === undefined ? "" : item.shopName})
+              </small>
+            </p>
+          </>
+        );
+      }
+    });
+  };
+
+  return (
+    <div className="card p-3">
       <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
         <li className="nav-item" role="presentation">
           <button
@@ -252,8 +498,68 @@ function AllProducts() {
           role="tabpanel"
           aria-labelledby="pills-home-tab"
         >
-          <div className="table-responsive" style={{ overflow: "auto" }}>
-            <table className="table table-hover table-bordered">
+          <DataTable
+            value={filterData}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            globalFilter={globalFilter}
+            header={headerComplete}
+            filters={filters}
+            filterDisplay="menu"
+            globalFilterFields={[
+              "category",
+              "productCode",
+              "keyword",
+              "productName",
+              "status",
+            ]}
+          >
+            <Column
+              field="category"
+              header="Category"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="productCode"
+              header="Code"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="keyword"
+              header="Keyword"
+              style={{ display: "none" }}
+            ></Column>
+            <Column
+              field="productName"
+              header="Product Name"
+              bodyStyle={{ fontSize: 16, fontWeight: "bold" }}
+              sortable
+            ></Column>
+            <Column
+              field={getItemData}
+              header="Size - Price"
+              body={getItemData}
+              bodyStyle={{ fontSize: 16 }}
+            ></Column>
+
+            <Column field={showImage} header="Image" body={showImage}></Column>
+            <Column
+              field="status"
+              header="Status"
+              sortable
+              bodyStyle={{ color: "green", fontSize: 16 }}
+            ></Column>
+            <Column
+              header="Action"
+              body={filterApplyTemplate}
+              severity="success"
+            ></Column>
+          </DataTable>
+          {/* <table className="table table-hover table-bordered">
               <thead className="table-dark">
                 <tr>
                   <th scope="col">Category</th>
@@ -355,8 +661,7 @@ function AllProducts() {
                   )
                 )}
               </tbody>
-            </table>
-          </div>
+            </table> */}
         </div>
         <div
           className="tab-pane fade"
@@ -364,8 +669,76 @@ function AllProducts() {
           role="tabpanel"
           aria-labelledby="pills-profile-tab"
         >
-          <div className="table-responsive" style={{ overflow: "auto" }}>
-            <table className="table table-hover table-bordered">
+          <DataTable
+            value={filterPendingVendorProduct}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            globalFilter={globalFilter}
+            header={headerComplete}
+            filters={filters}
+            filterDisplay="menu"
+            globalFilterFields={[
+              "category",
+              "productCode",
+              "keyword",
+              "productName",
+              "showVendorDetails",
+              "status",
+            ]}
+          >
+            <Column
+              field="category"
+              header="Category"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="productCode"
+              header="Code"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="keyword"
+              header="Keyword"
+              style={{ display: "none" }}
+            ></Column>
+            <Column
+              field="productName"
+              header="Product Name"
+              bodyStyle={{ fontSize: 16, fontWeight: "bold" }}
+              sortable
+            ></Column>
+            <Column
+              field={getItemData}
+              header="Size - Price"
+              body={getItemData}
+              bodyStyle={{ fontSize: 16 }}
+            ></Column>
+            <Column
+              field={showVendorDetails}
+              header="Vendor Details"
+              body={showVendorDetails}
+              bodyStyle={{ fontSize: 14 }}
+              filterElement={showVendorDetails}
+            ></Column>
+
+            <Column field={showImage} header="Image" body={showImage}></Column>
+            <Column
+              field="status"
+              header="Status"
+              sortable
+              bodyStyle={{ color: "green", fontSize: 16 }}
+            ></Column>
+            <Column
+              header="Action"
+              body={filterApplyTemplate}
+              severity="success"
+            ></Column>
+          </DataTable>
+          {/* <table className="table table-hover table-bordered">
               <thead className="table-dark">
                 <tr>
                   <th scope="col">Category</th>
@@ -594,8 +967,7 @@ function AllProducts() {
                   )
                 )}
               </tbody>
-            </table>
-          </div>
+            </table> */}
         </div>
         <div
           className="tab-pane fade"
@@ -603,7 +975,74 @@ function AllProducts() {
           role="tabpanel"
           aria-labelledby="pills-activeVendorProduct-tab"
         >
-          <div className="table-responsive" style={{ overflow: "auto" }}>
+          <DataTable
+            value={filterActiveVendorProduct}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            globalFilter={globalFilter}
+            header={headerComplete}
+            filters={filters}
+            filterDisplay="menu"
+            globalFilterFields={[
+              "category",
+              "productCode",
+              "keyword",
+              "productName",
+              "status",
+            ]}
+          >
+            <Column
+              field="category"
+              header="Category"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="productCode"
+              header="Code"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="keyword"
+              header="Keyword"
+              style={{ display: "none" }}
+            ></Column>
+            <Column
+              field="productName"
+              header="Product Name"
+              bodyStyle={{ fontSize: 16, fontWeight: "bold" }}
+              sortable
+            ></Column>
+            <Column
+              field={getItemData}
+              header="Size - Price"
+              body={getItemData}
+              bodyStyle={{ fontSize: 16 }}
+            ></Column>
+            <Column
+              field={showVendorDetails}
+              header="Vendor Details"
+              body={showVendorDetails}
+              bodyStyle={{ fontSize: 14 }}
+            ></Column>
+
+            <Column field={showImage} header="Image" body={showImage}></Column>
+            <Column
+              field="status"
+              header="Status"
+              sortable
+              bodyStyle={{ color: "green", fontSize: 16 }}
+            ></Column>
+            <Column
+              header="Action"
+              body={filterApplyTemplate}
+              severity="success"
+            ></Column>
+          </DataTable>
+          {/* <div className="table-responsive" style={{ overflow: "auto" }}>
             <table className="table table-hover table-bordered">
               <thead className="table-dark">
                 <tr>
@@ -833,9 +1272,10 @@ function AllProducts() {
                 )}
               </tbody>
             </table>
-          </div>
+          </div> */}
         </div>
       </div>
+
       <div
         className={`modal fade ${isSet ? "show" : ""} `}
         id="exampleModal"
@@ -861,7 +1301,7 @@ function AllProducts() {
             </div>
             <div className="modal-body p-4">
               <div className="row">
-                <div className="col-lg-6">
+                <div className="col-lg-4">
                   <label htmlFor="">
                     Category
                     <span className="text-danger" style={{ fontSize: 18 }}>
@@ -881,7 +1321,7 @@ function AllProducts() {
                     ))}
                   </select>
                 </div>
-                <div className="col-lg-6">
+                <div className="col-lg-5">
                   <label htmlFor="">
                     Products Name
                     <span className="text-danger" style={{ fontSize: 18 }}>
@@ -891,15 +1331,32 @@ function AllProducts() {
                   <input
                     type="text"
                     name="productName"
-                    onChange={(e) => setProductName(e.target.value)}
+                    onChange={(e) => mekeCode(e.target.value)}
                     placeholder="Products Name"
                     className="form-control"
                     required
                   />
                 </div>
+                <div className="col-lg-3">
+                  <label htmlFor="">Keywords</label>
+                  <input
+                    type="text"
+                    name="keyword"
+                    onChange={(e) => setKeyword(e.target.value)}
+                    className="form-control"
+                    placeholder="Keyword"
+                  />
+                </div>
               </div>
               <div className="row mt-2">
-                <div className="col-lg-6">
+                <div className="col-lg-2 text-center">
+                  <label htmlFor="">Product Code</label>
+                  <p>
+                    <strong>{productCode}</strong>
+                  </p>
+                </div>
+
+                <div className="col-lg-4">
                   <label htmlFor="">Description</label>
                   <textarea
                     name="desc"
@@ -911,7 +1368,7 @@ function AllProducts() {
                 <div className="col-lg-4">
                   <label htmlFor="">
                     Product Company
-                    <span className="text-danger" style={{ fontSize: 18 }}>
+                    <span className="text-danger" style={{ fontSize: 16 }}>
                       *
                     </span>
                   </label>
@@ -940,6 +1397,7 @@ function AllProducts() {
                     <div className="row mt-1 position-relative" key={index}>
                       <div className="col-lg-2">
                         <input
+                          ref={proSize}
                           type="text"
                           name="size"
                           placeholder="Size*"
@@ -948,7 +1406,7 @@ function AllProducts() {
                           onChange={(e) => handleChange(index, e)}
                         />
                       </div>
-                      <div className="col-lg-2">
+                      <div className="col-lg-1">
                         <input
                           type="text"
                           name="unit"
@@ -966,6 +1424,7 @@ function AllProducts() {
                           className="form-control"
                           value={element.selling_price || ""}
                           onChange={(e) => handleChange(index, e)}
+                          readOnly
                         />
                       </div>
                       <div className="col-lg-2">
@@ -976,6 +1435,19 @@ function AllProducts() {
                           className="form-control"
                           value={element.buying_price || ""}
                           onChange={(e) => handleChange(index, e)}
+                        />
+                      </div>
+                      <div className="col-lg-1">
+                        <input
+                          type="text"
+                          name="discount"
+                          placeholder="Discount in %"
+                          className="form-control"
+                          value={element.discount || ""}
+                          onChange={(e) => {
+                            handleChange(index, e);
+                            updateSelingPrice(index, e);
+                          }}
                         />
                       </div>
                       <div className="col-lg-2">
@@ -1031,8 +1503,8 @@ function AllProducts() {
               </div>
 
               <div className="row">
-                <div className="col-lg-3 mt-2">
-                  <label htmlFor="">Commission</label>
+                <div className="col-lg-2 mt-2">
+                  <label htmlFor="">Dist. Commission</label>
                   <input
                     type="text"
                     name="commission"
@@ -1041,10 +1513,21 @@ function AllProducts() {
                     onChange={(e) => setCommission(e.target.value)}
                   />
                 </div>
-                <div className="col-lg-3 mt-2">
-                  <label htmlFor="">Guarantee</label>
+                <div className="col-lg-2 mt-2">
+                  <label htmlFor="">Admin Commission</label>
                   <input
-                    type="text"
+                    type="number"
+                    name="Admin_Commission"
+                    defaultValue={adminCommission}
+                    onChange={(e) => setAdminCommission(e.target.value)}
+                    placeholder="Admin Commission"
+                    className="form-control"
+                  />
+                </div>
+                <div className="col-lg-3 mt-2">
+                  <label htmlFor="">Guarantee (No. of Months)</label>
+                  <input
+                    type="number"
                     name="Guarantee"
                     onChange={(e) => setProductGuarantee(e.target.value)}
                     placeholder="Guarantee"
@@ -1052,16 +1535,16 @@ function AllProducts() {
                   />
                 </div>
                 <div className="col-lg-3 mt-2">
-                  <label htmlFor="">Warranty</label>
+                  <label htmlFor="">Warranty (No. of Months)</label>
                   <input
-                    type="text"
+                    type="number"
                     name="warranty"
                     onChange={(e) => setProductWarranty(e.target.value)}
                     placeholder="Warranty"
                     className="form-control"
                   />
                 </div>
-                <div className="col-md-3 mt-2">
+                <div className="col-md-2 mt-2">
                   <label className="mb-0">Batch No</label>
                   <input
                     type="text"
@@ -1095,10 +1578,28 @@ function AllProducts() {
                     name="product_img"
                     multiple
                     accept="image/*"
-                    onChange={(e) => setImage(e.target.files)}
+                    // onChange={(e) => setImage(e.target.files)}
+                    defaultValue={image}
+                    onChange={onImageChange}
                     placeholder="Product Image"
                     className="form-control"
                   />
+                  <div className="row">
+                    {imageURLS.map((imageSrc, index) => (
+                      <div className="col-3 position-relative">
+                        <img
+                          src={imageSrc}
+                          alt="not fount"
+                          className="m-1 p-1"
+                          width={"80"}
+                        />
+                        <i
+                          className="fa fa-trash text-danger deleteButton"
+                          onClick={() => deleteImage(index)}
+                        ></i>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="col-lg-6 mt-2">
                   <label htmlFor="">Video Link</label>

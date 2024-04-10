@@ -7,7 +7,6 @@ function AllSlider() {
   const [heading, setHeading] = useState("");
   const [image, setImage] = useState("");
   const [link, setLink] = useState("");
-
   const storeSlider = async () => {
     let formData = new FormData();
     formData.append("heading", heading);

@@ -5,9 +5,12 @@ import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
+import loading from "../images/loading.gif";
+import moment from "moment";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
 const AdminWallet = () => {
   const [price, setPrice] = useState(0);
-
+  const [loadings, setLoadings] = useState(false);
   const [addDialog, setAddDialog] = useState(false);
   const [successData, setSuccessData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState(null);
@@ -16,6 +19,40 @@ const AdminWallet = () => {
   const adminId = localStorage.getItem("admin_id");
   const [filterData, setFilterData] = useState([]);
   const [editCharges, setEditCharges] = useState("");
+
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    transactionDate: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    orderId: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    transactionId: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    userName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    distName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    type: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getAdminWalletData = async () => {
     let success = [];
@@ -58,19 +95,48 @@ const AdminWallet = () => {
     );
   };
 
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
+  const onGlobalFilterChangeDate = (e) => {
+
+    let dates = moment(e.target.value).format("DD-MM-YYYY");
+    let _filters = { ...filters };
+    _filters["global"].value = dates;
+    setFilters(_filters);
+    setGlobalFilterValue(dates);
+  };
+
   const headerComplete = (
     <div className="py-2">
       <div className="row">
-        <div className="col-lg-6 d-flex">
+        <div className="col-lg-3 d-flex">
           <h4 className="m-0">Admin Wallet</h4>
         </div>
-        <div className="col-lg-4">
+        <div className="col-lg-3">
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
             <InputText
-              type="search"
-              onInput={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search..."
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
+              className="form-control ps-5"
+            />
+          </span>
+        </div>
+        <div className="col-lg-3">
+          <span className="p-input-icon-left">
+            <i className="pi pi-search" />
+            <InputText
+              type="date"
+              defaultValue={globalFilterValue}
+              onChange={onGlobalFilterChangeDate}
+              placeholder="Keyword Search"
               className="form-control ps-5"
             />
           </span>
@@ -90,7 +156,9 @@ const AdminWallet = () => {
     setAddDialog(false);
   };
 
-  const SaveData = async () => {
+  const SaveData = async (e) => {
+    e.preventDefault();
+    setLoadings(true);
     const response = await fetch(
       "https://krushimitr.in/api/admin/add-admin-wallet",
       {
@@ -103,6 +171,7 @@ const AdminWallet = () => {
     );
     const result = await response.json();
     if (result.status === 201) {
+      setLoadings(false);
       hideDialog();
       alert(result.result);
     } else {
@@ -126,10 +195,18 @@ const AdminWallet = () => {
       />
     </React.Fragment>
   );
+  const dateTime = (rowData) => {
+    return rowData.transactionDate + " / " + rowData.transactionTime;
+  };
+
   return (
     <div>
       <Toast ref={toast} />
-
+      <img
+        src={loading}
+        className={"loader " + (loadings ? "d-block" : "d-none")}
+        alt=""
+      />
       <div className="card px-3 UserCardReports">
         <DataTable
           ref={orderCmplt}
@@ -142,28 +219,47 @@ const AdminWallet = () => {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
           globalFilter={globalFilter}
           header={headerComplete}
+          filters={filters}
+          filterDisplay="menu"
+          globalFilterFields={[
+            "orderId",
+            "transactionDate",
+            "transactionId",
+            "type",
+            "userName",
+            "distName",
+            "status",
+          ]}
         >
-          <Column field="transactionDate" header="Date" sortable></Column>
-          <Column field="transactionTime" header="Time" sortable></Column>
+          <Column field="orderId" header="Order Id" sortable></Column>
+          <Column field="transactionId" header="Txn ID" sortable></Column>
+          <Column
+            field={dateTime}
+            header="Date / Time"
+            body={dateTime}
+            sortable
+          ></Column>
+          {/* <Column field="transactionTime" header="Time" sortable></Column> */}
+          <Column field="openingBalance" header="OpeningAmt" sortable></Column>
           <Column field="amount" header="Amount" sortable></Column>
-          <Column field="type" header="Type" sortable></Column>
+          <Column field="type" header="Type" bodyStyle={{color:'blue',fontWeight:'bold'}} sortable></Column>
           <Column field="userName" header="User Name"></Column>
           <Column field="distName" header="Distr/Vendor Name"></Column>
           <Column field="reason" header="Reason" sortable></Column>
-          <Column field="status" header="Status" sortable></Column>
-          <Column
+          <Column field="status" header="Status" bodyStyle={{color:'green'}} sortable></Column>
+          {/* <Column
             header="Action"
             style={{ minWidth: "4rem" }}
             body={filterApplyTemplate}
             severity="success"
-          ></Column>
+          ></Column> */}
         </DataTable>
       </div>
       <Dialog
         visible={addDialog}
         style={{ width: "32rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header={"Add Rent Pay Charges"}
+        header={"Add Amount"}
         modal
         className="p-fluid"
         footer={AddPriceDialogFooter}

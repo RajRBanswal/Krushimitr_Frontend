@@ -3,10 +3,15 @@ import "./cart.css";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteFromCart, emptyCart } from "../redux/slice/CartSlice";
 import { useNavigate } from "react-router-dom";
+import { City, State } from "country-state-city";
+
+import { cashfree } from "../cashfree/util";
+import axios from "axios";
 
 function Checkout() {
   const navigate = useNavigate();
   const cart = useSelector((state) => state.cart);
+
   const [product, setProducts] = useState([]);
   const dispatch = useDispatch();
   let user = localStorage.getItem("user_id");
@@ -33,7 +38,7 @@ function Checkout() {
   const [selectedWallet, setSelectedWallet] = useState(false);
 
   const SaveAddress = async () => {
-    const address = addressAdd;
+    const address = area + " " + addressAdd;
     const userId = userLoggedIn;
     if (!type || !addressAdd || !city || !state) {
       alert("Please Fill all Feilds");
@@ -70,6 +75,21 @@ function Checkout() {
     }
   };
   const [userData, setUserData] = useState([]);
+
+  const [allData, setAllData] = useState([]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getAllE = async () => {
+    const all_cod = await fetch(
+      "https://krushimitr.in/api/admin/all-cod-settings"
+    );
+    const AllCODData = await all_cod.json();
+    if (AllCODData.status === 201) {
+      setAllData(AllCODData.result);
+    } else {
+      console.log(AllCODData.result);
+    }
+  };
 
   const getTotal = () => {
     let total = 0;
@@ -147,6 +167,7 @@ function Checkout() {
       }
     );
     const getCat = await response.json();
+    console.log(getCat);
     if (getCat.status === 201) {
       dispatch(emptyCart([]));
       alert("Order placed successfully");
@@ -361,7 +382,9 @@ function Checkout() {
       setRupeeWalletData([]);
     }
   };
+  const [codCount, setCODCount] = useState(0);
   useEffect(() => {
+    getAllE();
     setProducts(cart.data);
 
     if (cart.data.length === 0) {
@@ -375,6 +398,9 @@ function Checkout() {
       if (item.referenceProductId !== "") {
         setreferenceProductId(item.referenceProductId);
       }
+      if (item.cod === "No") {
+        setCODCount(codCount + 1);
+      }
     });
 
     getUserData();
@@ -386,6 +412,133 @@ function Checkout() {
     let year = new Date().getFullYear();
     setCurrentDate(date + "-" + month + "-" + year);
   }, []);
+
+  const [cityCode, setCityCode] = useState([]);
+  const onChangeHandler = (e) => {
+    setCityCode("");
+    setState("");
+    const index = e.target.selectedIndex;
+    const el = e.target.childNodes[index];
+    const cityCode = el.getAttribute("id");
+    setCityCode(cityCode);
+    setState(el.getAttribute("value"));
+  };
+
+  const [sessionIds, setSessionIds] = useState("");
+  let version = cashfree.version();
+
+  const getSessionId = async () => {
+    if (!selectedAddress) {
+      textAddress.current?.focus();
+      alert("Select Address");
+      return false;
+    }
+    if (!paymentType) {
+      textInput.current?.focus();
+      return false;
+    }
+    let success = false;
+    let finalTotal = 0;
+    let walletAmount = 0;
+    if (selectedWallet === true) {
+      let wallet = getWalletTotal();
+      let total = getTotal();
+      if (wallet > total) {
+        let dd = total;
+        walletAmount = dd;
+        finalTotal = 0;
+      } else {
+        walletAmount = wallet;
+        finalTotal = total - wallet;
+      }
+    } else {
+      finalTotal = getTotal();
+    }
+
+    // localStorage.setItem("ORDER_DATA", JSON.stringify(data));
+    if (finalTotal < 1) {
+      let data = {
+        userName: userName,
+        userId: userLoggedIn,
+        address: selectedAddress,
+        userData: JSON.stringify(userData),
+        items: JSON.stringify(product), //cartItems,
+        amount: finalTotal,
+        walletAmount: walletAmount,
+        paymentMethod: "Online",
+        paymentStatus: "Paid",
+        orderDate: currentDate,
+        paymentType: "Wallet",
+        referenceId: referenceId,
+        referenceProductId: referenceProductId,
+        rewardPoints: getPointTotal(),
+      };
+      const response = await fetch(
+        "https://krushimitr.in/api/users/place-order-using-wallat",
+        {
+          method: "post",
+          body: JSON.stringify({
+            success: success,
+            userMobile: userData.mobile,
+            data: data,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const getCat = await response.json();
+      if (getCat.status === 201) {
+        dispatch(emptyCart([]));
+        alert("Order placed successfully");
+        navigate("/users/user-orders");
+      } else {
+        alert(getCat.result);
+      }
+    } else {
+      let data = {
+        userName: userName,
+        userId: userLoggedIn,
+        address: selectedAddress,
+        userData: JSON.stringify(userData),
+        items: JSON.stringify(product), //cartItems,
+        amount: finalTotal,
+        walletAmount: walletAmount,
+        orderDate: currentDate,
+        paymentType: paymentType,
+        referenceId: referenceId,
+        referenceProductId: referenceProductId,
+        rewardPoints: getPointTotal(),
+      };
+      await axios
+        .post("https://krushimitr.in/api/users/make-web-payment", {
+          user_id: userData._id,
+          price: finalTotal,
+          phone: userData.mobile,
+          name: userData.name,
+          data: data,
+        })
+        .then((res) => {
+          console.log(res.data);
+          setSessionIds(res.data.result);
+          handlePayment();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  };
+
+  const handlePayment = () => {
+    let checkoutOptions = {
+      paymentSessionId: sessionIds,
+    };
+    cashfree.checkout(checkoutOptions).then(function (result) {
+      if (result.redirect) {
+        console.log(result);
+      }
+    });
+  };
 
   return (
     <div className="container py-5">
@@ -417,7 +570,7 @@ function Checkout() {
                           width={50}
                         />
                       </td>
-                      <td>
+                      <td style={{width:'40%'}}>
                         <div className="product-info">
                           <div className="product-title">
                             <p className="mb-0 fw-bold ">
@@ -517,7 +670,7 @@ function Checkout() {
               </tfoot>
             </table>
             <div className="row">
-              <div className="col-lg-6">
+              <div className="col-lg-8 p-3">
                 <h5 className="mb-2 ps-3 d-flex justify-content-between">
                   Address{" "}
                   <button
@@ -597,6 +750,41 @@ function Checkout() {
                               </select>
                             </div>
                           </div>
+                          <div className="col-lg-6 col-6">
+                            <label>
+                              State<span className="text-danger">*</span>
+                            </label>
+                            <select
+                              className="form-select form-control"
+                              onChange={onChangeHandler}
+                            >
+                              {State.getStatesOfCountry("IN").map((state) => (
+                                <option id={state.isoCode} value={state.name}>
+                                  {state.name}{" "}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col-lg-6 col-6">
+                            <label>
+                              City<span className="text-danger">*</span>
+                            </label>
+                            <select
+                              className="form-select form-control"
+                              onChange={(e) => setCity(e.target.value)}
+                            >
+                              {City.getCitiesOfState("IN", cityCode).map(
+                                (city) => (
+                                  <option value={city.name}>
+                                    {" "}
+                                    {city.name}{" "}
+                                  </option>
+                                )
+                              )}
+                            </select>
+                          </div>
                           <div className="col-lg-6">
                             <div className="form-group">
                               <label>Area</label>
@@ -608,8 +796,6 @@ function Checkout() {
                               />
                             </div>
                           </div>
-                        </div>
-                        <div className="row">
                           <div className="col-lg-6">
                             <div className="form-group">
                               <label>Address</label>
@@ -621,7 +807,7 @@ function Checkout() {
                               />
                             </div>
                           </div>
-                          <div className="col-lg-6">
+                          {/* <div className="col-lg-6">
                             <div className="form-group">
                               <label>City</label>
                               <input
@@ -631,20 +817,7 @@ function Checkout() {
                                 onChange={(e) => setCity(e.target.value)}
                               />
                             </div>
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-lg-6">
-                            <div className="form-group">
-                              <label>State</label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder="State"
-                                onChange={(e) => setState(e.target.value)}
-                              />
-                            </div>
-                          </div>
+                          </div> */}
                           <div className="col-lg-6">
                             <div className="form-group">
                               <label>Pincode</label>
@@ -656,6 +829,19 @@ function Checkout() {
                               />
                             </div>
                           </div>
+                        </div>
+                        <div className="row">
+                          {/* <div className="col-lg-6">
+                            <div className="form-group">
+                              <label>State</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="State"
+                                onChange={(e) => setState(e.target.value)}
+                              />
+                            </div>
+                          </div> */}
                         </div>
                       </div>
                       <div className="modal-footer">
@@ -681,8 +867,8 @@ function Checkout() {
                   </div>
                 </div>
               </div>
-              <div className="col-lg-6">
-                <h5 className="mb-2 ps-3">Payment Method</h5>
+              <div className="col-lg-4">
+                <h5 className="mb-2 ps-3 my-3">Payment Method</h5>
                 <div
                   className={`form-check ps-5 ${
                     selectedWallet === true && getAfterWallet() === "0.00"
@@ -696,33 +882,40 @@ function Checkout() {
                     name="exampleRadios"
                     ref={textInput}
                     id="exampleRadios1"
-                    onChange={() => setPaymentType("Online")}
+                    onChange={() => {
+                      setPaymentType("Online");
+                    }}
                   />
                   <label className="form-check-label" for="exampleRadios1">
                     Online
                   </label>
                 </div>
-                <div
-                  className={`form-check ps-5 mb-5 ${
-                    selectedWallet === true && getAfterWallet() === "0.00"
-                      ? "d-none"
-                      : "d-block"
-                  }`}
-                >
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="exampleRadios"
-                    id="exampleRadios2"
-                    onChange={() => setPaymentType("COD")}
-                  />
-                  <label className="form-check-label" for="exampleRadios2">
-                    Cash On Delivery
-                  </label>
-                </div>
+                {/* Array.isArray(allData) && allData.length > 0 ? ( */}
+                {codCount > 0 ? (
+                  ""
+                ) : (
+                  <div
+                    className={`form-check ps-5 mb-5 ${
+                      selectedWallet === true && getAfterWallet() === "0.00"
+                        ? "d-none"
+                        : "d-block"
+                    }`}
+                  >
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="exampleRadios"
+                      id="exampleRadios2"
+                      onChange={() => setPaymentType("COD")}
+                    />
+                    <label className="form-check-label" for="exampleRadios2">
+                      Cash On Delivery
+                    </label>
+                  </div>
+                )}
                 {paymentType === "COD" ? (
                   <button
-                    className="btn btn-warning"
+                    className="btn btn-warning mt-5 ms-3"
                     type="button"
                     onClick={() => {
                       orderPlace();
@@ -732,15 +925,17 @@ function Checkout() {
                   </button>
                 ) : (
                   <button
-                    className="btn btn-warning"
+                    className="btn btn-warning mt-5 ms-3"
                     type="button"
                     onClick={() => {
-                      payNow();
+                      // payNow();
+                      getSessionId();
                     }}
                   >
                     Pay Now
                   </button>
                 )}
+                {/* <button onClick={() => handlePayment()}>CLick me</button> */}
               </div>
             </div>
           </div>
@@ -751,5 +946,3 @@ function Checkout() {
 }
 
 export default Checkout;
-
-

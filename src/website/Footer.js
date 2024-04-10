@@ -15,8 +15,9 @@ function Footer() {
                   className="text-white mb-0"
                   style={{ textTransform: "capitalize" }}
                 >
-                  SHIVANERI BUSINESS PRIVATE LIMITED <br />H N 889 L N 2 HANUMAN
-                  NGR LASINA KHANAPUR CHITTA HINGOLI MH 431513 IN
+                  H No--353, Hingoli Kalamnuri Road Hanuman Nagar Lasina, Lasina, Hingoli, Maharashtra 431702.
+                  {/* SHIVANERI BUSINESS PRIVATE LIMITED <br />H N 889 L N 2 HANUMAN
+                  NGR LASINA KHANAPUR CHITTA HINGOLI MH 431513 IN */}
                 </p>
               </div>
               <div className="d-flex mb-2">

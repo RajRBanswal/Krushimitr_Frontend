@@ -8,9 +8,14 @@ import { Calendar } from "primereact/calendar";
 import moment from "moment";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
+import loading from "../images/loading.gif";
+import Select from "react-select";
 
 function WalletManagement() {
   const [addDialog, setAddDialog] = useState(false);
+  const [loadings, setLoadings] = useState(false);
+  const buttonRef = useRef(null);
   const [walletData, setWalletData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState(null);
   const [pricePerPoint, setPricePerPoint] = useState(1);
@@ -20,7 +25,33 @@ function WalletManagement() {
   const walletRef = useRef(null);
   let success = [];
   const [filterData, setFilterData] = useState([]);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    transactionDate: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    transactionId: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    userName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+    },
+    type: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
 
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getUserWalletData = async () => {
     getAllUsers();
@@ -44,22 +75,34 @@ function WalletManagement() {
     walletRef.current.exportCSV();
   };
   const showDateWiseData = (date2) => {
-    let newDate1 = new Date(date1);
-    let newDate2 = new Date(date2);
+    let newDate1 = new Date(date1).toISOString();
+    let newDate2 = new Date(date2).toISOString();
     let Datas = [];
+    let befDatas = [];
     walletData.map((item) => {
-      let newDate3 = moment(item.createdAt, "DD-MM-YYYY");
-      let newDate4 = new Date(newDate3._d);
+      let newDate3 = moment(item.createdAt, "DD-M-YYYY");
+      let newDate4 = new Date(newDate3).toISOString();
 
       if (newDate4 >= newDate1 && newDate4 <= newDate2) {
         Datas.push(item);
       }
     });
+
+    userRupeeWalletData.map((item) => {
+      let newDate3 = moment(item.createdAt, "DD-M-YYYY");
+      let newDate4 = new Date(newDate3).toISOString();
+
+      if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+        befDatas.push(item);
+      }
+    });
+    setUserRupeeWalletData(befDatas);
     setFilterData(Datas);
   };
   const hideDialog = () => {
     setAddDialog(false);
     setChngStatus(false);
+    setAddAmountInUserWallet(false);
   };
   const deletePoints = async (id) => {
     const response = await fetch(
@@ -114,11 +157,19 @@ function WalletManagement() {
       }
     }
   };
+  const [options, setOptions] = useState([]);
   const [users, setUsers] = useState([]);
   const getAllUsers = async () => {
     const all_users = await fetch("https://krushimitr.in/api/admin/all-users");
     const uu = await all_users.json();
+    let data = [];
+    uu.map((item) => {
+      if (item.status === "Active") {
+        data.push({ value: item._id, label: item.name + " " + item.mobile });
+      }
+    });
     setUsers(uu);
+    setOptions(data);
   };
 
   const userName = (rowData) => {
@@ -133,6 +184,12 @@ function WalletManagement() {
   const rightToolbarTemplateCompleted = () => {
     return (
       <>
+        <button
+          className="ms-1 btn btn-outline-primary btn-sm"
+          onClick={() => setAddAmountInUserWallet(true)}
+        >
+          <i className="pi pi-plus"></i>{" "}
+        </button>
         <button
           className="ms-1 btn btn-outline-primary btn-sm"
           onClick={exportCSVS}
@@ -177,6 +234,16 @@ function WalletManagement() {
         doc.save("users.pdf");
       });
     });
+  };
+
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+
+    _filters["global"].value = value;
+
+    setFilters(_filters);
+    setGlobalFilterValue(value);
   };
 
   const [date1, setDate1] = useState(null);
@@ -237,10 +304,9 @@ function WalletManagement() {
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
             <InputText
-              type="search"
-              onInput={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search..."
-              className="form-control ps-5"
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
             />
           </span>
         </div>
@@ -265,7 +331,33 @@ function WalletManagement() {
             </div>
           </div>
         </div>
-        <div className="col-lg-2">
+        <div className="col-lg-2  ">
+          <Toolbar
+            className="p-0 border-0"
+            right={rightToolbarTemplateCompleted}
+          ></Toolbar>
+        </div>
+      </div>
+    </div>
+  );
+
+  const headerData = (
+    <div className="py-2">
+      <div className="row">
+        <div className="col-lg-4 d-flex text-start">
+          <h4 className="m-0">All Data</h4>
+        </div>
+        <div className="col-lg-4 text-center">
+          <span className="p-input-icon-left">
+            <i className="pi pi-search" />
+            <InputText
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
+            />
+          </span>
+        </div>
+        <div className="col-lg-4 text-end">
           <Toolbar
             className="p-0 border-0"
             right={rightToolbarTemplateCompleted}
@@ -294,6 +386,7 @@ function WalletManagement() {
           }
         }
       }
+      // console.log(cleanId);
       setUserRupeeWalletData(success);
     } else {
       setUserRupeeWalletData([]);
@@ -306,9 +399,10 @@ function WalletManagement() {
   let user_check_duplicate = (arr) => {
     let sorted_arr = arr.slice().sort();
     let results = [];
-
     for (let i = 0; i < sorted_arr.length - 1; i++) {
       if (sorted_arr[i + 1].userId === sorted_arr[i].userId) {
+        results.push(sorted_arr[i].userId);
+      } else {
         results.push(sorted_arr[i].userId);
       }
     }
@@ -341,6 +435,8 @@ function WalletManagement() {
 
   const [selectedData, setSelectedData] = useState([]);
   const [chngStatus, setChngStatus] = useState(false);
+  const [addAmountInUserWallet, setAddAmountInUserWallet] = useState(false);
+
   const [type, setType] = useState("");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
@@ -350,34 +446,122 @@ function WalletManagement() {
     getUserRupeeWalletData();
   }, [getUserRupeeWalletData, getUserWalletData]);
 
-  const changeStatus = async () => {
-    let walletAmt = UserWalletPrice(selectedData);
-    const response = await fetch(
-      "https://krushimitr.in/api/admin/users-credit-debit-amount",
-      {
-        method: "post",
-        body: JSON.stringify({
-          adminId: adminId,
-          adminName: adminName,
-          userId: selectedData.userId,
-          userName: selectedData.userName,
-          userMobile: selectedData.userMobile,
-          amount: amount === "" ? UserWalletPrice(selectedData) : amount,
-          walletAmt: walletAmt,
-          type: type,
-          reason: reason,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const result = await response.json();
-    if (result.status === 201) {
-      hideDialog();
-      alert(result.result);
+  const changeStatus = async (e) => {
+    e.preventDefault();
+    setLoadings(true);
+
+    if (type === "" || amount === "" || selectUser === "") {
+      alert("Select Type or Enter Amount or Select User");
+      setLoadings(false);
+      buttonRef.current.disabled = false;
+      return;
     } else {
-      alert(result.result);
+      buttonRef.current.disabled = true;
+      setLoadings(true);
+      let userId = "";
+      let userName = "";
+      let userMobile = "";
+      users.map((item) => {
+        if (item._id === selectUser) {
+          userId = selectUser;
+          userName = item.name;
+          userMobile = item.mobile;
+        }
+      });
+
+      let walletAmt = UserWalletPrice(selectedData);
+      const response = await fetch(
+        "https://krushimitr.in/api/admin/users-credit-debit-amount",
+        {
+          method: "post",
+          body: JSON.stringify({
+            adminId: adminId,
+            adminName: adminName,
+            userId: selectedData.userId !== "" ? selectedData.userId : userId,
+            userName:
+              selectedData.userName !== "" ? selectedData.userName : userName,
+            userMobile:
+              selectedData.userMobile !== ""
+                ? selectedData.userMobile
+                : userMobile,
+            amount: amount === "" ? UserWalletPrice(selectedData) : amount,
+            walletAmt: walletAmt,
+            type: type,
+            reason: reason,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      if (result.status === 201) {
+        hideDialog();
+        setLoadings(false);
+        buttonRef.current.disabled = false;
+        alert(result.result);
+      } else {
+        alert(result.result);
+      }
+    }
+  };
+  const changeOlderStatus = async (e) => {
+    e.preventDefault();
+    setLoadings(true);
+
+    if (type === "" || amount === "") {
+      alert("Select Type or Enter Amount or Select User");
+      setLoadings(false);
+      buttonRef.current.disabled = false;
+      return;
+    } else {
+      buttonRef.current.disabled = true;
+      setLoadings(true);
+      let userId = "";
+      let userName = "";
+      let userMobile = "";
+      users.map((item) => {
+        if (item._id === selectUser) {
+          userId = selectUser;
+          userName = item.name;
+          userMobile = item.mobile;
+        }
+      });
+
+      let walletAmt = UserWalletPrice(selectedData);
+      const response = await fetch(
+        "https://krushimitr.in/api/admin/users-credit-debit-amount",
+        {
+          method: "post",
+          body: JSON.stringify({
+            adminId: adminId,
+            adminName: adminName,
+            userId: selectedData.userId !== "" ? selectedData.userId : userId,
+            userName:
+              selectedData.userName !== "" ? selectedData.userName : userName,
+            userMobile:
+              selectedData.userMobile !== ""
+                ? selectedData.userMobile
+                : userMobile,
+            amount: amount === "" ? UserWalletPrice(selectedData) : amount,
+            walletAmt: walletAmt,
+            type: type,
+            reason: reason,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      if (result.status === 201) {
+        hideDialog();
+        setLoadings(false);
+        buttonRef.current.disabled = false;
+        alert(result.result);
+      } else {
+        alert(result.result);
+      }
     }
   };
 
@@ -394,7 +578,27 @@ function WalletManagement() {
         label="Save"
         icon="pi pi-check"
         className="ms-1"
+        onClick={changeOlderStatus}
+        ref={buttonRef}
+      />
+    </React.Fragment>
+  );
+
+  const AddNewCreditDebitDialogFooter = (
+    <React.Fragment>
+      <Button
+        label="Close"
+        icon="pi pi-times"
+        className="me-1"
+        outlined
+        onClick={hideDialog}
+      />
+      <Button
+        label="Save"
+        icon="pi pi-check"
+        className="ms-1"
         onClick={changeStatus}
+        ref={buttonRef}
       />
     </React.Fragment>
   );
@@ -438,10 +642,32 @@ function WalletManagement() {
     );
   };
 
-  return (
-    <div className="py-3 px-2">
-      <Toast ref={toast} />
+  const [selectUser, setSelectUser] = useState("");
+  const getSelectUser = (data) => {
+    setSelectUser(data.value);
+  };
 
+  const showDate = (rowData) => (
+    <>
+      <p className="mb-0">{rowData.transactionDate}</p>
+      <p className="mb-0">{rowData.transactionTime}</p>
+    </>
+  );
+
+  return (
+    <div
+      className="py-3 px-2"
+      disabled={loadings ? "disabled" : ""}
+      aria-disabled={loadings ? "disabled" : ""}
+    >
+      <div className="LoadingDiv">
+        <img
+          src={loading}
+          className={"loader " + (loadings ? "d-block" : "d-none")}
+          alt=""
+        />
+      </div>
+      <Toast ref={toast} />
       <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
           <button
@@ -491,9 +717,27 @@ function WalletManagement() {
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
             globalFilter={globalFilter}
             header={headerWalletComplete}
+            filters={filters}
+            filterDisplay="menu"
+            globalFilterFields={[
+              "transactionDate",
+              "transactionId",
+              "type",
+              "userName",
+              "status",
+            ]}
           >
+            <Column field="orderId" header="Order No." sortable></Column>
+            <Column field="transactionId" header="Txn Id" sortable></Column>
+            <Column
+              field={showDate}
+              header="Date/Time"
+              body={showDate}
+              bodyStyle={{fontSize:13}}
+              sortable
+            ></Column>
+            {/* <Column field="transactionTime" header="Time" sortable></Column> */}
             <Column field="userName" header="Name" sortable></Column>
-            <Column field="transactionDate" header="Date" sortable></Column>
             <Column
               field="type"
               header="Type"
@@ -504,6 +748,12 @@ function WalletManagement() {
               field={UserWalletPrice}
               header="Price"
               body={UserWalletPrice}
+              sortable
+            ></Column>
+            <Column
+              field="reason"
+              header="Notes"
+              bodyStyle={{ fontWeight: "bold" }}
               sortable
             ></Column>
             <Column
@@ -536,12 +786,18 @@ function WalletManagement() {
             header={headerPointComplete}
           >
             <Column
+              field="transactionId"
+              header="Transaction Id"
+              sortable
+            ></Column>
+            <Column
               field={userName}
               header="Name"
               body={userName}
               sortable
             ></Column>
             <Column field="createdDate" header="Date" sortable></Column>
+            <Column field="createdTime" header="Time" sortable></Column>
             <Column field="type" header="Type" sortable></Column>
             <Column
               field="status"
@@ -566,60 +822,73 @@ function WalletManagement() {
           {/* </div> */}
         </div>
       </div>
-
       <Dialog
         visible={addDialog}
         style={{ width: "45rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header={"All Data"}
+        header={""}
         modal
         className="p-fluid"
         footer={AddPriceDialogFooter}
         onHide={hideDialog}
       >
         <div className="overflow-auto">
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th>Date / Time</th>
-                <th>Type</th>
-                <th>Amount</th>
-                {/* <th>Pay Method</th>
-                <th>UTR</th> */}
-              </tr>
-            </thead>
-            <tbody>
-              {userDatas &&
-                userDatas.map((item) => (
-                  <tr>
-                    <td className="p-1">
-                      {item.transactionDate} /
-                      {item.transactionTime !== undefined
-                        ? item.transactionTime
-                        : ""}
-                    </td>
-                    <td className="p-1 ">{item.type}</td>
-                    <td className="p-1 ">{item.amount}</td>
-                    {/* <td className="p-1 ">{item.paymode}</td>
-                    <td className="p-1 ">{item.utrNo}</td> */}
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <DataTable
+            ref={walletRef}
+            value={userDatas}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            globalFilter={globalFilter}
+            header={headerData}
+          >
+            <Column field="orderId" header="Order Id" sortable></Column>
+            <Column
+              field="transactionId"
+              header="Transaction Id"
+              sortable
+            ></Column>
+            <Column
+              field={showDate}
+              header="Date / Time"
+              body={showDate}
+              bodyStyle={{fontSize:13}}
+              sortable
+            ></Column>
+            {/* <Column field="transactionTime" header="Time" sortable></Column> */}
+            <Column
+              field="type"
+              header="Type"
+              bodyStyle={{ color: "green" }}
+              sortable
+            ></Column>
+            <Column field="amount" header="Amount" sortable></Column>
+            <Column field="reason" header="Reason" sortable></Column>
+          </DataTable>
         </div>
       </Dialog>
-
       <Dialog
         visible={chngStatus}
-        style={{ width: "32rem" }}
+        style={{
+          width: "32rem",
+          pointerEvents: loadings ? "none" : "",
+          opacity: loadings ? 0.7 : "",
+        }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header={"All Data"}
+        header={type}
         modal
         className="p-fluid"
         footer={AddCreditDebitDialogFooter}
         onHide={hideDialog}
       >
-        <div className="row">
+        <div
+          className="row"
+          disabled={loadings ? "disabled" : ""}
+          aria-disabled={loadings ? "disabled" : ""}
+        >
           <div className="col-lg-12">
             <h4 className="fw-bold">
               <span className="text-dark">Wallet Amount :</span>{" "}
@@ -641,6 +910,64 @@ function WalletManagement() {
               defaultValue={
                 type === "Credit" ? 0 : UserWalletPrice(selectedData)
               }
+            />
+          </div>
+          <div className="col-lg-12 mt-2">
+            <label>Reason</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter Reason"
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+        </div>
+      </Dialog>
+      <Dialog
+        visible={addAmountInUserWallet}
+        style={{
+          width: "32rem",
+          pointerEvents: loadings ? "none" : "",
+          opacity: loadings ? 0.7 : "",
+        }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header={type}
+        modal
+        className="p-fluid"
+        footer={AddNewCreditDebitDialogFooter}
+        onHide={hideDialog}
+      >
+        <div
+          className="row"
+          disabled={loadings ? "disabled" : ""}
+          aria-disabled={loadings ? "disabled" : ""}
+        >
+          <div className="col-lg-12">
+            <label>All Users</label>
+            <Select
+              defaultValue={selectUser}
+              onChange={(text) => getSelectUser(text)}
+              options={options}
+            />
+          </div>
+          <div className="col-lg-12">
+            <label>Type</label>
+            <select
+              className="form-select "
+              onChange={(e) => setType(e.target.value)}
+            >
+              <option value={""}>Select Type</option>
+              <option value={"Credit"}>Credit</option>
+              <option value={"Debit"}>Debit</option>
+            </select>
+          </div>
+          <div className="col-lg-12 mt-2">
+            <label>Amount</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Amount"
+              onChange={(e) => setAmount(e.target.value)}
             />
           </div>
           <div className="col-lg-12 mt-2">

@@ -78,6 +78,28 @@ import VDWalletManagement from "./dashboard_content/VDWalletManagement";
 import UsersWalletReports from "./dashboard_content/UsersWalletReports";
 import VendorDistributorWalletReports from "./dashboard_content/VendorDistributorWalletReports";
 import AdminWalletReports from "./dashboard_content/AdminWalletReports";
+import VDWalletsReports from "./distributors/VDWalletsReports";
+import PlaceOrderForCustomer from "./distributors/PlaceOrderForCustomer";
+import StockManagement from "./distributors/StockManagement";
+import EnquiryForm from "./distributors/EnquiryForm";
+import AllEnquiries from "./dashboard_content/AllEnquiries";
+import OtherSettings from "./dashboard_content/OtherSettings";
+import CommissionData from "./distributors/CommissionData";
+import AllOrdersForCustomers from "./distributors/AllOrdersForCustomers";
+import AllCustomerOrders from "./distributors/AllCustomerOrders";
+import DistAllReport from "./distributors/DistAllReport";
+import DistCompleteOrdersReports from "./distributors/DistCompleteOrdersReports";
+import DistPendingOrderReports from "./distributors/DistPendingOrderReports";
+import UserPackages from "./dashboard_content/UserPackages";
+import DistributorsPackages from "./dashboard_content/DistributorsPackages";
+import PurchasePlan from "./user_panel/PurchasePlan";
+import AllPrimeMember from "./dashboard_content/AllPrimeMember";
+import DistPurchasePlan from "./distributors/DistPurchasePlan";
+import AllCustomers from "./distributors/AllCustomers";
+import UserProfile from "./user_panel/UserProfile";
+import AllSliderTwo from "./dashboard_content/AllSliderTwo";
+import AllPrimeDistributors from "./dashboard_content/AllPrimeDistributors";
+import AllPrimeVendors from "./dashboard_content/AllPrimeVendors";
 
 function App() {
   const ref = React.useRef();
@@ -125,6 +147,10 @@ function App() {
           <Route path="/return-policy" Component={ReturnPolicy} />
           <Route path="/user-register" Component={UserRegister} />
           <Route path="/product-details" Component={ProductDetials} />
+          <Route
+            path="/product-details/:pid/:name"
+            Component={ProductDetials}
+          />
           <Route path="/cart-details" Component={Cart} />
           <Route path="/checkout" Component={Checkout} />
           <Route path="/donation-form" Component={DonationForm} />
@@ -138,6 +164,8 @@ function App() {
           <Route path="user-dashboard" Component={DashboardU} />
           <Route path="user-orders" Component={UserAllOrders} />
           <Route path="user-wallet" Component={UserWallet} />
+          <Route path="purchase-plan" Component={PurchasePlan} />
+          <Route path="users-profile" Component={UserProfile} />
         </Route>
         <Route path="/admin_login" Component={Login} />
         <Route path="/admin" Component={MainContent}>
@@ -164,6 +192,11 @@ function App() {
             Component={EditProduct}
           />
           <Route path="all-slider" name="All-Slider" Component={AllSlider} />
+          <Route
+            path="all-slider-two"
+            name="All-Slider-Two"
+            Component={AllSliderTwo}
+          />
           <Route path="all-news" name="All-News" Component={News} />
           <Route
             path="all-application-form"
@@ -272,6 +305,41 @@ function App() {
             name="Vendor Distributor Wallet Reports"
             Component={VendorDistributorWalletReports}
           />
+          <Route
+            path="all-enquiries"
+            name="All Enquiries"
+            Component={AllEnquiries}
+          />
+          <Route
+            path="other-settings"
+            name="Other Settings"
+            Component={OtherSettings}
+          />
+          <Route
+            path="users-packages"
+            name="Users Packages"
+            Component={UserPackages}
+          />
+          <Route
+            path="distributors-packages"
+            name="Distributors Packages"
+            Component={DistributorsPackages}
+          />
+          <Route
+            path="all-prime_member"
+            name="All-Prime-Member"
+            Component={AllPrimeMember}
+          />
+          <Route
+            path="all-prime_distributor"
+            name="All-Prime-Distributor"
+            Component={AllPrimeDistributors}
+          />
+          <Route
+            path="all-prime_vendor"
+            name="All-Prime-Vendor"
+            Component={AllPrimeVendors}
+          />
 
           {/* all-sarkari-yojna */}
         </Route>
@@ -283,6 +351,11 @@ function App() {
             Component={Categories}
           />
           <Route path="allusers" name="AllUsers" Component={DAllUsers} />
+          <Route
+            path="all-customers"
+            name="AllCustomers"
+            Component={AllCustomers}
+          />
           <Route path="allproducts" name="AllProducts" Component={DProducts} />
           <Route
             path="product-edit/:id"
@@ -294,7 +367,11 @@ function App() {
             name="CustomersOrders"
             Component={CustomerOrders}
           />
-          <Route path="edit-orders" name="EditOrder" Component={EditOrder} />
+          <Route
+            path="edit-orders/:order_id"
+            name="EditOrder"
+            Component={EditOrder}
+          />
           <Route
             path="place-orders"
             name="PlaceOrders"
@@ -304,6 +381,11 @@ function App() {
             path="all-orders"
             name="AllOrders"
             Component={DistributorOrders}
+          />
+          <Route
+            path="all-customer-orders"
+            name="AllCustomersOrders"
+            Component={AllCustomerOrders}
           />
           <Route
             path="shop-details"
@@ -321,6 +403,22 @@ function App() {
             Component={DVAllReports}
           />
           <Route
+            path="distributors-orders-reports"
+            name="Distributors Orders Reports"
+            Component={DistAllReport}
+          />
+          <Route
+            path="distributors-complete-orders-reports"
+            name="Distributors Complete Orders Reports"
+            Component={DistCompleteOrdersReports}
+          />
+          <Route
+            path="distributors-pending-orders-reports"
+            name="Distributors Pending Orders Reports"
+            Component={DistPendingOrderReports}
+          />
+
+          <Route
             path="orders_pending_reports"
             name="Prders_Pending_Reports"
             Component={OrdersPendingReports}
@@ -330,6 +428,41 @@ function App() {
             path="payment-status/:status/:txnId"
             name="Payment Status"
             Component={VDPaymentStatus}
+          />
+          <Route
+            path="vd-wallet-reports"
+            name="VD Wallet Reports"
+            Component={VDWalletsReports}
+          />
+          <Route
+            path="place-order-for-customer"
+            name="Place Order For Customer"
+            Component={PlaceOrderForCustomer}
+          />
+          <Route
+            path="stock-management"
+            name="Stock Management"
+            Component={StockManagement}
+          />
+          <Route
+            path="enquiry-form"
+            name="Enquiry Form"
+            Component={EnquiryForm}
+          />
+          <Route
+            path="all-commission-data"
+            name="All Commission Data"
+            Component={CommissionData}
+          />
+          <Route
+            path="all-order-for-customer"
+            name="All-Order-For-Customer"
+            Component={AllOrdersForCustomers}
+          />
+          <Route
+            path="distributor-purchase-plan-data"
+            name="Distributor-Purchase-Plan-Data"
+            Component={DistPurchasePlan}
           />
 
           {/* all-sarkari-yojna */}

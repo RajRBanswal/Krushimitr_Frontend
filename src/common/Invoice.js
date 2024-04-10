@@ -115,7 +115,8 @@ function Invoice() {
                   ? navigate("/admin/all-orders")
                   : route === "users"
                   ? navigate("/users/user-orders")
-                  : navigate("");
+                  : route === "distributors"
+                  ? navigate("/distributors/all-customer-orders") : navigate("");
               }}
             >
               <i class="fa fa-solid fa-arrow-left"></i>

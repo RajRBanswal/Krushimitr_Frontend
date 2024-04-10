@@ -5,6 +5,7 @@ import "../../node_modules/owl.carousel/dist/assets/owl.carousel.min.css";
 import "../../node_modules/owl.carousel/dist/owl.carousel.min";
 import "./../styles.css";
 import { fromLatLng } from "react-geocode";
+import Packages from "./Packages";
 
 function Home() {
   const navigate = useNavigate();
@@ -153,6 +154,8 @@ function Home() {
     getProductData();
     getNEWSData();
   }, []);
+
+  // console.log(product);
 
   return (
     <>
@@ -381,6 +384,8 @@ function Home() {
       </div>
       {/* <!-- Products End --> */}
 
+      {/* <Packages /> */}
+
       {/* <!-- Category Start --> */}
       <div className="container-fluid py-5">
         <div className="container">
@@ -393,57 +398,75 @@ function Home() {
           </div>
 
           <div className="row">
-            {product.map((item) =>
-              item.status === "Active" ? (
-                <div className="col-lg-3 my-3">
-                  <div className="card h-100 shadow">
-                    <div className="card-body p-0 productImage">
-                      <img
-                        src={`https://krushimitr.in/upload/${
-                          Array.isArray(item.image) && item.image[0]
-                        }`}
-                        style={{ margin: "auto" }}
-                        width={"200"}
-                        alt={item.image}
-                      />
-                    </div>
-                    <div className="px-2 py-3">
-                      <p
-                        className="text-dark mb-0 text-center fw-bold"
-                        style={{ fontSize: 14 }}
-                      >
-                        {item.productName}
-                      </p>
-                      {/* <p><label className="text-primary fw-bold mb-0"><i className='fa fa-rupee' ></i>{item.price}</label> &nbsp;  {item.oldPrice ? <del className=''><i className='fa fa-rupee' ></i>{item.oldPrice}</del> : ''}</p> */}
-                    </div>
-                    <div className="btn-action d-flex justify-content-center pb-3">
-                      <button
-                        className="btn bg-primary btn-sm py-0"
-                        onClick={() =>
-                          navigate("/product-details", {
-                            state: { item: item },
-                          })
-                        }
-                      >
-                        <i className="bi bi-eye text-white"></i>
-                      </button>
-                    </div>
-                    <div className="productPercentage">
-                      {item.discount ? (
-                        <span>
-                          {item.discount}
-                          {item.percentSbl}
-                        </span>
-                      ) : (
-                        ""
-                      )}
+            {product.map((item) => {
+              let sizes = item.size;
+              let abc = JSON.parse(sizes[0]);
+              if (item.status === "Active") {
+                return (
+                  <div className="col-lg-3 my-3">
+                    <div className="card h-100 shadow">
+                      <div className="card-body p-0 productImage">
+                        <img
+                          src={`https://krushimitr.in/upload/${
+                            Array.isArray(item.image) && item.image[0]
+                          }`}
+                          style={{ margin: "auto" }}
+                          width={"200"}
+                          alt={item.image}
+                        />
+                      </div>
+                      <div className="px-2 py-3">
+                        <p
+                          className="text-dark mb-0 text-center fw-bold"
+                          style={{ fontSize: 14 }}
+                        >
+                          {item.productName}
+                        </p>
+                        <div className="d-flex justify-content-evenly">
+                          <label className="text-primary fw-bold mb-0">
+                            <i className="fa fa-rupee"></i>{" "}
+                            {abc && abc.selling_price}
+                          </label>
+                          <del className=" fw-bold mb-0">
+                            <i className="fa fa-rupee"></i>{" "}
+                            {abc && abc.buying_price}
+                          </del>
+                        </div>
+                        <div className="d-flex justify-content-center">
+                          <span className="text-primary">
+                            Saved Price : <i className="fa fa-rupee"></i>
+                            {abc && abc.buying_price - abc.selling_price}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="btn-action d-flex justify-content-center pb-3">
+                        <button
+                          className="btn bg-primary btn-sm py-0"
+                          onClick={() =>
+                            navigate(
+                              `/product-details/${
+                                item._id
+                              }/${item.productName.replace(/\//g, "")}`
+                            )
+                          }
+                        >
+                          <i className="bi bi-eye text-white"></i>
+                        </button>
+                      </div>
+                      <div>
+                        <div className="productPercentage">
+                          <span>
+                            {abc && abc.discount === undefined
+                              ? "5% Off"
+                              : abc.discount + "% Off"}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                ""
-              )
-            )}
+                );
+              }
+            })}
           </div>
         </div>
       </div>

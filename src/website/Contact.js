@@ -85,7 +85,10 @@ function Contact() {
                                     </div>
                                     <div className="ps-3">
                                         <h5 className="text-white">Our Office</h5>
-                                        <span className="text-white"><b>SHIVANERI BUSINESS PRIVATE LIMITED</b> <br />H N 889 L N 2 HANUMAN NGR LASINA KHANAPUR CHITTA  HINGOLI MH 431513 IN</span>
+                                        <span className="text-white">
+                                            H No--353, Hingoli Kalamnuri Road Hanuman Nagar Lasina, Lasina, Hingoli, Maharashtra 431702.
+                                            {/* <b>SHIVANERI BUSINESS PRIVATE LIMITED</b> <br />H N 889 L N 2 HANUMAN NGR LASINA KHANAPUR CHITTA  HINGOLI MH 431513 IN */}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="d-flex mb-4">
