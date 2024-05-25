@@ -66,6 +66,9 @@ function AllOrders() {
     },
     activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
   });
+  const [filterData, setFilterData] = useState([]);
+  const [filterPendingData, setFilterPendingData] = useState([]);
+  const [filterCompletedData, setFilterCompletedData] = useState([]);
 
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const toast = useRef(null);
@@ -109,9 +112,15 @@ function AllOrders() {
           reject.push(item);
         }
       });
+      setFilterData(data);
       setProducts(data);
+
+      setFilterPendingData(datas);
       setProd(datas);
+
+      setFilterCompletedData(datass);
       setCompOrders(datass);
+
       setRejectOrders(reject);
       setCancelOrders(usercancel);
     } else {
@@ -121,7 +130,7 @@ function AllOrders() {
   useEffect(() => {
     getProductData();
     setIsLoading(false);
-  }, [getProductData]);
+  }, []);
 
   const filterApplyTemplate = (options) => {
     return (
@@ -479,68 +488,184 @@ function AllOrders() {
     setFilters(_filters);
     setGlobalFilterValue(value);
   };
-
+  const [date1, setDate1] = useState(null);
   const header = (
-    <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-      <h4 className="m-0">All Orders</h4>
-      <span className="p-input-icon-left">
-        <i className="pi pi-search" />
-        <InputText
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Keyword Search"
-        />
-        <Calendar
-          showButtonBar
-          value={globalFilterValue}
-          onChange={onGlobalFilterChangeDate}
-          dateFormat="dd-m-yy"
-          placeholder="Select Date"
-        />
-      </span>
-      <Toolbar className="p-0" right={rightToolbarTemplate}></Toolbar>
+    <div className="row">
+      <div className="col-lg-4">
+        <span className="p-input-icon-left">
+          <i className="pi pi-search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Keyword Search"
+          />
+        </span>
+      </div>
+      <div className="col-lg-6 ">
+        <div className="row">
+          <div className="col-lg-6">
+            <Calendar
+              value={date1}
+              onChange={(e) => setDate1(e.value)}
+              dateFormat="dd-mm-yy"
+              placeholder="From Date"
+            />
+          </div>
+          <div className="col-lg-6">
+            <Calendar
+              onChange={(e) => {
+                showDateWiseData(e.target.value);
+              }}
+              dateFormat="dd-mm-yy"
+              placeholder="To Date"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="col-lg-2">
+        <Toolbar
+          className="p-0 border-0"
+          right={rightToolbarTemplate}
+        ></Toolbar>
+      </div>
     </div>
   );
+
+  const showDateWiseData = (date2) => {
+    if (date2 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(date2).toISOString();
+      let Datas = [];
+      // alert(newDate1, newDate2);
+      products.map((item) => {
+        let newDate3 = moment(item.orderDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3._d).toISOString();
+
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          Datas.push(item);
+        }
+      });
+      setFilterData(Datas);
+    } else {
+      setFilterData(products);
+    }
+  };
   const pending_header = (
-    <div className="flex flex-wrap gap-2 align-items-left justify-content-between">
-      <span className="p-input-icon-left position-relative">
-        <i className="pi pi-search" />
-        <InputText
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Keyword Search"
-        />
-        <Calendar
-          showButtonBar
-          value={globalFilterValue}
-          onChange={onGlobalFilterChangeDate}
-          dateFormat="dd-m-yy"
-          placeholder="Select Date"
-        />
-      </span>
+    <div className="row">
+      <div className="col-lg-6">
+        <span className="p-input-icon-left">
+          <i className="pi pi-search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Keyword Search"
+            className="form-control"
+          />
+        </span>
+      </div>
+      <div className="col-lg-6 ">
+        <div className="row">
+          <div className="col-lg-6">
+            <Calendar
+              value={date1}
+              onChange={(e) => setDate1(e.value)}
+              dateFormat="dd-mm-yy"
+              placeholder="From Date"
+            />
+          </div>
+          <div className="col-lg-6">
+            <Calendar
+              onChange={(e) => {
+                showPendingDateWiseData(e.target.value);
+              }}
+              dateFormat="dd-mm-yy"
+              placeholder="To Date"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
+  const showPendingDateWiseData = (date2) => {
+    if (date2 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(date2).toISOString();
+      let Datas = [];
+      // alert(newDate1, newDate2);
+      prod.map((item) => {
+        let newDate3 = moment(item.orderDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3._d).toISOString();
+
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          Datas.push(item);
+        }
+      });
+      setFilterPendingData(Datas);
+    } else {
+      setFilterData(products);
+    }
+  };
   const headerComplete = (
-    <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-      <h4 className="m-0">Completed Orders Users</h4>
-      <span className="p-input-icon-left">
-        <i className="pi pi-search" />
-        <InputText
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Keyword Search"
-        />
-        <Calendar
-          showButtonBar
-          value={globalFilterValue}
-          onChange={onGlobalFilterChangeDate}
-          dateFormat="dd-m-yy"
-          placeholder="Select Date"
-        />
-      </span>
-      <Toolbar className="p-0 " right={rightToolbarTemplateCompleted}></Toolbar>
+    <div className="row">
+      <div className="col-lg-4">
+        <span className="p-input-icon-left">
+          <i className="pi pi-search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Keyword Search"
+            className="form-control"
+          />
+        </span>
+      </div>
+      <div className="col-lg-6 ">
+        <div className="row">
+          <div className="col-lg-6">
+            <Calendar
+              value={date1}
+              onChange={(e) => setDate1(e.value)}
+              dateFormat="dd-mm-yy"
+              placeholder="From Date"
+            />
+          </div>
+          <div className="col-lg-6">
+            <Calendar
+              onChange={(e) => {
+                showCompletedDateWiseData(e.target.value);
+              }}
+              dateFormat="dd-mm-yy"
+              placeholder="To Date"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="col-lg-2 ">
+        <Toolbar
+          className="p-0 "
+          right={rightToolbarTemplateCompleted}
+        ></Toolbar>
+      </div>
     </div>
   );
+  const showCompletedDateWiseData = (date2) => {
+    if (date2 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(date2).toISOString();
+      let Datas = [];
+      // alert(newDate1, newDate2);
+      compOrders.map((item) => {
+        let newDate3 = moment(item.orderDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3._d).toISOString();
+
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          Datas.push(item);
+        }
+      });
+      setFilterCompletedData(Datas);
+    } else {
+      setFilterData(products);
+    }
+  };
 
   const getItemData = (rowData) => {
     let xyz = JSON.parse(rowData.itemsData);
@@ -683,7 +808,7 @@ function AllOrders() {
           <div className="card px-3 UserCard">
             <DataTable
               ref={dt}
-              value={products}
+              value={filterData}
               selection={selectedUsers1}
               onSelectionChange={(e) => setSelectedUsers1(e.value)}
               dataKey="id"
@@ -707,6 +832,16 @@ function AllOrders() {
                 "status",
               ]}
             >
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field="orderNumber"
                 header="Order No."
@@ -791,7 +926,7 @@ function AllOrders() {
           aria-labelledby="pills-profile-tab"
         >
           <DataTable
-            value={prod}
+            value={filterPendingData}
             sortMode="multiple"
             paginator
             rows={10}
@@ -812,6 +947,16 @@ function AllOrders() {
               "status",
             ]}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column field="orderTime" header="Time" sortable></Column>
@@ -844,7 +989,7 @@ function AllOrders() {
         >
           <div className="card px-3 UserCard">
             <DataTable
-              value={compOrders}
+              value={filterCompletedData}
               dataKey="id"
               paginator
               rows={10}
@@ -865,6 +1010,16 @@ function AllOrders() {
                 "status",
               ]}
             >
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field="orderNumber"
                 header="Order No."
@@ -974,6 +1129,16 @@ function AllOrders() {
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Orders"
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column field="orderTime" header="Time" sortable></Column>
@@ -1036,6 +1201,16 @@ function AllOrders() {
               "status",
             ]}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="orderDate" header="Date" sortable></Column>
             <Column field="orderTime" header="Time" sortable></Column>

@@ -264,7 +264,7 @@ const VDWalletManagement = () => {
         }
       }
     }
-    return element;
+    return element.toFixed(2);
   };
   const [activeDistributor, setActiveDistributor] = useState([]);
 
@@ -519,6 +519,16 @@ const VDWalletManagement = () => {
             "status",
           ]}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column field="dvName" header="Name" sortable></Column>
           <Column
             field={getVendorType}
@@ -594,6 +604,16 @@ const VDWalletManagement = () => {
               "status",
             ]}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column field="transactionId" header="Txn ID" sortable></Column>
             <Column
               field="transactionDate"

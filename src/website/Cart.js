@@ -7,6 +7,7 @@ import {
   removeFromCart,
 } from "../redux/slice/CartSlice";
 import { useNavigate } from "react-router-dom";
+import { handelRightClick } from "./AppUtility";
 
 function Cart() {
   const navigate = useNavigate();
@@ -19,11 +20,16 @@ function Cart() {
     setProducts(cart.data);
 
     if (cart.data.length === 0) {
-      alert("Your cart is empty")
+      alert("Your cart is empty");
       navigate("/");
     }
     let user = localStorage.getItem("user_id");
     setUserLoggedIn(user);
+    
+    document.addEventListener("contextmenu", handelRightClick);
+    return function cleanup() {
+      document.removeEventListener("contextmenu", handelRightClick);
+    };
   });
   const getTotal = () => {
     let total = 0;

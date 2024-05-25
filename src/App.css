@@ -829,3 +829,11 @@ div[disabled] {
   pointer-events: none !important;
   opacity: 0.5 !important;
 }
+.shareLinkGroup .shareLink{
+  font-size: 24px;
+  margin-left: 10px;
+}
+.shareLinkGroup{
+  justify-content: center;
+  align-items: center;
+}

@@ -100,6 +100,7 @@ import UserProfile from "./user_panel/UserProfile";
 import AllSliderTwo from "./dashboard_content/AllSliderTwo";
 import AllPrimeDistributors from "./dashboard_content/AllPrimeDistributors";
 import AllPrimeVendors from "./dashboard_content/AllPrimeVendors";
+import RequestAccountDelete from "./website/RequestAccountDelete";
 
 function App() {
   const ref = React.useRef();
@@ -147,6 +148,7 @@ function App() {
           <Route path="/return-policy" Component={ReturnPolicy} />
           <Route path="/user-register" Component={UserRegister} />
           <Route path="/product-details" Component={ProductDetials} />
+          <Route path="/account-delete-request" Component={RequestAccountDelete} />
           <Route
             path="/product-details/:pid/:name"
             Component={ProductDetials}

@@ -120,6 +120,16 @@ const AllPrimeDistributors = () => {
             "status",
           ]}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column field="order_id" header="OrderId" sortable></Column>
           <Column field="transactionId" header="Txn Id" sortable></Column>
           <Column field="distName" header="Name" sortable></Column>

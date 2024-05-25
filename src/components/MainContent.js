@@ -175,9 +175,9 @@ function MainContent() {
   const getTotal = () => {
     let total = 0;
     filterData.map((item) => {
-      if (item.type === "Credit") {
+      if (item.type === "Credit" && item.amountStatus === "Done") {
         total += parseInt(item.amount);
-      } else if (item.type === "Debit") {
+      } else if (item.type === "Debit" && item.amountStatus === "Done") {
         total -= parseInt(item.amount);
       }
     });
@@ -313,7 +313,9 @@ function MainContent() {
                         <Link to="all-distributor">All Distributor</Link>
                       </li>
                       <li>
-                        <Link to="all-prime_distributor">All Prime Distributor</Link>
+                        <Link to="all-prime_distributor">
+                          All Prime Distributor
+                        </Link>
                       </li>
                       <li>
                         <Link to="all-vendor">All Vendor</Link>

@@ -169,6 +169,7 @@ function UserPanel() {
                     <i className="bi bi-person-square"></i> User Profile
                   </Link>
                 </li>
+
                 <li className="nav-item">
                   <Link className="nav-link" to="" onClick={Logout}>
                     <i className="bi bi-box-arrow-left"></i> Logout

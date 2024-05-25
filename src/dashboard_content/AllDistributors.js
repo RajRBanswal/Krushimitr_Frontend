@@ -307,6 +307,16 @@ function AllDistributors() {
                 filterDisplay="menu"
                 globalFilterFields={["name", "email", "mobile", "status"]}
               >
+                <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
                 <Column field="mobile" header="Mobile No." sortable></Column>
@@ -350,6 +360,16 @@ function AllDistributors() {
                 filterDisplay="menu"
                 globalFilterFields={["name", "email", "mobile", "status"]}
               >
+                <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
                 <Column field="mobile" header="Mobile No." sortable></Column>
@@ -393,6 +413,16 @@ function AllDistributors() {
                 filterDisplay="menu"
                 globalFilterFields={["name", "email", "mobile", "status"]}
               >
+                <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
                 <Column field="mobile" header="Mobile No." sortable></Column>

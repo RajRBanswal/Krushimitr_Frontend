@@ -474,6 +474,16 @@ function CustomerOrders() {
               ]}
             >
               <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
+              <Column
                 field="orderNumber"
                 header="Order No"
                 sortable
@@ -539,6 +549,16 @@ function CustomerOrders() {
               ]}
             >
               <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
+              <Column
                 field="orderNumber"
                 header="Order No"
                 sortable
@@ -603,6 +623,16 @@ function CustomerOrders() {
               ]}
             >
               <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
+              <Column
                 field="orderNumber"
                 header="Order No"
                 sortable
@@ -666,6 +696,16 @@ function CustomerOrders() {
               ]}
             >
               <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
+              <Column
                 field="orderNumber"
                 header="Order No"
                 sortable
@@ -728,6 +768,16 @@ function CustomerOrders() {
                 "status",
               ]}
             >
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field="orderNumber"
                 header="Order No"

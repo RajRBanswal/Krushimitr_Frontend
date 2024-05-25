@@ -116,7 +116,8 @@ function Invoice() {
                   : route === "users"
                   ? navigate("/users/user-orders")
                   : route === "distributors"
-                  ? navigate("/distributors/all-customer-orders") : navigate("");
+                  ? navigate("/distributors/all-customer-orders")
+                  : navigate("");
               }}
             >
               <i class="fa fa-solid fa-arrow-left"></i>
@@ -217,7 +218,7 @@ function Invoice() {
                   </td>
                   <td className="text-end py-1 pe-3">
                     <p className="mb-0" style={{ fontSize: 14 }}>
-                      {distributor.shopName}
+                      {distributor.name} ({distributor.shopName})
                     </p>
                     <p className="mb-0" style={{ fontSize: 14 }}>
                       {distributor.shopMobile}
@@ -243,7 +244,8 @@ function Invoice() {
                   <th className="">Size</th>
                   <th className="">BtcNo</th>
                   <th>HsnNo</th>
-                  <th>Guar. / Warr.</th>
+                  <th>Guar. </th>
+                  <th> Warr.</th>
 
                   <th className="text-center">Rate</th>
                   <th className="text-center">Qty</th>
@@ -267,14 +269,20 @@ function Invoice() {
                         {item.HSNNo !== undefined ? item.HSNNo : ""}
                       </td>
                       <td class="text-center">
-                        {item.guarantee !== undefined ? item.guarantee : ""} /
-                        {item.warranty !== undefined ? item.warranty : ""}
+                        {item.guarantee !== undefined
+                          ? item.guarantee + "m"
+                          : "NA"}
+                      </td>
+                      <td class="text-center">
+                        {item.warranty !== undefined
+                          ? item.warranty + "m"
+                          : "NA"}
                       </td>
                       <td className="text-center">
                         {getTotal(item.price, item.quantity, item.gst)}
                       </td>
                       <td className="text-center">{item.quantity}</td>
-                      <td className="text-center">{item.gst}</td>
+                      <td className="text-center">{item.gst}%</td>
                       <td className="text-end">
                         {getTotal(item.price, item.quantity, item.gst) *
                           item.quantity}
@@ -294,11 +302,12 @@ function Invoice() {
                   <th></th>
                   <th></th>
                   <th></th>
+                  <th></th>
                 </tr>
               </thead>
               <thead className="table-dark">
                 <tr className="add">
-                  <th colSpan={8} className="text-white">
+                  <th colSpan={9} className="text-white">
                     Total
                   </th>
 
@@ -308,20 +317,13 @@ function Invoice() {
 
               <tbody>
                 <tr className="add finalAdd">
-                  <th rowSpan={5} colSpan={6} className="text-start"></th>
+                  <th rowSpan={5} colSpan={7} className="text-start"></th>
                   <th colSpan={2}>Subtotal</th>
                   <td className="w-15 text-nowrap">
                     <i className="fa fa-rupee"></i>&nbsp;
                     {taxableTotal}
                   </td>
                 </tr>
-                {/* <tr className="add finalAdd">
-                  <th>Discount</th>
-                  <td className="w-15 text-nowrap">
-                    <i className="fa fa-rupee"></i>
-                    {"  "} 100.00
-                  </td>
-                </tr> */}
                 <tr className="add finalAdd">
                   <th colSpan={2}>GST</th>
                   <td className="w-15 text-nowrap">

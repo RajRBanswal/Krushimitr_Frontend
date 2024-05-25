@@ -207,9 +207,9 @@ const AdminWalletReports = () => {
   const lastYearTotal = () => {
     let element = 0;
     filterData.map((item) => {
-      if (item.type === "Credit") {
+      if (item.type === "Credit" && item.amountStatus === "Done") {
         element = element + parseInt(item.amount);
-      } else if (item.type === "Debit") {
+      } else if (item.type === "Debit" && item.amountStatus === "Done") {
         element = element - item.amount;
       }
     });
@@ -228,6 +228,15 @@ const AdminWalletReports = () => {
       </Row>
     </ColumnGroup>
   );
+
+  const showClosing = (rowData) => {
+    if (rowData.openingBalance === undefined || rowData.openingBalance === "") {
+      return "";
+    } else {
+      return parseInt(rowData.openingBalance) + parseInt(rowData.amount);
+    }
+  };
+
   return (
     <div>
       <Toast ref={toast} />
@@ -258,6 +267,16 @@ const AdminWalletReports = () => {
           footerColumnGroup={footerGroup}
         >
           <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
+          <Column
             field={getDateTime}
             header="Date/Time"
             body={getDateTime}
@@ -268,6 +287,11 @@ const AdminWalletReports = () => {
           <Column field="openingBalance" header="Ope.Amt" sortable></Column>
           <Column field="amount" header="Amount" sortable></Column>
           <Column
+            field={showClosing}
+            header="ClosingBal."
+            body={showClosing}
+          ></Column>
+          <Column
             field="type"
             header="Type"
             bodyStyle={{ fontWeight: "bold", color: "green" }}
@@ -277,6 +301,11 @@ const AdminWalletReports = () => {
           <Column field="distName" header="Distr/Vendor Name"></Column>
           <Column field="reason" header="Reason" sortable></Column>
           <Column field="status" header="Status" sortable></Column>
+          <Column
+            field="amountStatus"
+            header="AmtStatus"
+            bodyStyle={{ color: "green" }}
+          ></Column>
         </DataTable>
       </div>
     </div>

@@ -196,7 +196,7 @@ const DistributorsPackages = () => {
     );
     formData.append("price", price ? price : "");
     formData.append("duration", duration ? duration : "");
-    formData.append("image", image ? image : "");
+    formData.append("file", image);
     const response = await fetch(
       "https://krushimitr.in/api/admin/update-distributors-package",
       {
@@ -205,6 +205,7 @@ const DistributorsPackages = () => {
       }
     );
     const result = await response.json();
+    console.log(result);
     if (result.status === 201) {
       hideEditDialog();
       setPackage_Name("");
@@ -251,6 +252,16 @@ const DistributorsPackages = () => {
           globalFilter={globalFilter}
           header={headerComplete}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column
             field="package_name"
             header="Package Name"

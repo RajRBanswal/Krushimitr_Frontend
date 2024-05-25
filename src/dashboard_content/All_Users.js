@@ -337,6 +337,16 @@ function All_Users() {
             globalFilterFields={["name", "email", "mobile", "status"]}
           >
             <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
+            <Column
               field="createdAt"
               header="Date"
               sortable
@@ -374,11 +384,12 @@ function All_Users() {
               body={password}
               sortable
             ></Column> */}
-            <Column
+            {/* <Column
               field="image"
               header="Image"
               body={imageBodyTemplate}
-            ></Column>
+            ></Column> */}
+            <Column field="status" header="Status" style={{ fontWeight:'bold',color:'green' }}></Column>
             <Column
               header="Action"
               body={actionBodyTemplate}
@@ -407,6 +418,16 @@ function All_Users() {
             globalFilter={globalFilter}
             header={header}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column
               field="createdAt"
               header="Date"
@@ -440,11 +461,12 @@ function All_Users() {
               style={{ minWidth: "16rem" }}
             ></Column>
             <Column field="stringPassword" header="Password" sortable></Column>
-            <Column
+            {/* <Column
               field="image"
               header="Image"
               body={imageBodyTemplate}
-            ></Column>
+            ></Column> */}
+            <Column field="status" header="Status"  style={{ fontWeight:'bold',color:'red' }}></Column>
             {/* <Column
               header="Action"
               body={actionBodyTemplate}

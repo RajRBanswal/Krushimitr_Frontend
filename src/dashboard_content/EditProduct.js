@@ -73,6 +73,7 @@ function EditProduct() {
           buying_price: data.buying_price,
           discount: data.discount,
           gst: data.gst,
+          minQuantity: data.minQuantity,
           quantity: data.quantity,
           remQuantity: data.remQuantity,
         };
@@ -91,6 +92,7 @@ function EditProduct() {
       selling_price: "",
       buying_price: "",
       gst: "",
+      minQuantity: "",
       quantity: "",
       remQuantity: "0",
     },
@@ -120,6 +122,7 @@ function EditProduct() {
         selling_price: "",
         buying_price: "",
         gst: "",
+        minQuantity: "",
         quantity: "",
         remQuantity: "0",
       },
@@ -252,8 +255,12 @@ function EditProduct() {
 
   const mekeCode = (value) => {
     setProductName(value);
-    let code = value.slice(0, 4);
-    if (code.length === 4) {
+    if (value.length > 4) {
+      return;
+    }
+
+    if (value.length === 4) {
+      let code = value.slice(0, 4);
       let name = code.toUpperCase();
       let val = Math.floor(1000 + Math.random() * 9000);
       let finalCode = name + "-" + val;
@@ -432,6 +439,16 @@ function EditProduct() {
                     onChange={(e) => handleChanges(index, e)}
                   />
                 </div>
+                <div className="col-lg-1">
+                  <input
+                    type="number"
+                    name="minQuantity"
+                    className="form-control"
+                    placeholder="Min Quantity"
+                    value={item.minQuantity || ""}
+                    onChange={(e) => handleChanges(index, e)}
+                  />
+                </div>
                 {/* <div className="col-lg-2">
                   <input
                     type="number"
@@ -528,6 +545,16 @@ function EditProduct() {
                     className="form-control"
                     placeholder="Qty"
                     value={element.quantity || ""}
+                    onChange={(e) => handleChange(index, e)}
+                  />
+                </div>
+                <div className="col-lg-1">
+                  <input
+                    type="number"
+                    name="minQuantity"
+                    className="form-control"
+                    placeholder="Min Quantity"
+                    value={element.minQuantity || ""}
                     onChange={(e) => handleChange(index, e)}
                   />
                 </div>

@@ -1,0 +1,16 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.Krushimitr_Shivaneri",
+            "sha256_cert_fingerprints": [
+                "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C",
+                "72:30:84:c3:fe:1f:94:2b:d4:6e:b3:f0:39:84:7a:37:a5:9d:13:2d:74:c9:79:12:b6:c3:62:1c:10:95:11:8c",
+                "32:E4:59:E5:4C:F9:5C:E5:EE:EC:41:F1:56:AE:83:AE:04:02:B5:D5:5C:61:62:84:53:CE:02:65:ED:1B:02:56"
+            ]
+        }
+    }
+]

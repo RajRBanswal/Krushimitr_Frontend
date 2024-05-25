@@ -31,7 +31,7 @@ function AllReports() {
   const orderCmplt = useRef(null);
   let datas = [];
   const [filterData, setFilterData] = useState([]);
-  
+
   const getProductData = async () => {
     let all_products = await fetch(
       "https://krushimitr.in/api/admin/all-orders"
@@ -390,6 +390,16 @@ function AllReports() {
           header={headerComplete}
           footerColumnGroup={footerGroup}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column
             field="orderNumber"
             header="Order No."

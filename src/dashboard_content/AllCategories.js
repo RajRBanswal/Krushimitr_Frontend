@@ -279,6 +279,16 @@ function AllCategories() {
             ]}
           >
             <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
+            <Column
               field="category_code"
               header="Category Code"
               bodyStyle={{ fontWeight: "bold" }}

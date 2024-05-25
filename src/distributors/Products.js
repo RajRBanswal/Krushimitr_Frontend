@@ -1,3 +1,7 @@
+import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { InputText } from "primereact/inputtext";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -20,6 +24,39 @@ function Products() {
   const [hamali, setHamali] = useState("");
   const [keyword, setKeyword] = useState("");
   const [productCode, setProductCode] = useState("");
+  const [filterPendingProduct, setFilterPendingProduct] = useState([]);
+  const [filterActiveProduct, setFilterActiveProduct] = useState([]);
+  const [globalFilter, setGlobalFilter] = useState(null);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    productCode: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    keyword: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    productName: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    category: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    showVendorDetails: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
+    status: {
+      operator: FilterOperator.OR,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
+
   const [formValues, setFormValues] = useState([
     {
       size: "",
@@ -28,6 +65,7 @@ function Products() {
       buying_price: "",
       discount: "",
       gst: "",
+      minQuantity: "",
       quantity: "",
       remQuantity: "0",
     },
@@ -52,6 +90,8 @@ function Products() {
       setDistributor("");
     }
   };
+
+  const refresh = () => window.location.reload(true);
   //Add Products
   const storeProducts = async () => {
     let saved = "Yes";
@@ -114,6 +154,7 @@ function Products() {
         setProductWarranty("");
         setImage("");
         alert(result.result);
+        refresh();
         setTime(true);
         setIsSet(false);
       } else {
@@ -137,13 +178,15 @@ function Products() {
           Accept: "application/json",
         },
       }
-    ).then((resultDel) => resultDel.json());
-    if (resultDel.status === 201) {
-      alert(resultDel.result);
+    );
+    let result = await resultDel.json();
+    if (result.status === 201) {
+      alert(result.result);
       setIsSet(false);
       setTime(true);
+      window.location.reload();
     } else {
-      alert(resultDel.result);
+      alert(result.result);
     }
   };
 
@@ -155,6 +198,18 @@ function Products() {
     );
     const getProd = await all_products.json();
     if (getProd.status === 201) {
+      let vendorActive = [];
+      let vendorPending = [];
+      getProd.product_data.map((item) => {
+        if (item.vendor_id === distributor_id && item.status === "Active") {
+          vendorActive.push(item);
+        }
+        if (item.vendor_id === distributor_id && item.status === "Pending") {
+          vendorPending.push(item);
+        }
+      });
+      setFilterActiveProduct(vendorActive);
+      setFilterPendingProduct(vendorPending);
       setProducts(getProd.product_data);
       // console.log(getProd.product_data);
     } else {
@@ -209,6 +264,7 @@ function Products() {
         selling_price: "",
         buying_price: "",
         gst: "",
+        minQuantity: "",
         quantity: "",
         remQuantity: "0",
       },
@@ -256,8 +312,12 @@ function Products() {
   };
   const mekeCode = (value) => {
     setProductName(value);
-    let code = value.slice(0, 4);
-    if (code.length === 4) {
+    if (value.length > 4) {
+      return;
+    }
+
+    if (value.length === 4) {
+      let code = value.slice(0, 4);
       let name = code.toUpperCase();
       let val = Math.floor(1000 + Math.random() * 9000);
       let finalCode = name + "-" + val;
@@ -265,13 +325,31 @@ function Products() {
     }
   };
 
-  return (
-    <div className="card p-3">
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
+  const headerComplete = (
+    <div className="py-2">
       <div className="row">
         <div className="col-lg-4">
           <h2 className="text-uppercase">All Products</h2>
         </div>
-        <div className="col-lg-4"></div>
+        <div className="col-lg-4">
+          <span className="p-input-icon-left">
+            <i className="pi pi-search" />
+            <InputText
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Keyword Search"
+              className="form-control ps-5"
+            />
+          </span>
+        </div>
         <div className="col-lg-4">
           <button
             type="button"
@@ -284,9 +362,76 @@ function Products() {
           </button>
         </div>
       </div>
-      <hr />
-      <div className="table-responsive" style={{ overflow: "auto" }}>
-        <table className="table table-hover table-bordered">
+    </div>
+  );
+
+  const getItemData = (rowData) => (
+    <ul className="list-group list-group-numbered">
+      {rowData.size !== "" ||
+      rowData.size !== null ||
+      rowData.size !== undefined
+        ? rowData.size.map((item) => {
+            let items = JSON.parse(item);
+            return (
+              <li className="my-0  py-0 list-group-item list-group-item-primary">
+                {items.size}
+                {items.unit} - {items.selling_price}rs
+              </li>
+            );
+          })
+        : ""}
+    </ul>
+  );
+  const showImage = (rowData) => (
+    <img
+      src={`https://krushimitr.in/upload/${rowData.image[0]}`}
+      style={{ maxWidth: "100px", maxHeight: "100px" }}
+      alt={rowData.category_image}
+    />
+  );
+
+  const filterApplyTemplate = (options) => (
+    // <div className="row">
+    //   <div className="col-lg-6">
+    //     <button
+    //       type="button"
+    //       className="btn btn-primary btn-sm"
+    //       onClick={() => navigate("/admin/edit-product/" + options._id)}
+    //     >
+    //       <i className="fas fa-edit" />
+    //     </button>
+    //   </div>
+    //   <div className="col-lg-6">
+    //     <button
+    //       type="button"
+    //       className="btn btn-danger btn-sm"
+    //       onClick={() => DeleteOne(options._id)}
+    //     >
+    //       <i className="fa fa-trash" aria-hidden="true" />
+    //     </button>
+    //   </div>
+    // </div>
+    <>
+      <button
+        type="button"
+        className="btn btn-primary btn-sm me-1"
+        onClick={() => navigate("/distributors/product-edit/" + options._id)}
+      >
+        <i className="fas fa-edit" />
+      </button>
+      <button
+        type="button"
+        className="btn btn-danger btn-sm"
+        onClick={() => DeleteOne(options._id)}
+      >
+        <i className="fa fa-trash" aria-hidden="true" />
+      </button>
+    </>
+  );
+
+  return (
+    <div className="card p-3">
+      {/* <table className="table table-hover table-bordered">
           <thead className="table-dark">
             <tr>
               <th scope="col">Category</th>
@@ -349,8 +494,197 @@ function Products() {
               )
             )}
           </tbody>
-        </table>
+        </table> */}
+      <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li className="nav-item" role="presentation">
+          <button
+            className="nav-link active"
+            id="pills-profile-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-profile"
+            type="button"
+            role="tab"
+            aria-controls="pills-profile"
+            aria-selected="false"
+          >
+            Pending Products
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className="nav-link"
+            id="pills-activeVendorProduct-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-activeVendorProduct"
+            type="button"
+            role="tab"
+            aria-controls="pills-activeVendorProduct"
+            aria-selected="false"
+          >
+            Active Products
+          </button>
+        </li>
+      </ul>
+
+      <div className="tab-content" id="pills-tabContent">
+        <div
+          className="tab-pane fade show active"
+          id="pills-profile"
+          role="tabpanel"
+          aria-labelledby="pills-profile-tab"
+        >
+          <DataTable
+            value={filterPendingProduct}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            globalFilter={globalFilter}
+            header={headerComplete}
+            filters={filters}
+            filterDisplay="menu"
+            globalFilterFields={[
+              "category",
+              "productCode",
+              "keyword",
+              "productName",
+              "showVendorDetails",
+              "status",
+            ]}
+          >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
+            <Column
+              field="category"
+              header="Category"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="productCode"
+              header="Code"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="keyword"
+              header="Keyword"
+              style={{ display: "none" }}
+            ></Column>
+            <Column
+              field="productName"
+              header="Product Name"
+              bodyStyle={{ fontSize: 16, fontWeight: "bold" }}
+              sortable
+            ></Column>
+            <Column
+              field={getItemData}
+              header="Size - Price"
+              body={getItemData}
+              bodyStyle={{ fontSize: 16 }}
+            ></Column>
+            <Column field={showImage} header="Image" body={showImage}></Column>
+            <Column
+              field="status"
+              header="Status"
+              sortable
+              bodyStyle={{ color: "green", fontSize: 16 }}
+            ></Column>
+            <Column
+              header="Action"
+              body={filterApplyTemplate}
+              severity="success"
+            ></Column>
+          </DataTable>
+        </div>
+        <div
+          className="tab-pane fade"
+          id="pills-activeVendorProduct"
+          role="tabpanel"
+          aria-labelledby="pills-activeVendorProduct-tab"
+        >
+          <DataTable
+            value={filterActiveProduct}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            globalFilter={globalFilter}
+            header={headerComplete}
+            filters={filters}
+            filterDisplay="menu"
+            globalFilterFields={[
+              "category",
+              "productCode",
+              "keyword",
+              "productName",
+              "status",
+            ]}
+          >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
+            <Column
+              field="category"
+              header="Category"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="productCode"
+              header="Code"
+              bodyStyle={{ color: "green", fontSize: 16, fontWeight: "bold" }}
+            ></Column>
+            <Column
+              field="keyword"
+              header="Keyword"
+              style={{ display: "none" }}
+            ></Column>
+            <Column
+              field="productName"
+              header="Product Name"
+              bodyStyle={{ fontSize: 16, fontWeight: "bold" }}
+              sortable
+            ></Column>
+            <Column
+              field={getItemData}
+              header="Size - Price"
+              body={getItemData}
+              bodyStyle={{ fontSize: 16 }}
+            ></Column>
+            <Column field={showImage} header="Image" body={showImage}></Column>
+            <Column
+              field="status"
+              header="Status"
+              sortable
+              bodyStyle={{ color: "green", fontSize: 16 }}
+            ></Column>
+            <Column
+              header="Action"
+              body={filterApplyTemplate}
+              severity="success"
+            ></Column>
+          </DataTable>
+        </div>
       </div>
+
+      {/* Add Product Form */}
       <div
         className={`modal fade ${isSet ? "show" : ""} `}
         id="exampleModal"
@@ -530,13 +864,23 @@ function Products() {
                           <option value={"28"}>28%</option>
                         </select>
                       </div>
-                      <div className="col-lg-2">
+                      <div className="col-lg-1">
                         <input
                           type="number"
                           name="quantity"
                           className="form-control"
                           placeholder="Qty"
                           value={element.quantity || ""}
+                          onChange={(e) => handleChange(index, e)}
+                        />
+                      </div>
+                      <div className="col-lg-1">
+                        <input
+                          type="number"
+                          name="minQuantity"
+                          className="form-control"
+                          placeholder="Min Quantity"
+                          value={element.minQuantity || ""}
                           onChange={(e) => handleChange(index, e)}
                         />
                       </div>

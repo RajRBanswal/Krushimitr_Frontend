@@ -251,12 +251,18 @@ const UsersWalletReports = () => {
   };
   const getTransId = (rowData) => {
     if (Array.isArray(rowData.paymentInstrument)) {
-      let arr = JSON.parse(rowData.paymentInstrument);
-      if (arr.transactionId !== undefined || arr.transactionId !== "") {
-        return arr.transactionId;
+      if (rowData.paymentInstrument[0] === "CARD, UPI, WALLET") {
+        return "";
       } else {
-        return arr.transactionId;
+        let arr = JSON.parse(rowData.paymentInstrument);
+        if (arr.transactionId !== undefined || arr.transactionId !== "") {
+          return arr.transactionId;
+        } else {
+          return arr.transactionId;
+        }
       }
+    } else {
+      return "";
     }
   };
   const getDateTime = (rowData) => {
@@ -348,15 +354,23 @@ const UsersWalletReports = () => {
                 "status",
               ]}
             >
-              {/* <Column field="transactionDate" header="Date" sortable></Column>
-              <Column field="transactionTime" header="Time"></Column> */}
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field={getDateTime}
                 header="Date/Time"
                 body={getDateTime}
                 sortable
               ></Column>
-               <Column field="orderId" header="Order No." sortable></Column>
+              <Column field="orderId" header="Order No." sortable></Column>
               <Column
                 field={getTransId}
                 header="TransactionId"
@@ -374,12 +388,12 @@ const UsersWalletReports = () => {
                 header="Type"
                 bodyStyle={{ color: "green", fontWeight: "bold" }}
               ></Column>
-               <Column
-              field="reason"
-              header="Notes"
-              bodyStyle={{ fontWeight: "bold" }}
-              sortable
-            ></Column>
+              <Column
+                field="reason"
+                header="Notes"
+                bodyStyle={{ fontWeight: "bold" }}
+                sortable
+              ></Column>
 
               {/* <Column
             header="Action"
@@ -418,8 +432,16 @@ const UsersWalletReports = () => {
                 "status",
               ]}
             >
-              {/* <Column field="transactionDate" header="Date" sortable></Column>
-              <Column field="transactionTime" header="Time"></Column> */}
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field={getDateTime}
                 header="Date/Time"
@@ -474,8 +496,16 @@ const UsersWalletReports = () => {
                 "status",
               ]}
             >
-              {/* <Column field="transactionDate" header="Date" sortable></Column>
-              <Column field="transactionTime" header="Time"></Column> */}
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field={getDateTime}
                 header="Date/Time"

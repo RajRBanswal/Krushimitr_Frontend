@@ -47,7 +47,10 @@ function ProductDetials() {
   const [selectedPrice, setSelectedPrice] = useState("");
   const [selectedGST, setSelectedGST] = useState("");
   const [selectedDiscount, setSelectedDiscount] = useState("");
+  const [selectedMinQuantity, setSelectedMinQuantity] = useState(1);
+
   // const [product, setProduct] = useState(location.state.item);
+  const [quantity, setQuantity] = useState(1);
   const getProductDatas = async () => {
     let all_products = await fetch(
       "https://krushimitr.in/api/admin/get-product/",
@@ -73,6 +76,10 @@ function ProductDetials() {
       setSelectedDiscount(
         main[0].discount === undefined ? 0 : main[0].discount
       );
+      setSelectedMinQuantity(
+        main[0].minQuantity === undefined ? 1 : main[0].minQuantity
+      );
+      setQuantity(main[0].minQuantity === undefined ? 1 : main[0].minQuantity);
     } else {
       alert(getProd.result);
     }
@@ -102,6 +109,17 @@ function ProductDetials() {
     }
   };
 
+  const changePrice = (item) => {
+    setSelectedSize(item.size);
+    setSelectedUnit(item.unit);
+    setSelectedPrice(item.selling_price);
+    setSelectedGST(item.gst);
+    setSelectedDiscount(item.discount === undefined ? 0 : item.discount);
+    setSelectedMinQuantity(
+      item.minQuantity === undefined ? 1 : item.minQuantity
+    );
+  };
+
   useEffect(() => {
     getProductDatas();
     getProductData();
@@ -111,17 +129,8 @@ function ProductDetials() {
         setProductSize(datas);
       }
     });
+
   }, [location]);
-
-  const changePrice = (item) => {
-    setSelectedSize(item.size);
-    setSelectedUnit(item.unit);
-    setSelectedPrice(item.selling_price);
-    setSelectedGST(item.gst);
-    setSelectedDiscount(item.discount === undefined ? 0 : item.discount);
-  };
-
-  const [quantity, setQuantity] = useState(1);
 
   return (
     <div className="container mt-3">
@@ -271,7 +280,7 @@ function ProductDetials() {
                           <p className="fw-bold mb-0  text-center">Quantity</p>
                           <hr className="my-1" />
                           <div className="qty-input m-auto">
-                            <button
+                            {/* <button
                               className="qty-count qty-count--minus btn"
                               data-action="minus"
                               type="button"
@@ -281,13 +290,38 @@ function ProductDetials() {
                               }
                             >
                               -
-                            </button>
+                            </button> */}
+                            {selectedMinQuantity < quantity ? (
+                              <button
+                                className="qty-count qty-count--minus btn"
+                                data-action="minus"
+                                type="button"
+                                onClick={() =>
+                                  quantity > 1 &&
+                                  setQuantity(parseInt(quantity) - 1)
+                                }
+                              >
+                                -
+                              </button>
+                            ) : (
+                              <button
+                                disabled={true}
+                                className="qty-count qty-count--minus btn"
+                                data-action="minus"
+                                type="button"
+                                onClick={() =>
+                                  quantity > 1 &&
+                                  setQuantity(parseInt(quantity) - 1)
+                                }
+                              >
+                                -
+                              </button>
+                            )}
                             <input
                               className="product-qty"
                               type="number"
                               name="product-qty"
-                              min="0"
-                              max="10"
+                              min={selectedMinQuantity}
                               onChange={(e) => setQuantity(e.target.value)}
                               value={quantity}
                             />

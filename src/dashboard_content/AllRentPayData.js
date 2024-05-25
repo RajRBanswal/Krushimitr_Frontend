@@ -292,6 +292,16 @@ function AllRentPayData() {
                 header={headerComplete}
               >
                 <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
+                <Column
                   field="transactionDate"
                   header="Date"
                   bodyStyle={{ fontWeight: "bold", color: "green" }}
@@ -347,6 +357,16 @@ function AllRentPayData() {
                 header={headerComplete}
               >
                 <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
+                <Column
                   field="transactionDate"
                   header="Date"
                   bodyStyle={{ fontWeight: "bold", color: "green" }}
@@ -401,6 +421,16 @@ function AllRentPayData() {
                 globalFilter={globalFilter}
                 header={headerComplete}
               >
+                <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
                 <Column
                   field="transactionDate"
                   header="Date"

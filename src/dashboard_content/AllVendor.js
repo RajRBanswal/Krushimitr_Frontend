@@ -250,6 +250,16 @@ function AllVendor() {
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 tableStyle={{ minWidth: "100%" }}
               >
+                <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
                 <Column field="mobile" header="Mobile No." sortable></Column>
@@ -289,6 +299,16 @@ function AllVendor() {
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 tableStyle={{ minWidth: "100%" }}
               >
+                <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
                 <Column field="mobile" header="Mobile No." sortable></Column>
@@ -328,6 +348,16 @@ function AllVendor() {
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 tableStyle={{ minWidth: "100%" }}
               >
+                <Column
+                  field="#"
+                  header="Sr. No."
+                  bodyStyle={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  body={(data, options) => options.rowIndex + 1}
+                ></Column>
                 <Column field="name" header="Name" sortable></Column>
                 <Column field="email" header="Email" sortable></Column>
                 <Column field="mobile" header="Mobile No." sortable></Column>

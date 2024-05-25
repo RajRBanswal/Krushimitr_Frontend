@@ -78,11 +78,13 @@ function AllProducts() {
       buying_price: "",
       discount: "",
       gst: "",
+      minQuantity: "",
       quantity: "",
       remQuantity: "0",
     },
   ]);
   const [productData, setProductData] = useState([]);
+  const refresh = () => window.location.reload(true);
   //Add Products
   const storeProducts = async () => {
     let saved = "Yes";
@@ -134,6 +136,7 @@ function AllProducts() {
         setProductWarranty("");
         setImage("");
         alert(result.result);
+        refresh();
         setTime(true);
         setIsSet(false);
       } else {
@@ -263,6 +266,7 @@ function AllProducts() {
         selling_price: "",
         buying_price: "",
         gst: "",
+        minQuantity: "",
         quantity: "",
         remQuantity: "0",
       },
@@ -313,8 +317,12 @@ function AllProducts() {
 
   const mekeCode = (value) => {
     setProductName(value);
-    let code = value.slice(0, 4);
-    if (code.length === 4) {
+    if (value.length > 4) {
+      return;
+    }
+
+    if (value.length === 4) {
+      let code = value.slice(0, 4);
       let name = code.toUpperCase();
       let val = Math.floor(1000 + Math.random() * 9000);
       let finalCode = name + "-" + val;
@@ -392,14 +400,14 @@ function AllProducts() {
         <button
           type="button"
           className="btn btn-success btn-sm me-1"
-          onClick={() => {}}
+          onClick={() => changeStatus("Active", options._id)}
         >
           <i className="fas fa-eye" /> Accept
         </button>
         <button
           type="button"
           className="btn btn-danger btn-sm me-1"
-          onClick={() => {}}
+          onClick={() => changeStatus("Reject", options._id)}
         >
           <i className="fas fa-close" /> Reject
         </button>
@@ -502,10 +510,10 @@ function AllProducts() {
             value={filterData}
             dataKey="id"
             paginator
-            rows={10}
+            rows={20}
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Products"
             globalFilter={globalFilter}
             header={headerComplete}
             filters={filters}
@@ -518,6 +526,16 @@ function AllProducts() {
               "status",
             ]}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column
               field="category"
               header="Category"
@@ -676,7 +694,7 @@ function AllProducts() {
             rows={10}
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Users"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Products"
             globalFilter={globalFilter}
             header={headerComplete}
             filters={filters}
@@ -690,6 +708,16 @@ function AllProducts() {
               "status",
             ]}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column
               field="category"
               header="Category"
@@ -995,6 +1023,16 @@ function AllProducts() {
               "status",
             ]}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column
               field="category"
               header="Category"
@@ -1465,13 +1503,23 @@ function AllProducts() {
                           <option value={"28"}>28%</option>
                         </select>
                       </div>
-                      <div className="col-lg-2">
+                      <div className="col-lg-1">
                         <input
                           type="number"
                           name="quantity"
                           className="form-control"
                           placeholder="Qty"
                           value={element.quantity || ""}
+                          onChange={(e) => handleChange(index, e)}
+                        />
+                      </div>
+                      <div className="col-lg-1">
+                        <input
+                          type="number"
+                          name="minQuantity"
+                          className="form-control"
+                          placeholder="Min Quantity"
+                          value={element.minQuantity || ""}
                           onChange={(e) => handleChange(index, e)}
                         />
                       </div>

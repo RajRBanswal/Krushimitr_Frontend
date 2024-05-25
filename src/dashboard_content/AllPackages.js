@@ -232,6 +232,16 @@ function AllPackages() {
           header={headerComplete}
         >
           <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
+          <Column
             field="package_name"
             header="package_name"
             bodyStyle={{ fontWeight: "bold" }}

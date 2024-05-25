@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function ProductEdit() {
   const navigate = useNavigate();
@@ -70,8 +70,9 @@ function ProductEdit() {
       setProductWarranty(getProd.product_data[0].warranty);
       setLink(getProd.product_data[0].link);
       setCOD(getProd.product_data[0].cod);
-      setImage(getProd.product_data[0].image);
-      setImage1(getProd.product_data[0].image);
+      // setImage(getProd.product_data[0].image);
+      // setImage1(getProd.product_data[0].image);
+      setImage1(getProd.product_data[0].image.map((item) => item));
       setCommission(getProd.product_data[0].vCommissionId);
       setVCommission1(getProd.product_data[0].vCommission);
       setVCommissionPercent1(getProd.product_data[0].vCommissionPercent);
@@ -107,6 +108,7 @@ function ProductEdit() {
       buying_price: "",
       discount: "",
       gst: "",
+      minQuantity: "",
       quantity: "",
       remQuantity: "0",
     },
@@ -136,6 +138,7 @@ function ProductEdit() {
         buying_price: "",
         discount: "",
         gst: "",
+        minQuantity: "",
         quantity: "",
         remQuantity: "0",
       },
@@ -213,8 +216,11 @@ function ProductEdit() {
     );
     formData.append("productWarranty", productWarranty ? productWarranty : " ");
     formData.append("vCommissionId", commission);
-    formData.append("vCommission", vCommission ? vCommission : " ");
-    formData.append("vCommissionPercent", vCommissionPercent);
+    formData.append("vCommission", vCommission ? vCommission : vCommission1);
+    formData.append(
+      "vCommissionPercent",
+      vCommissionPercent ? vCommissionPercent : vCommissionPercent1
+    );
     formData.append("rewardPoints", "");
     formData.append("batchNo", " ");
     formData.append("HSNNo", " ");
@@ -224,7 +230,8 @@ function ProductEdit() {
     formData.append("link", link ? link : " ");
     formData.append("slug", slug);
     formData.append("hamali", hamali ? hamali : " ");
-
+    formData.append("keyword", keyword);
+    formData.append("productCode", productCode);
     Object.values(arr).forEach((item) => {
       if (item.size !== "") {
         formData.append("sizes", JSON.stringify(item));
@@ -233,6 +240,8 @@ function ProductEdit() {
     Object.values(image).forEach((file) => {
       formData.append("image", file);
     });
+
+    // console.log(vCommissionPercent);
 
     let result = await fetch("https://krushimitr.in/api/admin/update-product", {
       method: "POST",
@@ -310,8 +319,12 @@ function ProductEdit() {
 
   const mekeCode = (value) => {
     setProductName(value);
-    let code = value.slice(0, 4);
-    if (code.length === 4) {
+    if (value.length > 4) {
+      return;
+    }
+
+    if (value.length === 4) {
+      let code = value.slice(0, 4);
       let name = code.toUpperCase();
       let val = Math.floor(1000 + Math.random() * 9000);
       let finalCode = name + "-" + val;
@@ -324,7 +337,12 @@ function ProductEdit() {
       <div className="modal-body p-4">
         <div className="row">
           <div className="col-lg-6">
-            <h2 htmlFor="">Edit Product</h2>
+            <h2 htmlFor="" className="d-flex align-items-center">
+              <Link to={"/distributors/allproducts"}>
+                <i class="fa fa-solid fa-arrow-left"></i>
+              </Link>{" "}
+              {"    "} Edit Product
+            </h2>
           </div>
         </div>
         <div className="row">
@@ -461,7 +479,7 @@ function ProductEdit() {
                     onChange={(e) => handleChanges(index, e)}
                   />
                 </div>
-                <div className="col-lg-2">
+                <div className="col-lg-1">
                   <input
                     type="number"
                     name="discount"
@@ -496,6 +514,16 @@ function ProductEdit() {
                     placeholder="Qty"
                     className="form-control"
                     defaultValue={item.quantity}
+                    onChange={(e) => handleChanges(index, e)}
+                  />
+                </div>
+                <div className="col-lg-1">
+                  <input
+                    type="number"
+                    name="minQuantity"
+                    className="form-control"
+                    placeholder="Min Quantity"
+                    value={item.minQuantity || ""}
                     onChange={(e) => handleChanges(index, e)}
                   />
                 </div>
@@ -549,7 +577,7 @@ function ProductEdit() {
                     onChange={(e) => handleChange(index, e)}
                   />
                 </div>
-                <div className="col-lg-2">
+                <div className="col-lg-1">
                   <input
                     type="text"
                     name="discount"
@@ -584,6 +612,16 @@ function ProductEdit() {
                     className="form-control"
                     placeholder="Qty"
                     value={element.quantity || ""}
+                    onChange={(e) => handleChange(index, e)}
+                  />
+                </div>
+                <div className="col-lg-1">
+                  <input
+                    type="number"
+                    name="minQuantity"
+                    className="form-control"
+                    placeholder="Min Quantity"
+                    value={element.minQuantity || ""}
                     onChange={(e) => handleChange(index, e)}
                   />
                 </div>

@@ -339,6 +339,16 @@ function AllTransaction() {
               header={headerComplete}
             >
               <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
+              <Column
                 field="orderNo"
                 header="Type"
                 bodyStyle={{ color: "green", fontSize: 12, fontWeight: "bold" }}
@@ -387,6 +397,16 @@ function AllTransaction() {
               globalFilter={globalFilter}
               header={headerComplete}
             >
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field="createdAt"
                 header="Date"

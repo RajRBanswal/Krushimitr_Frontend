@@ -492,6 +492,16 @@ const CommissionManagement = () => {
             globalFilter={globalFilter}
             header={headerWalletComplete}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column field="userName" header="Name" sortable></Column>
             <Column field="transactionDate" header="Date" sortable></Column>
             <Column
@@ -535,6 +545,16 @@ const CommissionManagement = () => {
             globalFilter={globalFilter}
             header={headerPointComplete}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column
               field={userName}
               header="Name"

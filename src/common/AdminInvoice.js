@@ -16,7 +16,7 @@ function AdminInvoice() {
   const [InclTotal, setInclTotal] = useState("");
 
   const getTotal = (price, quantity, gst) => {
-    let reeta = price * quantity;
+    let reeta = price;
     let tot_price = "";
     if (gst === "28") {
       tot_price = reeta / 1.28;
@@ -86,6 +86,7 @@ function AdminInvoice() {
   useEffect(() => {
     getDistributor();
     setProductFun();
+
     if (orderData.userData.length === 0) {
       setCustomer(orderData.userData);
     } else {
@@ -104,6 +105,7 @@ function AdminInvoice() {
     setTaxableTotal(ttl.toFixed(2));
     setInclTotal(InclTotal);
   }, []);
+
   return (
     <>
       <div className="container mb-3 " style={{ overflowY: "scroll" }}>
@@ -142,19 +144,18 @@ function AdminInvoice() {
               </span>{" "}
             </div>
             <div className="col-lg-4 col-12 col-md-4 order-md-2 textEnd order-lg-2 order-1">
-              {/* <p className="mb-0" style={{ fontSize: 14 }}>
-                {distributor.shopName}
+              <p className="mb-0 fw-bold" style={{ fontSize: 18 }}>
+                Shivaneri Business
               </p>
               <p className="mb-0" style={{ fontSize: 14 }}>
-                {distributor.shopMobile}
+                Lasina, Hingoli
               </p>
               <p className="mb-0" style={{ fontSize: 14 }}>
-                {distributor.email}
+                +91-9322192188
               </p>
               <p className="mb-0" style={{ fontSize: 14 }}>
-                {distributor.address}, {distributor.city}, {distributor.state},{" "}
-                {distributor.pincode}
-              </p> */}
+                shivaneribusiness@gmail.com
+              </p>
             </div>
           </div>
           <hr className="my-0" />
@@ -165,12 +166,12 @@ function AdminInvoice() {
                   <th className="uppercase">
                     ORDER ID : {orderData.orderNumber}
                   </th>
-                  {/* <th className="text-center" style={{ width: "33%" }}>
+                  <th className="text-center" style={{ width: "33%" }}>
                     GST No : {distributor.gstNo}
-                  </th> */}
-                  {/* <th className="text-end" style={{ width: "33%" }}>
+                  </th>
+                  <th className="text-end" style={{ width: "33%" }}>
                     License : {distributor.shopLicense}
-                  </th> */}
+                  </th>
                 </tr>
               </tbody>
             </table>
@@ -200,7 +201,7 @@ function AdminInvoice() {
                   </td>
                   <td className="text-end py-1 pe-3">
                     <p className="mb-0" style={{ fontSize: 14 }}>
-                      {distributor.shopName}
+                      {distributor.name} ({distributor.shopName})
                     </p>
                     <p className="mb-0" style={{ fontSize: 14 }}>
                       {distributor.shopMobile}
@@ -222,17 +223,45 @@ function AdminInvoice() {
             <table className="table table-bordered mb-3">
               <thead>
                 <tr className="add">
-                  <th>Product Name / Description</th>
+                  {/* <th>Product Name / Description</th>
                   <th className="text-center">Size</th>
                   <th className="text-end">Price</th>
                   <th className="text-center">Quantity</th>
                   <th className="text-end">Incl Rate</th>
                   <th className="text-center">GST </th>
-                  <th className="text-end">Taxable</th>
+                  <th className="text-end">Taxable</th> */}
+
+                  <th>Name / Desc</th>
+                  <th className="">Size</th>
+                  <th className="">BtcNo</th>
+                  <th>HsnNo</th>
+                  <th>Guar. </th>
+                  <th> Warr.</th>
+
+                  <th className="text-center">Rate</th>
+                  <th className="text-center">Qty</th>
+                  <th className="text-center">GST </th>
+                  <th className="text-end">Amount</th>
                 </tr>
               </thead>
               <tbody>
                 {product.map((item, index) => {
+                  // return (
+                  //   <tr className="invoice_content" key={(ele) => ele._id}>
+                  //     <td>{item.productName}</td>
+                  //     <td>
+                  //       {item.size}
+                  //       {item.unit}
+                  //     </td>
+                  //     <td className="text-end">{item.price}</td>
+                  //     <td className="text-center">{item.quantity}</td>
+                  //     <td className="text-end">{item.price * item.quantity}</td>
+                  //     <td className="text-center">{item.gst}</td>
+                  //     <td className="text-end">
+                  //       {getTotal(item.price, item.quantity, item.gst)}
+                  //     </td>
+                  //   </tr>
+                  // );
                   return (
                     <tr className="invoice_content" key={(ele) => ele._id}>
                       <td>{item.productName}</td>
@@ -240,12 +269,30 @@ function AdminInvoice() {
                         {item.size}
                         {item.unit}
                       </td>
-                      <td className="text-end">{item.price}</td>
-                      <td className="text-center">{item.quantity}</td>
-                      <td className="text-end">{item.price * item.quantity}</td>
-                      <td className="text-center">{item.gst}</td>
-                      <td className="text-end">
+                      <td className="text-center">
+                        {item.batchNo !== undefined ? item.batchNo : ""}
+                      </td>
+                      <td class="text-center">
+                        {item.HSNNo !== undefined ? item.HSNNo : ""}
+                      </td>
+                      <td class="text-center">
+                        {item.guarantee !== undefined
+                          ? item.guarantee + "m"
+                          : "NA"}
+                      </td>
+                      <td class="text-center">
+                        {item.warranty !== undefined
+                          ? item.warranty + "m"
+                          : "NA"}
+                      </td>
+                      <td className="text-center">
                         {getTotal(item.price, item.quantity, item.gst)}
+                      </td>
+                      <td className="text-center">{item.quantity}</td>
+                      <td className="text-center">{item.gst}%</td>
+                      <td className="text-end">
+                        {getTotal(item.price, item.quantity, item.gst) *
+                          item.quantity}
                       </td>
                     </tr>
                   );
@@ -260,11 +307,14 @@ function AdminInvoice() {
                   <th></th>
                   <th></th>
                   <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
                 </tr>
               </thead>
               <thead className="table-dark">
                 <tr className="add">
-                  <th colSpan={6} className="text-white">
+                  <th colSpan={9} className="text-white">
                     Total
                   </th>
 
@@ -274,33 +324,28 @@ function AdminInvoice() {
 
               <tbody>
                 <tr className="add finalAdd">
-                  <th rowSpan={5} colSpan={5} className="text-start">
+                  <th rowSpan={5} colSpan={7} className="text-start">
                     Do not send an Excel Invoice file to your clients, use PDF
                     converter/printer to create a PDF file
                   </th>
-                  <th>Subtotal</th>
+                  <th colSpan={2}>Subtotal</th>
                   <td className="w-15 text-nowrap">
                     <i className="fa fa-rupee"></i>&nbsp;
                     {taxableTotal}
                   </td>
                 </tr>
-                {/* <tr className="add finalAdd">
-                    <th>Discount</th>
-                    <td className="w-15 text-nowrap">
-                      <i className="fa fa-rupee"></i>
-                      {"  "} 100.00
-                    </td>
-                  </tr> */}
                 <tr className="add finalAdd">
-                  <th>GST</th>
+                  <th colSpan={2}>GST</th>
                   <td className="w-15 text-nowrap">
                     <i className="fa fa-rupee"></i> &nbsp;
                     {(InclTotal - taxableTotal).toFixed(2)}
                   </td>
                 </tr>
                 <tr className="add finalAdd">
-                  <th>Total</th>
-                  <td className="w-15 text-nowrap">
+                  <th colSpan={2} className="fw-bold">
+                    Final Total
+                  </th>
+                  <td className="w-15 text-nowrap fw-bold">
                     <i className="fa fa-rupee"></i>&nbsp;
                     {InclTotal}.00
                   </td>

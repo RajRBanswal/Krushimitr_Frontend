@@ -8,9 +8,11 @@ import { Button } from "primereact/button";
 import loading from "../images/loading.gif";
 import moment from "moment";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { Calendar } from "primereact/calendar";
 const AdminWallet = () => {
   const [price, setPrice] = useState(0);
   const [loadings, setLoadings] = useState(false);
+  const [loadPage, setLoadPage] = useState(false);
   const [addDialog, setAddDialog] = useState(false);
   const [successData, setSuccessData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState(null);
@@ -55,6 +57,7 @@ const AdminWallet = () => {
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getAdminWalletData = async () => {
+    setLoadPage(true);
     let success = [];
     let all_rent_chages = await fetch(
       "https://krushimitr.in/api/admin/admin-wallet"
@@ -73,7 +76,7 @@ const AdminWallet = () => {
 
   useEffect(() => {
     getAdminWalletData();
-  }, [getAdminWalletData]);
+  }, [loadPage]);
 
   const openNew = () => {
     setAddDialog(true);
@@ -96,6 +99,7 @@ const AdminWallet = () => {
   };
 
   const onGlobalFilterChange = (e) => {
+    setDate2("");
     const value = e.target.value;
     let _filters = { ...filters };
     _filters["global"].value = value;
@@ -104,7 +108,6 @@ const AdminWallet = () => {
   };
 
   const onGlobalFilterChangeDate = (e) => {
-
     let dates = moment(e.target.value).format("DD-MM-YYYY");
     let _filters = { ...filters };
     _filters["global"].value = dates;
@@ -112,6 +115,8 @@ const AdminWallet = () => {
     setGlobalFilterValue(dates);
   };
 
+  const [date1, setDate1] = useState(null);
+  const [date2, setDate2] = useState(null);
   const headerComplete = (
     <div className="py-2">
       <div className="row">
@@ -130,16 +135,26 @@ const AdminWallet = () => {
           </span>
         </div>
         <div className="col-lg-3">
-          <span className="p-input-icon-left">
-            <i className="pi pi-search" />
-            <InputText
-              type="date"
-              defaultValue={globalFilterValue}
-              onChange={onGlobalFilterChangeDate}
-              placeholder="Keyword Search"
-              className="form-control ps-5"
-            />
-          </span>
+          <div className="row">
+            <div className="col-lg-6">
+              <Calendar
+                value={date1}
+                onChange={(e) => setDate1(e.value)}
+                dateFormat="dd-mm-yy"
+                placeholder="From Date"
+              />
+            </div>
+            <div className="col-lg-6">
+              <Calendar
+                onChange={(e) => {
+                  setDate2(e.target.value);
+                  showDateWiseData(e.target.value);
+                }}
+                dateFormat="dd-mm-yy"
+                placeholder="To Date"
+              />
+            </div>
+          </div>
         </div>
         <div className="col-lg-2">
           <button
@@ -152,6 +167,27 @@ const AdminWallet = () => {
       </div>
     </div>
   );
+
+  const showDateWiseData = (datea) => {
+    if (date2 !== "") {
+      let newDate1 = new Date(date1).toISOString();
+      let newDate2 = new Date(datea).toISOString();
+      let Datas = [];
+      successData.map((item) => {
+        let newDate3 = moment(item.transactionDate, "DD-M-YYYY");
+        let newDate4 = new Date(newDate3._d).toISOString();
+
+        if (newDate4 >= newDate1 && newDate4 <= newDate2) {
+          Datas.push(item);
+        }
+      });
+      setFilterData(Datas);
+    } else {
+      setLoadPage(true);
+      setFilterData(successData);
+    }
+  };
+
   const hideDialog = () => {
     setAddDialog(false);
   };
@@ -199,6 +235,14 @@ const AdminWallet = () => {
     return rowData.transactionDate + " / " + rowData.transactionTime;
   };
 
+  const showClosing = (rowData) => {
+    if (rowData.openingBalance === undefined || rowData.openingBalance === "") {
+      return "";
+    } else {
+      return parseInt(rowData.openingBalance) + parseInt(rowData.amount);
+    }
+  };
+
   return (
     <div>
       <Toast ref={toast} />
@@ -231,6 +275,16 @@ const AdminWallet = () => {
             "status",
           ]}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column field="orderId" header="Order Id" sortable></Column>
           <Column field="transactionId" header="Txn ID" sortable></Column>
           <Column
@@ -242,11 +296,32 @@ const AdminWallet = () => {
           {/* <Column field="transactionTime" header="Time" sortable></Column> */}
           <Column field="openingBalance" header="OpeningAmt" sortable></Column>
           <Column field="amount" header="Amount" sortable></Column>
-          <Column field="type" header="Type" bodyStyle={{color:'blue',fontWeight:'bold'}} sortable></Column>
+          <Column
+            field={showClosing}
+            header="ClosingBal."
+            body={showClosing}
+          ></Column>
+          <Column
+            field="type"
+            header="Type"
+            bodyStyle={{ color: "blue", fontWeight: "bold" }}
+            sortable
+          ></Column>
           <Column field="userName" header="User Name"></Column>
           <Column field="distName" header="Distr/Vendor Name"></Column>
           <Column field="reason" header="Reason" sortable></Column>
-          <Column field="status" header="Status" bodyStyle={{color:'green'}} sortable></Column>
+          <Column
+            field="status"
+            header="Status"
+            bodyStyle={{ color: "green" }}
+            sortable
+          ></Column>
+          <Column
+            field="amountStatus"
+            header="AmtStatus"
+            bodyStyle={{ color: "green" }}
+            sortable
+          ></Column>
           {/* <Column
             header="Action"
             style={{ minWidth: "4rem" }}

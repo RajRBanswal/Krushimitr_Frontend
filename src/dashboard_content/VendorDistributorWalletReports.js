@@ -165,7 +165,7 @@ const VendorDistributorWalletReports = () => {
     });
   };
   const onGlobalFilterChange = (e) => {
-    setDate1("")
+    setDate1("");
     const value = e.target.value;
     let _filters = { ...filters };
 
@@ -252,15 +252,16 @@ const VendorDistributorWalletReports = () => {
     return arr;
   };
   const getTransId = (rowData) => {
-    if (
-      Array.isArray(rowData.paymentInstrument) ||
-      rowData.paymentInstrument !== ""
-    ) {
-      let arr = JSON.parse(rowData.paymentInstrument);
-      if (arr.transactionId !== undefined || arr.transactionId !== "") {
-        return arr.transactionId;
-      } else {
+    if (Array.isArray(rowData.paymentInstrument)) {
+      if (rowData.paymentInstrument[0] === "CARD, UPI, WALLET") {
         return "";
+      } else {
+        let arr = JSON.parse(rowData.paymentInstrument);
+        if (arr.transactionId !== undefined || arr.transactionId !== "") {
+          return arr.transactionId;
+        } else {
+          return "";
+        }
       }
     } else {
       return "";
@@ -355,8 +356,16 @@ const VendorDistributorWalletReports = () => {
                 "status",
               ]}
             >
-              {/* <Column field="transactionDate" header="Date" sortable></Column>
-              <Column field="transactionTime" header="Time"></Column> */}
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field={getDateTime}
                 header="Date/Time"
@@ -425,6 +434,16 @@ const VendorDistributorWalletReports = () => {
               ]}
             >
               <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
+              <Column
                 field={getDateTime}
                 header="Date/Time"
                 body={getDateTime}
@@ -492,8 +511,16 @@ const VendorDistributorWalletReports = () => {
                 "status",
               ]}
             >
-              {/* <Column field="transactionDate" header="Date" sortable></Column>
-              <Column field="transactionTime" header="Time"></Column> */}
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field={getDateTime}
                 header="Date/Time"

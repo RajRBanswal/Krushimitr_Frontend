@@ -562,10 +562,14 @@ function EditOrder() {
         }
       );
       const data = await response.json();
+      console.log(data);
       if (data.status === 201) {
         setLoadings(false);
         alert(data.result);
         navigate("/distributors/customer-orders");
+      } else if (data.status === 507) {
+        alert(data.result);
+        navigate("/distributors/stock-management");
       } else {
         alert(data.result);
         navigate("/distributors/customer-orders");

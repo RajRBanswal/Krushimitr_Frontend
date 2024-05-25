@@ -6,6 +6,7 @@ import "../../node_modules/owl.carousel/dist/owl.carousel.min";
 import "./../styles.css";
 import { fromLatLng } from "react-geocode";
 import Packages from "./Packages";
+import { handelRightClick } from "./AppUtility";
 
 function Home() {
   const navigate = useNavigate();
@@ -153,6 +154,11 @@ function Home() {
     getCategoryData();
     getProductData();
     getNEWSData();
+
+    document.addEventListener("contextmenu", handelRightClick);
+    return function cleanup() {
+      document.removeEventListener("contextmenu", handelRightClick);
+    };
   }, []);
 
   // console.log(product);
@@ -404,7 +410,14 @@ function Home() {
               if (item.status === "Active") {
                 return (
                   <div className="col-lg-3 my-3">
-                    <div className="card h-100 shadow">
+                    <div
+                      aria-disabled={abc.quantity < 1 ? true : false}
+                      className={
+                        abc.quantity < 1
+                          ? "card h-100 shadow productDisabled"
+                          : "card h-100 shadow "
+                      }
+                    >
                       <div className="card-body p-0 productImage">
                         <img
                           src={`https://krushimitr.in/upload/${
@@ -461,6 +474,13 @@ function Home() {
                               : abc.discount + "% Off"}
                           </span>
                         </div>
+                      </div>
+                      <div
+                        className={
+                          abc.quantity < 1 ? "productDisabledText" : "d-none"
+                        }
+                      >
+                        <h4>Out of Stock</h4>
                       </div>
                     </div>
                   </div>

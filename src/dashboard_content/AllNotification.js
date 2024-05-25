@@ -76,7 +76,7 @@ function AllNotification() {
           className="btn btn-outline-danger btn-sm"
           onClick={() => deleteNotification(options._id)}
         >
-          <i className="pi pi-trash"></i>
+          <i className="fa fa-trash"></i>
         </button>
         <button
           type="button"
@@ -87,7 +87,7 @@ function AllNotification() {
             setEditDialog(true);
           }}
         >
-          <i className="pi pi-pencil"></i>
+          <i className="fa fa-edit"></i>
         </button>
       </>
     );
@@ -224,6 +224,16 @@ function AllNotification() {
           globalFilter={globalFilter}
           header={headerComplete}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column field="noti_date" header="Date" sortable></Column>
           <Column field="user_name" header="Name" sortable></Column>
           <Column field="noti_title" header="Title" sortable></Column>

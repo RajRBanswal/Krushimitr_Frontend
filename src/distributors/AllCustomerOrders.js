@@ -637,6 +637,16 @@ const AllCustomerOrders = () => {
               ]}
             >
               <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
+              <Column
                 field="orderNumber"
                 header="Order No"
                 sortable
@@ -700,6 +710,16 @@ const AllCustomerOrders = () => {
                 "status",
               ]}
             >
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field="orderNumber"
                 header="Order No"
@@ -766,6 +786,16 @@ const AllCustomerOrders = () => {
               ]}
             >
               <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
+              <Column
                 field="orderNumber"
                 header="Order No ss"
                 sortable
@@ -829,6 +859,16 @@ const AllCustomerOrders = () => {
                 "status",
               ]}
             >
+              <Column
+                field="#"
+                header="Sr. No."
+                bodyStyle={{
+                  fontSize: 15,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+                body={(data, options) => options.rowIndex + 1}
+              ></Column>
               <Column
                 field="orderNumber"
                 header="Order No"

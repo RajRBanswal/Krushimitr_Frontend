@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { addToCart } from "../redux/slice/CartSlice";
+import { handelRightClick } from "./AppUtility";
 
 function ProductDetail() {
   const { id, user_id } = useParams();
@@ -17,7 +18,9 @@ function ProductDetail() {
   const [selectedDiscount, setSelectedDiscount] = useState("");
   const [selectedGST, setSelectedGST] = useState("");
   const [selectedCommission, setSelectedCommission] = useState("");
+  const [selectedMinQuantity, setSelectedMinQuantity] = useState(1);
   let datas = [];
+  const [quantity, setQuantity] = useState(1);
   const getProducts = async () => {
     const response = await fetch(
       "https://krushimitr.in/api/admin/get-product/",
@@ -43,6 +46,12 @@ function ProductDetail() {
           setSelectedDiscount(
             itmess.discount === undefined ? 0 : itmess.discount
           );
+          setSelectedMinQuantity(
+            itmess.minQuantity === undefined ? 1 : itmess.minQuantity
+          );
+          setQuantity(
+            itmess.minQuantity === undefined ? 1 : itmess.minQuantity
+          );
           setProductSize(item);
           datas.push(JSON.parse(item));
         } else {
@@ -59,6 +68,7 @@ function ProductDetail() {
 
     localStorage.setItem("PRODUCT_ID", id);
     localStorage.setItem("USERID", user_id);
+
   }, [id]);
 
   const changePrice = (item) => {
@@ -67,12 +77,11 @@ function ProductDetail() {
     setSelectedPrice(item.selling_price);
     setSelectedGST(item.gst);
     setSelectedCommission(item.commission);
-    setSelectedDiscount(
-      item.discount === undefined ? 0 : item.discount
+    setSelectedDiscount(item.discount === undefined ? 1 : item.discount);
+    setSelectedMinQuantity(
+      item.minQuantity === undefined ? 1 : item.minQuantity
     );
   };
-
-  const [quantity, setQuantity] = useState(1);
 
   return (
     <div className="container mt-3">
@@ -220,23 +229,39 @@ function ProductDetail() {
                               <p className="fw-bold mb-0">Quantity</p>
                               <hr className="my-1" />
                               <div className="qty-input m-auto">
-                                <button
-                                  className="qty-count qty-count--minus btn"
-                                  data-action="minus"
-                                  type="button"
-                                  onClick={() =>
-                                    quantity > 1 && setQuantity(quantity - 1)
-                                  }
-                                >
-                                  -
-                                </button>
+                                {selectedMinQuantity < quantity ? (
+                                  <button
+                                    className="qty-count qty-count--minus btn"
+                                    data-action="minus"
+                                    type="button"
+                                    onClick={() =>
+                                      quantity > 1 &&
+                                      setQuantity(parseInt(quantity) - 1)
+                                    }
+                                  >
+                                    -
+                                  </button>
+                                ) : (
+                                  <button
+                                    disabled={true}
+                                    className="qty-count qty-count--minus btn"
+                                    data-action="minus"
+                                    type="button"
+                                    onClick={() =>
+                                      quantity > 1 &&
+                                      setQuantity(parseInt(quantity) - 1)
+                                    }
+                                  >
+                                    -
+                                  </button>
+                                )}
                                 <input
                                   className="product-qty"
                                   type="number"
                                   name="product-qty"
-                                  min="0"
-                                  max="10"
-                                  value={quantity}
+                                  min={selectedMinQuantity}
+                                  onChange={(e) => setQuantity(e.target.value)}
+                                  defaultValue={quantity}
                                 />
                                 <button
                                   className="qty-count qty-count--add btn"

@@ -6,7 +6,7 @@ import { InputText } from "primereact/inputtext";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router";
-import axios  from "axios";
+import axios from "axios";
 const UserPackages = () => {
   const navigate = useNavigate();
   const [package_name, setPackage_Name] = useState(0);
@@ -192,7 +192,6 @@ const UserPackages = () => {
     setImages(event.target.files[0]);
   };
   const UpdateData = async () => {
-    console.log(imageFile);
     const formData = new FormData();
     formData.append("id", editPackage._id);
     formData.append("package_name", package_name ? package_name : "");
@@ -203,7 +202,7 @@ const UserPackages = () => {
     formData.append("price", price ? price : "");
     formData.append("duration", duration ? duration : "");
     formData.append("image", imageFile);
-    
+
     const response = await axios.post(
       "https://krushimitr.in/api/admin/update-users-package",
       formData,
@@ -213,24 +212,20 @@ const UserPackages = () => {
         },
       }
     );
-    // const response = await fetch(
-    //   "https://krushimitr.in/api/admin/update-users-package",
-    //   {
-    //     method: "POST",
-    //     body: formData,
-    //   }
-    // );
+
     // const result = await response.json();
     console.log(response);
-    // if (result.status === 201) {
-    //   hideEditDialog();
-    //   setPackage_Name("");
-    //   setPrice("");
-    //   setImages("");
-    //   alert(result.result);
-    // } else {
-    //   alert(result.result);
-    // }
+    // const result = await response.json();
+    // console.log(result);
+    if (response.data.status === 201) {
+      hideEditDialog();
+      setPackage_Name("");
+      setPrice("");
+      setImages("");
+      alert(response.data.result);
+    } else {
+      alert(response.data.result);
+    }
   };
 
   // console.log(images);
@@ -271,6 +266,16 @@ const UserPackages = () => {
           globalFilter={globalFilter}
           header={headerComplete}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column
             field="package_name"
             header="Package Name"

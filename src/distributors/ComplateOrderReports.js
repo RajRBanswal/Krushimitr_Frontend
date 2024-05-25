@@ -33,7 +33,9 @@ function ComplateOrderReports() {
   const [distributor, setDistributor] = useState(distr);
   const getProductData = async () => {
     let data = [];
-    let all_products = await fetch("https://krushimitr.in/api/admin/all-orders");
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/all-orders"
+    );
     const all_orders = await all_products.json();
     if (all_orders.status === 201) {
       all_orders.result.map((item) => {
@@ -74,15 +76,18 @@ function ComplateOrderReports() {
 
   const [singleData, setSingleData] = useState("");
   const getOrderData = async (Id) => {
-    let all_products = await fetch("https://krushimitr.in/api/admin/get-orders", {
-      method: "post",
-      body: JSON.stringify({
-        orderId: Id,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    let all_products = await fetch(
+      "https://krushimitr.in/api/admin/get-orders",
+      {
+        method: "post",
+        body: JSON.stringify({
+          orderId: Id,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const get_orders = await all_products.json();
     setSingleData(get_orders.result);
   };
@@ -313,6 +318,16 @@ function ComplateOrderReports() {
           globalFilter={globalFilter}
           header={headerComplete}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column
             field="orderNumber"
             header="Order No."

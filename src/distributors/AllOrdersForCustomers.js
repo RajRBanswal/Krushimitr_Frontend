@@ -120,8 +120,6 @@ const AllOrdersForCustomers = () => {
     dispatch(emptyCart());
   }, [getRejectedOrders]);
 
-
-
   const filterApplyTemplate = (options) => {
     return (
       <button
@@ -161,7 +159,6 @@ const AllOrdersForCustomers = () => {
     }
   };
 
-
   const RejectOrder = async (orderId) => {
     const response = await fetch(
       "https://krushimitr.in/api/distributor/reject-order",
@@ -194,6 +191,16 @@ const AllOrdersForCustomers = () => {
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           tableStyle={{ minWidth: "100%" }}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column
             field="orderNumber"
             header="Order No"

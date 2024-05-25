@@ -4,6 +4,7 @@ import seedss from "../images/seeds.jpg";
 import machinery from "../images/machinery.jpg";
 import elect from "../images/electroninc.jpg";
 import ferti from "../images/fertilizers.jpg";
+import { handelRightClick } from "./AppUtility";
 
 function Products() {
   const navigate = useNavigate();
@@ -24,6 +25,10 @@ function Products() {
   useEffect(() => {
     getProductData();
     setInterval(() => getProductData(), 5000);
+    document.addEventListener("contextmenu", handelRightClick);
+    return function cleanup() {
+      document.removeEventListener("contextmenu", handelRightClick);
+    };
   }, []);
 
   // console.log(product);
@@ -116,7 +121,14 @@ function Products() {
               if (item.status === "Active") {
                 return (
                   <div className="col-lg-3 my-3">
-                    <div className="card h-100 shadow">
+                    <div
+                      aria-disabled={abc.quantity < 1 ? true : false}
+                      className={
+                        abc.quantity < 1
+                          ? "card h-100 shadow productDisabled"
+                          : "card h-100 shadow "
+                      }
+                    >
                       <div className="card-body p-0 productImage">
                         <img
                           src={`https://krushimitr.in/upload/${
@@ -173,6 +185,13 @@ function Products() {
                               : abc.discount + "% Off"}
                           </span>
                         </div>
+                      </div>
+                      <div
+                        className={
+                          abc.quantity < 1 ? "productDisabledText" : "d-none"
+                        }
+                      >
+                        <h4>Out of Stock</h4>
                       </div>
                     </div>
                   </div>

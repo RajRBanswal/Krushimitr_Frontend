@@ -727,13 +727,23 @@ function WalletManagement() {
               "status",
             ]}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column field="orderId" header="Order No." sortable></Column>
             <Column field="transactionId" header="Txn Id" sortable></Column>
             <Column
               field={showDate}
               header="Date/Time"
               body={showDate}
-              bodyStyle={{fontSize:13}}
+              bodyStyle={{ fontSize: 13 }}
               sortable
             ></Column>
             {/* <Column field="transactionTime" header="Time" sortable></Column> */}
@@ -785,6 +795,16 @@ function WalletManagement() {
             globalFilter={globalFilter}
             header={headerPointComplete}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column
               field="transactionId"
               header="Transaction Id"
@@ -845,6 +865,16 @@ function WalletManagement() {
             globalFilter={globalFilter}
             header={headerData}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column field="orderId" header="Order Id" sortable></Column>
             <Column
               field="transactionId"
@@ -855,7 +885,7 @@ function WalletManagement() {
               field={showDate}
               header="Date / Time"
               body={showDate}
-              bodyStyle={{fontSize:13}}
+              bodyStyle={{ fontSize: 13 }}
               sortable
             ></Column>
             {/* <Column field="transactionTime" header="Time" sortable></Column> */}

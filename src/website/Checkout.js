@@ -7,6 +7,7 @@ import { City, State } from "country-state-city";
 
 import { cashfree } from "../cashfree/util";
 import axios from "axios";
+import { handelRightClick } from "./AppUtility";
 
 function Checkout() {
   const navigate = useNavigate();
@@ -411,6 +412,11 @@ function Checkout() {
     let month = new Date().getMonth() + 1;
     let year = new Date().getFullYear();
     setCurrentDate(date + "-" + month + "-" + year);
+
+    document.addEventListener("contextmenu", handelRightClick);
+    return function cleanup() {
+      document.removeEventListener("contextmenu", handelRightClick);
+    };
   }, []);
 
   const [cityCode, setCityCode] = useState([]);
@@ -570,7 +576,7 @@ function Checkout() {
                           width={50}
                         />
                       </td>
-                      <td style={{width:'40%'}}>
+                      <td style={{ width: "40%" }}>
                         <div className="product-info">
                           <div className="product-title">
                             <p className="mb-0 fw-bold ">

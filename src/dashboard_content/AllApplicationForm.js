@@ -149,6 +149,16 @@ function AllApplicationForm() {
           globalFilter={globalFilter}
           header={headerComplete}
         >
+          <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
           <Column field="store_type" header="Store Type" sortable></Column>
           <Column field="name" header="Name" sortable></Column>
           <Column field="mobile" header="Mobile" sortable></Column>

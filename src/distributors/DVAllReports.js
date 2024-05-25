@@ -400,6 +400,16 @@ function DVAllReports() {
           footerColumnGroup={footerGroup}
         >
           <Column
+            field="#"
+            header="Sr. No."
+            bodyStyle={{
+              fontSize: 15,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+            body={(data, options) => options.rowIndex + 1}
+          ></Column>
+          <Column
             field="orderNumber"
             header="Order No."
             bodyStyle={{ color: "green", fontSize: 12 }}

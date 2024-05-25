@@ -338,6 +338,16 @@ function UserAllOrders() {
             tableStyle={{ minWidth: "100%" }}
           >
             <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
+            <Column
               field="orderNumber"
               header="OrderId"
               bodyStyle={{ color: "green", fontSize: 13, fontWeight: "bold" }}
@@ -363,7 +373,7 @@ function UserAllOrders() {
               sortable
               bodyStyle={{ color: "green", fontWeight: "bold" }}
             ></Column>
-             <Column
+            <Column
               field="orderStatus"
               header="Status"
               sortable
@@ -392,6 +402,16 @@ function UserAllOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column
               field="orderNumber"
               header="OrderId"
@@ -442,6 +462,16 @@ function UserAllOrders() {
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
           >
             <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
+            <Column
               field="orderNumber"
               header="OrderId"
               bodyStyle={{ color: "green", fontSize: 13, fontWeight: "bold" }}
@@ -490,6 +520,16 @@ function UserAllOrders() {
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             tableStyle={{ minWidth: "100%", boxShadow: "0 0 5px" }}
           >
+            <Column
+              field="#"
+              header="Sr. No."
+              bodyStyle={{
+                fontSize: 15,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+              body={(data, options) => options.rowIndex + 1}
+            ></Column>
             <Column
               field="orderNumber"
               header="OrderId"

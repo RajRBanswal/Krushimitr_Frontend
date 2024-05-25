@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { cashfree } from "../cashfree/util";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { FacebookShareCount } from "react-share";
 
 function Dashboard() {
   let userId = "";
@@ -159,7 +160,12 @@ function Dashboard() {
       }
     });
   };
-
+  const link =
+    "whatsapp://send?text=https://play.google.com/store/apps/details?id=com.Krushimitr_Shivaneri&pli=1&user_id=" +
+    users._id;
+  const fbLink =
+    "https://www.facebook.com/sharer/sharer.php?u=#https://play.google.com/store/apps/details?id=com.Krushimitr_Shivaneri&pli=1&user_id=" +
+    users._id;
   return (
     <div>
       <div className="row mb-3">
@@ -201,6 +207,24 @@ function Dashboard() {
                   </h4>
                 ))}
             </Link>
+          </div>
+        </div>
+        <div className="col-lg-3 mt-3">
+          <div className="card bg-info p-3 text-center">
+            <h4 className="text-white">Refer & Earn</h4>
+            <div className="d-flex text-center w-100 shareLinkGroup">
+              {/* <Link
+                to={link}
+                className="shareLink"
+                data-action="share/whatsapp/share"
+              >
+                <i className="bi bi-whatsapp text-white"></i>
+              </Link>
+              <Link to={fbLink} className="shareLink" target="_blank">
+                <i className="bi bi-facebook text-white"></i>
+              </Link> */}
+              <FacebookShareCount url={link} />
+            </div>
           </div>
         </div>
       </div>
